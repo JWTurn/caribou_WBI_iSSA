@@ -4,13 +4,12 @@
 
 
 ### Packages ----
-# remotes::install_github('bbolker/broom.mixed')
-# remotes::install_github('ropensci/spatsoc')
 libs <- c('data.table', 'readxl', 'fs', 'tidyr', 'purrr', 'janitor')
 lapply(libs, require, character.only = TRUE)
 
 
 #### Functions ----
+#get rid of spaces in column names -- weird excel artifacts
 spaceless <- function(x) {colnames(x) <- gsub(" ", "", colnames(x));x}
 
 ### Input data ----
@@ -18,7 +17,7 @@ raw <- 'data/raw-data/'
 sk <- 'data/raw-data/SK_data/'
 derived <- 'data/derived-data/'
 
-
+# list of files
 ls_sk <- as.character(dir_ls(path = sk))
 
 temp <- data.table()
