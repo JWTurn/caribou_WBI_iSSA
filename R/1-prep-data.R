@@ -45,36 +45,12 @@ colnames(prep_sk[[1]])
 newnames <- c('file','date','time','datum','lat','long','UTMzone','northing','easting','id') 
 for (dd in 1:length(ls_sk)) {
   setnames(prep_sk[[dd]], old = colnames(prep_sk[[dd]]), new = newnames)
-  prep_sk[[dd]][,`:=`(date = convert_to_date(date))]
+  prep_sk[[dd]][,`:=`(date = as.IDate(convert_to_date(date)))]
   prep_sk[[dd]][,time:=as.ITime(as.character(time)) ]
   prep_sk[[dd]][,datetime:= as.POSIXct(paste(date,time, sep = ' '))]
 }
 
 dat_sk <- rbindlist(prep_sk)
 
-
-colnames(prep_sk[[1]])
-prep_sk[]
-
-# .(pd_start = colnames(data[[1]]) %like% 'Start Date',
-#      pd_end = colnames(data[[1]]) %like% 'End Date',
-#      date = colnames(data[[1]]) %like% 'Sample Date',
-#      time = as.ITime(as.character(colnames(data[[1]]) %like% 'Start Time')),
-#      datum = Datum,
-#      precision = as.character(colnames(data[[1]]) %like% 'Precision'),
-#      lat = colnames(data[[1]]) %like% 'Latitude',
-#      long = colnames(data[[1]]) %like% 'Longitude',
-#      UTMzone = colnames(data[[1]]) %like% 'Zone',
-#      northing = colnames(data[[1]]) %like% 'Northing',
-#      easting =  colnames(data[[1]]) %like% 'Easting',
-#      id = as.character(colnames(data[[1]]) %like% 'Individual'),
-#      comments = as.character(Comments))])]
-
-
-dat_sk[,time:=as.ITime(as.character(`Sample Time (24hr Clock)`)) ]
-dat_sk[,datetime:= as.POSIXct(paste(`Sample Date                              (yyyy-mm-dd)`, 
-                                    time, sep = ' '))]
-
-
-
+saveRDS(dat_sk, paste0(derived, 'prepped-data/SKprepDat.RDS'))
 
