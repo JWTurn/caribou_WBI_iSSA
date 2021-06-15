@@ -17,7 +17,10 @@ dat_sk <- readRDS(paste0(sk, 'SKprepDat.RDS'))
 
 ### EXPLORE ----
 # check if all observations are complete
-all(complete.cases(dat_sk[,.(long,lat, datetime)])) # no action required
+all(complete.cases(dat_sk[,.(long,lat, datetime)]))
+# remove incomplete observations
+dat_sk <- dat_sk[complete.cases(long,lat, datetime)]
+all(complete.cases(dat_sk[,.(long,lat, datetime)]))
 
 # check for duplicated time stamps
 dat_sk[,any(duplicated(datetime)), by = id]
@@ -36,31 +39,32 @@ fixrate <- trk_sk %>% mutate(sr = lapply(data, summarize_sampling_rate)) %>%
 # trk_sk[, trk:= amt::make_track(data, long, lat, datetime, crs = sp::CRS("+init=epsg:4326")), by = id]
 
 
-trk_sk<- rbindlist(lapply(unique(DT_sk$id), function(i){
-  DT_sk[id == i, .(amt::make_track(.SD, long, lat, datetime, crs = sp::CRS("+init=epsg:4326"), id = id))]
-}))
+# trk_sk<- rbindlist(lapply(unique(DT_sk$id), function(i){
+#   DT_sk[id == i, .(amt::make_track(.SD, long, lat, datetime, crs = sp::CRS("+init=epsg:4326"), id = id))]
+# }))
 ### standardize fix rate ####
 
 #trk_sk2 <-trk_sk %>% nest(data = -"id") 
+# safely gets rid of the individuals causing errors 
+#TODO look into errors later
 trk_sk2 <-trk_sk %>%
-  mutate(burst = map(data, function(x) 
+  mutate(burst = map(data, purrr::safely(function(x) 
     x %>% amt::track_resample(rate = hours(5), tolerance = minutes(30)) %>% 
-      amt::filter_min_n_burst())) #%>% 
-trk_sk3 <-trk_sk2 %>%   mutate(steps = map(burst, function(x) 
-  x %>%  amt::steps_by_burst()))
+      amt::filter_min_n_burst() %>% amt::steps_by_burst(., lonlat = T))))
+
+steps_by_burst(trk_sk2$burst[[1]], lonlat = T)
+
+
 
 
 
 ############
-trk_sk2 %>% mutate(data, step_lengths(.)) %>%
-  dplyr::select(id, sl) %>% unnest(cols = c(sl))
+sl<- trk_sk %>%mutate(sl = map(data, function(x) 
+  x %>% amt::step_lengths(., lonlat = T)))
+sum <- sl %>%
+  mutate(sum = lapply(sl, summary)) %>% 
+  dplyr::select(id, sum) 
 
-### standardize fix rate ####
+### look at movement ####
 
-trk_sk2 <-trk_sk %>% 
-  mutate(steps = map(tibble(data), function(x) 
-    x %>% amt::track_resample(rate = hours(5), tolerance = minutes(30)) %>% 
-      amt::filter_min_n_burst() %>%
-      amt::steps_by_burst()))
 
-class(trk_sk$data[[1]])
