@@ -26,8 +26,8 @@ temp <- rbindlist(lapply(seq(1:length(ls_sk)), function(i){
            data = list(setDT(read_excel(ls_sk[[i]], sheet = 'TelemetryData', skip = 3))))]
 }))
 
-temp[,data:= function(x){
-  colnames(.SD) <- gsub(' ','', colnames(.SD))}, by = file]
+# temp[,data:= function(x){
+#   colnames(.SD) <- gsub(' ','', colnames(.SD))}, by = file]
 temp$file
 
 #### gather just needed data ####
@@ -47,6 +47,8 @@ for (dd in 1:length(ls_sk)) {
   prep_sk[[dd]][,`:=`(date = as.IDate(convert_to_date(date)))]
   prep_sk[[dd]][,time:=as.ITime(as.character(time)) ]
   prep_sk[[dd]][,datetime:= as.POSIXct(paste(date,time, sep = ' '))]
+  prep_sk[[dd]][,lat:= as.numeric(lat)]
+  prep_sk[[dd]][,long:= as.numeric(long)]
 }
 
 dat_sk <- rbindlist(prep_sk)
