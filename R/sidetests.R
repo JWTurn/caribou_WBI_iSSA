@@ -3,6 +3,7 @@ require(raster)
 tar_load(inputland)
 tar_load(lcvalues)
 
+road.shp <- 
 inputland <- projectRaster(inputland, crs = crs)
 writeRaster(inputland, file.path('data', 'raw-data', 'CanLCC_WGS84.tif'))
 
