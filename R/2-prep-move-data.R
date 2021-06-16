@@ -48,13 +48,17 @@ fixrate <- trk_sk %>% mutate(sr = lapply(data, summarize_sampling_rate)) %>%
 # safely gets rid of the individuals causing errors 
 #TODO look into errors later
 trk_sk2 <-trk_sk %>%
-  mutate(burst = map(data, purrr::safely(function(x) 
+  mutate(steps = map(data, purrr::safely(function(x) 
     x %>% amt::track_resample(rate = hours(5), tolerance = minutes(30)) %>% 
       amt::filter_min_n_burst() %>% amt::steps_by_burst(., lonlat = T))))
 
-steps_by_burst(trk_sk2$burst[[1]], lonlat = T)
+steps_by_burst(trk_sk2$steps[[1]], lonlat = T)
 
 
+trk_sk2 <-trk_sk %>%
+  mutate(steps = map(data, function(x)
+    x %>% amt::track_resample(rate = hours(5), tolerance = minutes(30)) %>%
+      amt::filter_min_n_burst() %>% amt::steps_by_burst(., lonlat = T)))
 
 
 
@@ -67,4 +71,9 @@ sum <- sl %>%
 
 ### look at movement ####
 
+trk_sk3 <- trk_sk2 %>% dplyr::select(id, steps) %>% unnest(cols = steps) 
+test <- data.table(id = trk_sk3$id, trk_sk3$steps$result)
+ggplot(aes(sl_, fill = factor(id))) + geom_density(alpha = 0.4)
 
+DT_sk %>% ggplot(aes(long,lat, color= factor(id))) +
+  geom_point()
