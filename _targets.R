@@ -111,9 +111,7 @@ list(
   # create random steps and extract covariates
   tar_target(
     randsteps,
-    random_steps(resamples, n=10) %>%
-      extract_covariates(lc, where = "end") %>%
-      time_of_day(where = 'start'),
+    make_random_tracks(resamples, lc),
     pattern = map(resamples)
   )
   
