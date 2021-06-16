@@ -52,22 +52,16 @@ list(
     readRDS(path)
   ),
   
-  # Remove duplicated id*datetime rows
+  # Remove duplicated and incomplete observations
   tar_target(
     mkunique,
-    unique(input, by = c(id, datetime))
-  ),
-  
-  # remove incomplete observations
-  tar_target(
-    mkuniqueobs,
-    mkunique[complete.cases(long,lat, datetime)]
+    make_unique_complete(input, id, datetime, long, lat)
   ),
   
   # Set up split -- these are our iteration units
   tar_target(
     splits,
-    mkuniqueobs[, tar_group := .GRP, by = splitBy],
+    mkunique[, tar_group := .GRP, by = splitBy],
     iteration = 'group'
   ),
   
