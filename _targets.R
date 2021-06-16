@@ -38,11 +38,11 @@ crs <- CRS(st_crs(4326)$wkt)
 splitBy <- id
 
 
-# Resampling rate (hours)
-rate <- 5
+# Resampling rate 
+rate <- hours(5)
 
-# Tolerance (minutes)
-tolerance <- 30
+# Tolerance
+tolerance <- minutes(30)
 
 
 # Targets -----------------------------------------------------------------
