@@ -14,9 +14,12 @@ make_unique_complete <- function(DT, id, datetime, long, lat) {
 
 # Extract land cover ------------------------------------------------------
 extract_lc <- function(DT, lc, x, y, lcvalues) {
-  merge(DT[, value := raster::extract(lc, matrix(do.call(cbind, .SD), ncol = 2)),
+  merge(
+    DT[, value := raster::extract(lc, do.call(cbind, .SD)),
            .SDcols = c(x, y)],
-        lcvalues, by = value)
+    lcvalues,
+    by = 'value',
+    all.x = TRUE)
 }
 
 
