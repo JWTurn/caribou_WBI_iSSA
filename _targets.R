@@ -88,11 +88,11 @@ list(
     fread(landclass)
   ),
   
-  # reclassify the land
-  tar_target(
-    lcc,
-    merge(inputland[, value := extract(lc, xy)], lcvalues, by = value)
-  ),
+  # # reclassify the land
+  # tar_target(
+  #   lcc,
+  #   merge(inputland[, value := extract(lc, xy)], lcvalues, by = value)
+  # ),
   
   # Make tracks. Note from here on, when we want to iterate use pattern = map(x)
   #  where x is the upstream target name
@@ -124,7 +124,7 @@ list(
   tar_target(
     randsteps,
     amt::random_steps(n=10) %>%
-      amt::extract_covariates(lcc, where = "end") %>%
+      amt::extract_covariates(inputland, where = "end") %>%
       amt::time_of_day(where = 'start'),
     pattern = map(resamples)
   )
