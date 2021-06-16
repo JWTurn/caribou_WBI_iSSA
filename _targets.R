@@ -23,7 +23,7 @@ tar_option_set(format = 'qs',
 
 # Variables ---------------------------------------------------------------
 path <- file.path('data', 'derived-data', 'prepped-data', 'SKprepDat.RDS')
-land <- raster(file.path('data', 'raw-data', 'CanLCC.tif'), resolution = c(30, 30))
+land <- file.path('data', 'raw-data', 'CanLCC.tif')
 landclass <- fread(file.path('data', 'raw-data', 'rcl.csv'))
 
 id <- 'id'
@@ -59,10 +59,15 @@ list(
     make_unique_complete(input, id, datetime, long, lat)
   ),
   
+  tar_target(
+    lc,
+    raster(land, resolution = c(30, 30))
+  ),
+  
   # Extract land cover
   tar_target(
     extracts,
-    extract_lc(mkunique, lc, lcvalues)
+    extract_lc(mkunique, lc, long, lat, landclass)
   ),
   
   # Set up split -- these are our iteration units
