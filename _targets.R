@@ -59,36 +59,25 @@ list(
     make_unique_complete(input, id, datetime, long, lat)
   ),
   
+  # Extract land cover
+  tar_target(
+    extracts,
+    extract_lc(mkunique, lc, lcvalues)
+  ),
+  
   # Set up split -- these are our iteration units
   tar_target(
     splits,
-    mkunique[, tar_group := .GRP, by = splitBy],
+    extracts[, tar_group := .GRP, by = splitBy],
     iteration = 'group'
   ),
   
   tar_target(
     splitsnames,
-    unique(mkunique[, .(path = path), by = splitBy])
+    unique(extracts[, .(path = path), by = splitBy])
   ),
   
-  # load land raster
-  tar_target(
-    inputland,
-    raster(land, resolution = c(30, 30))
-  ),
-  
-  # Read land classification data
-  tar_target(
-    lcvalues,
-    fread(landclass)
-  ),
-  
-  # reclassify the land
-  tar_target(
-    lcc,
-    merge(inputland[, value := extract(lc, xy)], lcvalues, by = value)
-  ),
-  
+
   # Make tracks. Note from here on, when we want to iterate use pattern = map(x)
   #  where x is the upstream target name
   tar_target(

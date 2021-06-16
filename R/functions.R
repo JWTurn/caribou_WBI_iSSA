@@ -12,5 +12,12 @@ make_unique_complete <- function(DT, id, datetime, long, lat) {
 
 
 
+# Extract land cover ------------------------------------------------------
+extract_lc <- function(DT, lc, lcvalues) {
+  merge(DT[, value := extract(lc, xy)], lcvalues, by = value)
+}
+
+
+
 
 
