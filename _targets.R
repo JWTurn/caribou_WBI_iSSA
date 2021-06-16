@@ -23,8 +23,9 @@ tar_option_set(format = 'qs',
 
 # Variables ---------------------------------------------------------------
 path <- file.path('data', 'derived-data', 'prepped-data', 'SKprepDat.RDS')
-land <- file.path('data', 'raw-data', 'CanLCC.tif')
-landclass <- file.path('data', 'raw-data', 'rcl.csv')
+land <- raster(file.path('data', 'raw-data', 'CanLCC.tif'), resolution = c(30, 30))
+landclass <- fread(file.path('data', 'raw-data', 'rcl.csv'))
+
 id <- 'id'
 datetime <- 'datetime'
 long <- 'long'
