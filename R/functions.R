@@ -25,4 +25,13 @@ extract_lc <- function(DT, lc, x, y, lcvalues) {
 
 
 
-
+# Check resamples ---------------------------------------------------------
+resample_tracks <- function(tracks, rate, tolerance) {
+  t <- track_resample(tracks, rate = hours(rate), tolerance = minutes(tolerance)) %>%
+    filter_min_n_burst()
+  
+  # Cancel if there are not at least three rows after resample
+  tar_cancel(nrow(t) < 3)
+  
+  t %>% steps_by_burst(., lonlat = TRUE)  
+}

@@ -94,8 +94,7 @@ list(
   # Resample sampling rate
   tar_target(
     resamples,
-    track_resample(tracks, rate = hours(rate), tolerance = minutes(tolerance)) %>%
-      filter_min_n_burst() %>% steps_by_burst(., lonlat = TRUE),
+    resample_tracks(tracks, rate, tolerance),
     pattern = map(tracks)
   ),
   
@@ -112,7 +111,7 @@ list(
   # create random steps and extract covariates
   tar_target(
     randsteps,
-    random_steps(n=10) %>%
+    random_steps(resamples, n=10) %>%
       extract_covariates(inputland, where = "end") %>%
       time_of_day(where = 'start'),
     pattern = map(resamples)
