@@ -23,8 +23,9 @@ tar_option_set(format = 'qs',
 
 # Variables ---------------------------------------------------------------
 path <- file.path('data', 'derived-data', 'prepped-data', 'SKprepDat.RDS')
-land <- file.path('data', 'raw-data', 'CanLCC.tif')
-landclass <- file.path('data', 'raw-data', 'rcl.csv')
+land <- raster(file.path('data', 'raw-data', 'CanLCC.tif'), resolution = c(30, 30))
+landclass <- fread(file.path('data', 'raw-data', 'rcl.csv'))
+
 id <- 'id'
 datetime <- 'datetime'
 long <- 'long'
@@ -52,48 +53,31 @@ list(
     readRDS(path)
   ),
   
-  # Remove duplicated id*datetime rows
+  # Remove duplicated and incomplete observations
   tar_target(
     mkunique,
-    unique(input, by = c(id, datetime))
+    make_unique_complete(input, id, datetime, long, lat)
   ),
   
-  # remove incomplete observations
+  # Extract land cover
   tar_target(
-    mkuniqueobs,
-    mkunique[complete.cases(long,lat, datetime)]
+    extracts,
+    extract_lc(mkunique, lc, lcvalues)
   ),
   
   # Set up split -- these are our iteration units
   tar_target(
     splits,
-    mkuniqueobs[, tar_group := .GRP, by = splitBy],
+    extracts[, tar_group := .GRP, by = splitBy],
     iteration = 'group'
   ),
   
   tar_target(
     splitsnames,
-    unique(mkunique[, .(path = path), by = splitBy])
+    unique(extracts[, .(path = path), by = splitBy])
   ),
   
-  # load land raster
-  tar_target(
-    inputland,
-    raster(land, resolution = c(30, 30))
-  ),
-  
-  # Read land classification data
-  tar_target(
-    lcvalues,
-    fread(landclass)
-  ),
-  
-  # # reclassify the land
-  # tar_target(
-  #   lcc,
-  #   merge(inputland[, value := extract(lc, xy)], lcvalues, by = value)
-  # ),
-  
+
   # Make tracks. Note from here on, when we want to iterate use pattern = map(x)
   #  where x is the upstream target name
   tar_target(
