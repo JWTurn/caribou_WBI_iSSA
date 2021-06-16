@@ -4,4 +4,6 @@
 .Ruserdata
 data
 .DS_Store
+_targets/*
 _targets/
+_targets
