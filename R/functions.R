@@ -35,3 +35,14 @@ resample_tracks <- function(tracks, rate, tolerance) {
   
   t %>% steps_by_burst(., lonlat = TRUE)  
 }
+
+
+
+# Make random tracks ------------------------------------------------------
+make_random_tracks <- function(DT, lc) {
+  tar_cancel(nrow(DT) == 0)
+  random_steps(DT, n = 10) %>%
+    extract_covariates(lc, where = "end") %>%
+    time_of_day(where = 'start')
+}
+
