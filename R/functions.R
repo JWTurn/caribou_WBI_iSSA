@@ -38,7 +38,7 @@ resample_tracks <- function(tracks, rate, tolerance) {
 
 
 
-# Make random tracks ------------------------------------------------------
+# Make random steps ------------------------------------------------------
 make_random_tracks <- function(DT, lc) {
   tar_cancel(nrow(DT) == 0)
   random_steps(DT, n = 10) %>%
