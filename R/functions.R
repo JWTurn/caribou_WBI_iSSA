@@ -30,8 +30,10 @@ resample_tracks <- function(tracks, rate, tolerance) {
   t <- track_resample(tracks, rate = rate, tolerance = tolerance) %>%
     filter_min_n_burst()
   
-  # Cancel if there are not at least three rows after resample
-  tar_cancel(nrow(t) < 3)
+  # Cancel if there are not at least 20 observed steps after resample
+  # this is semi-arbitrary, but this should be enough for robust estimates in the model 
+  # (Street et al preprint 2021)
+  tar_cancel(nrow(t) < 20)
   
   t %>% steps_by_burst(., lonlat = TRUE)  
 }
