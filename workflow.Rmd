@@ -62,9 +62,23 @@ resample_tracks <- function(tracks, rate, tolerance) {
 
 ### Steps
 
-Now we have tracks, but a step selection analysis requires steps! So, at this point, I usually calculate the observed steps at the same time that I create the random steps.
+Now we have tracks, but a step selection analysis requires steps!
+
+```{r steps}
+require(amt) # This needs to be checked and updated, I don't know what I'm doing
+resample_tracks <- function(tracks, rate, tolerance) {
+  t <- track_resample(tracks, rate = rate, tolerance = tolerance) %>%
+    filter_min_n_burst()
+  
+  # Cancel if there are not at least three rows after resample
+  tar_cancel(nrow(t) < 3)
+  
+  t %>% steps_by_burst(., lonlat = TRUE)  
+}
+```
 
 #### Check the distribution of steps and turn angles
+
 Now to make sure there aren't any weirdos in the steps.  Usually there are a lot of little steps and few big steps, but this is a good check to make sure any erroneous obsevations are removed. For instance, this would show if there are any steps that are not biologically possible. It also shows the distribution so you know if you should use a Gamma or exponential distribution for generating random steps. Most are Gamma, and that is the default in `amt`.
 
 ```{r sl/ta distributions}
@@ -72,7 +86,36 @@ Now to make sure there aren't any weirdos in the steps.  Usually there are a lot
 ```
 
 
+### Prepare the data to go into the iSSA
 
+So, at this point, we have our observed steps and know what their distributions look like. Now we can use this information to properly inform our random steps with the correct distribution. As we create the random steps, we will also extract the covariates of interest at each step. 
+
+#### Motivation vs Selection
+
+One of the critical decisions to make in your analysis is if you want to know if a variable is motivating why/how an animal moves vs. if the animal is selecting for that variable; this decision influences if you use the information from the start of the step (motivation) vs. the end of the step (selection) in your analysis. This decision is of course determined by your question and hypotheses 
+
+TODO: Fill in more, get CMP input
+
+#### Example extraction
+
+For example, here we are creating random steps and extracting information about what landcover class an individual selects for (at the end of each step) and how time of day (day or night at the start of the step) influences their movement. This will create a dataset that includes step length, turn angle, whether it's day or night at the star of the step, and what land class an animal is on at the end of their step.
+
+If you have multiple hypotheses that would benefit from know information from both the beginning and the end of the step, you can input`"both"` insted of `"start"` or `"end"`.
+
+```{r sl/ta distributions}
+make_random_steps <- function(DT, lc) {
+  tar_cancel(nrow(DT) == 0)
+  random_steps(DT, n = 10) %>%
+    extract_covariates(lc, where = "end") %>%
+    time_of_day(where = 'start')
+}
+```
+
+
+## Running and iSSA
+
+
+#### this is how to show the output but not the code **** 
 ```{r pressure, echo=FALSE}
 plot(pressure)
 ```
