@@ -33,7 +33,7 @@ resample_tracks <- function(tracks, rate, tolerance) {
   # Cancel if there are not at least 20 observed steps after resample
   # this is semi-arbitrary, but this should be enough for robust estimates in the model 
   # (Street et al preprint 2021)
-  tar_cancel(nrow(t) < 20)
+  if (nrow(t) < 20) return()
   
   t %>% steps_by_burst(., lonlat = TRUE)  
 }
@@ -42,7 +42,9 @@ resample_tracks <- function(tracks, rate, tolerance) {
 
 # Make random steps ------------------------------------------------------
 make_random_steps <- function(DT, lc) {
-  tar_cancel(nrow(DT) == 0)
+  if (is.null(DT)) return()
+  if (nrow(DT) == 0) return()
+
   random_steps(DT, n = 10) %>%
     extract_covariates(lc, where = "end") %>%
     time_of_day(where = 'start')
