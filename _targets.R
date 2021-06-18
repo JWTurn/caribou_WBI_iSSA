@@ -23,7 +23,7 @@ tar_option_set(format = 'qs',
 
 # Variables ---------------------------------------------------------------
 path <- file.path('data', 'derived-data', 'prepped-data', 'SKprepDat.RDS')
-land <- file.path('data', 'raw-data', 'CanLCC.tif')
+land <- file.path('data', 'raw-data', 'WB_LCC.tif')
 landclass <- fread(file.path('data', 'raw-data', 'rcl.csv'))
 
 id <- 'id'
@@ -111,7 +111,7 @@ list(
   # create random steps and extract covariates
   tar_target(
     randsteps,
-    make_random_tracks(resamples, lc),
+    make_random_steps(resamples, lc),
     pattern = map(resamples)
   )
   
