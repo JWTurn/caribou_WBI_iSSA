@@ -13,11 +13,10 @@ sk <- sk[complete.cases(long,lat, datetime),.(long, lat, datetime, id)]
 coords<- sk%>%st_as_sf(coords = c('long','lat'))%>%
   st_set_crs(crs)
 
-land <- raster(file.path('data', 'raw-data', 'WB_LCC.tif'))
-
-land <- raster(file.path('data', 'raw-data', 'CanLCC.tif'))
-projland <- projectRaster(land, crs = crs)
-writeRaster(projland, file.path('data', 'raw-data', 'CanLCC_WGS84.tif'))
+# did this in Q where I could highlight what I wanted to crop to for now, lost patience
+# land <- raster(file.path('data', 'raw-data', 'CanLCC.tif'))
+# projland <- projectRaster(land, crs = crs)
+# writeRaster(projland, file.path('data', 'raw-data', 'CanLCC_WGS84.tif'))
 
 merge(inputland[, value := extract(lc, xy)], lcvalues, by = value)
 
@@ -25,15 +24,13 @@ merge(inputland[, value := extract(lc, xy)], lcvalues, by = value)
 road.shp <- rgdal::readOGR(file.path('data', 'raw-data', 'sk_roads', 'sk_roads.shp'))  
 # %>%
 #    st_transform(crs)# %>% as_Spatial()
-road.shp <- spTransform(road.shp, crs)
+#road.shp <- spTransform(road.shp, crs)
 #road.poly <- st_cast(road.shp, 'POLYGON')
 #st_crs(road.shp)
 #dum <- raster(ext = extent(coords))
 dist2road <- gDistance(road.shp, hausdorff = T)
 
-dum2 <- raster(ext = extent(road.shp), resolution = 30, crs = crs)
-road.ras <- raster::rasterize(road.shp, dum2)
-#road.ras<- stars::st_rasterize(road.shp)
-#road.ras <- raster(road.ras$FID, ext=extent(road.shp))
+road.ras<- stars::st_rasterize(road.shp)
+road.ras <- raster(road.ras$FID, ext=extent(road.shp))
 
 #plot(road.shp)
