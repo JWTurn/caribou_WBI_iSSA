@@ -11,6 +11,11 @@ make_unique_complete <- function(DT, id, datetime, long, lat) {
 }
 
 
+# turn no data in landcover to NAs
+make_raster <- function(raster.file){
+  temp <- raster(raster.file)
+  values(temp==0) <- NA
+}
 
 # Extract land cover ------------------------------------------------------
 extract_lc <- function(DT, lc, x, y, lcvalues) {
@@ -50,3 +55,26 @@ make_random_steps <- function(DT, lc) {
     time_of_day(where = 'start')
 }
 
+
+# Make unique step ID across individuals -----------------------------------
+make_step_id <- function(DT) {
+  if (is.null(DT)) return()
+  if (nrow(DT) == 0) return()
+  
+  DT[,'indiv_step_id'] <- paste(DT$id, DT$step_id_, sep = '_')
+}
+
+# iSSA ------------------------------------------------------
+make_iSSA <- function(DT,resp, expl) {
+  if (is.null(DT)) return()
+  if (nrow(DT) == 0) return()
+  
+  mod.tmp <- glmmTMB(reformulate(expl, resp), data = DT, family = Poisson(), 
+          doFit=FALSE)
+  
+  mod.tmp$parameters$theta[1] <- log(1e3)
+  nvarparm<-length(mod.tmp$parameters$theta)
+  mod.tmp$mapArg <- list(theta=factor(c(NA,1:(nvarparm-1))))
+  mod <- glmmTMB:::fitTMB(mod.tmp)
+  
+}
