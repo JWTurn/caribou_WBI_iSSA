@@ -113,7 +113,7 @@ list(
     randsteps,
     make_random_steps(resamples, lc),
     pattern = map(resamples)
-  )
+  ),
   
   
   # Distribution parameters
