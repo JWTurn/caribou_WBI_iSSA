@@ -115,4 +115,25 @@ list(
     pattern = map(resamples)
   )
   
+  
+  # Distribution parameters
+  tar_target(
+    distparams,
+    calc_distribution_parameters(randsteps),
+    pattern = map(randsteps)
+  ),
+  
+  # Merge covariate legend
+  tar_target(
+    mergelc,
+    merge(
+      randsteps,
+      legend,
+      by.x = 'lc',
+      by.y = 'Value',
+      all.x = TRUE
+    ),
+    pattern = map(randsteps)
+  )
+  
 )
