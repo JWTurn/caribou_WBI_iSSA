@@ -11,6 +11,7 @@ library(data.table)
 library(sf)
 library(sp)
 library(ggplot2)
+library(glmmTMB)
 
 # Functions ---------------------------------------------------------------
 source('R/functions.R')
@@ -61,7 +62,7 @@ list(
   
   tar_target(
     lc,
-    raster(land, resolution = c(30, 30))
+    make.raster(land)
   ),
   
   # Extract land cover
@@ -128,12 +129,18 @@ list(
     mergelc,
     merge(
       randsteps,
-      legend,
+      landclass,
       by.x = 'lc',
-      by.y = 'Value',
+      by.y = 'value',
       all.x = TRUE
     ),
     pattern = map(randsteps)
+  ),
+  
+  # create step ID across individuals
+  tar_target(
+    stepID,
+    make_step_id(mergelc)
   )
   
 )
