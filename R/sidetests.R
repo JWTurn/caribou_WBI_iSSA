@@ -31,8 +31,9 @@ road.shp <- spTransform(road.shp, crs)
 #dum <- raster(ext = extent(coords))
 dist2road <- gDistance(road.shp, hausdorff = T)
 
-dum2 <- raster(ext = extent(road.shp), resolution = 30, crs = crs)
-road.ras <- raster::rasterize(road.shp, dum2)
+#dum2 <- raster(ext = extent(road.shp), resolution = 30, crs = crs)
+road.ras <- raster(file.path('data', 'raw-data','sk_roads', 'sk_roads.tif'))
+dist2road <- gridDistance(road.ras)
 #road.ras<- stars::st_rasterize(road.shp)
 #road.ras <- raster(road.ras$FID, ext=extent(road.shp))
 

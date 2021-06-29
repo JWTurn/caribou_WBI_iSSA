@@ -21,7 +21,7 @@ crpland <- crop(land, extent(WBnad83))
 writeRaster(crpland, file.path('data', 'raw-data', 'WB_LCC_NAD83.tif'))
 
 projland <- projectRaster(crpland, crs = crs)
-writeRaster(projland, file.path('data', 'raw-data', 'CanLCC_WGS84.tif'))
+writeRaster(projland, file.path('data', 'raw-data', 'WB_LCC.tif'))
 
 merge(inputland[, value := extract(lc, xy)], lcvalues, by = value)
 
