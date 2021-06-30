@@ -60,15 +60,22 @@ list(
     make_unique_complete(input, id, datetime, long, lat)
   ),
   
+  # Remove impossible GPS points in a different hemisphere
+  tar_target(
+    realpts,
+    mkunique[long<0&lat>0]
+  ),
+  
+  # load land raster
   tar_target(
     lc,
-    make.raster(land)
+    raster(land)
   ),
   
   # Extract land cover
   tar_target(
     extracts,
-    extract_lc(mkunique, lc, long, lat, landclass)
+    extract_lc(realpts, lc, long, lat, landclass)
   ),
   
   # Set up split -- these are our iteration units

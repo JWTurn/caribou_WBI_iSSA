@@ -1,4 +1,5 @@
 # === Functions -----------------------------------------------------------
+# Julie W. Turner
 # Alec L. Robitaille
 
 
@@ -11,11 +12,6 @@ make_unique_complete <- function(DT, id, datetime, long, lat) {
 }
 
 
-# turn no data in landcover to NAs
-make_raster <- function(raster.file){
-  temp <- raster(raster.file)
-  values(temp==0) <- NA
-}
 
 # Extract land cover ------------------------------------------------------
 extract_lc <- function(DT, lc, x, y, lcvalues) {
