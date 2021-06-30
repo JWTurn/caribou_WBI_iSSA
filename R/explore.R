@@ -6,7 +6,8 @@ require(viridis)
 
 tar_load(resamples)
 tar_load(lc)
-values(lc==0)<-NA
+tar_load(randsteps)
+
 plot(lc)
 gplot(lc) +
   geom_tile(aes(fill = value), show.legend = F) +
