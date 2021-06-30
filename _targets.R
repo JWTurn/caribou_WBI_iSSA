@@ -45,6 +45,14 @@ rate <- hours(5)
 # Tolerance
 tolerance <- minutes(30)
 
+# columns to rename
+old <- c('becomes')
+new <- c('lc_end')
+
+# build iSSA 
+response <- 'case_'
+explanatory <- "I(log(sl_)) + I(log(sl_)):tod_start_ + 
+  lc_end +lc_end:I(log(sl_))"
 
 # Targets -----------------------------------------------------------------
 list(
@@ -141,11 +149,18 @@ list(
     pattern = map(randsteps)
   ),
   
+  # Rename weird name
+  tar_target(
+    named,
+    make_good_names(mergelc, old, new),
+    pattern = map(mergelc)
+  ),
+  
   # create step ID across individuals
   tar_target(
     stepID,
-    make_step_id(mergelc),
-    pattern = map(mergelc)
+    make_step_id(named),
+    pattern = map(named)
   )
   
 )
