@@ -10,6 +10,7 @@ tar_load(resamples)
 tar_load(lc)
 tar_load(randsteps)
 tar_load(mergelc)
+tar_load(named)
 
 crs <- CRS(st_crs(4326)$wkt)
 coords <- st_as_sf(resamples, coords = c('x1_', 'y1_'),
