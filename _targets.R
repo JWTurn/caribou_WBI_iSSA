@@ -134,12 +134,9 @@ list(
   # Merge covariate legend
   tar_target(
     mergelc,
-    merge(
+    make_mergelc(
       randsteps,
-      landclass,
-      by.x = 'lc',
-      by.y = 'value',
-      all.x = TRUE
+      landclass
     ),
     pattern = map(randsteps)
   ),
@@ -147,7 +144,8 @@ list(
   # create step ID across individuals
   tar_target(
     stepID,
-    make_step_id(mergelc)
+    make_step_id(mergelc),
+    pattern = map(mergelc)
   )
   
 )

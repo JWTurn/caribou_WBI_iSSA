@@ -36,7 +36,7 @@ resample_tracks <- function(tracks, rate, tolerance) {
   # (Street et al preprint 2021)
   if (nrow(t) < 20) return()
   
-  t %>% steps_by_burst(., lonlat = TRUE)  
+  t %>% steps_by_burst(., lonlat = TRUE, keep_cols = 'start')  
 }
 
 
@@ -51,6 +51,19 @@ make_random_steps <- function(DT, lc) {
     time_of_day(where = 'start')
 }
 
+# Merge landcover values with descriptions -----------------------------------
+make_mergelc <- function(DT, meta) {
+  if (is.null(DT)) return()
+  if (nrow(DT) == 0) return()
+  
+   merge(
+    DT,
+    meta,
+    by.x = 'WB_LCC',
+    by.y = 'value',
+    all.x = TRUE
+  )
+}
 
 # Make unique step ID across individuals -----------------------------------
 make_step_id <- function(DT) {
@@ -59,6 +72,13 @@ make_step_id <- function(DT) {
   
   DT[,'indiv_step_id'] <- paste(DT$id, DT$step_id_, sep = '_')
 }
+
+# Calculate distribution parameters ---------------------------------------
+calc_distribution_parameters <- function(steps) {
+  if (is.null(steps)) return()
+  c(ta_distr_params(steps), sl_distr_params(steps))
+}
+
 
 # iSSA ------------------------------------------------------
 make_iSSA <- function(DT,resp, expl) {
