@@ -46,13 +46,16 @@ rate <- hours(5)
 tolerance <- minutes(30)
 
 # columns to rename
-old <- c('becomes')
-new <- c('lc_end')
+oldname <- c('becomes')
+newname <- c('lc_end')
 
 # build iSSA 
 response <- 'case_'
 explanatory <- "I(log(sl_)) + I(log(sl_)):tod_start_ + 
-  lc_end +lc_end:I(log(sl_))"
+  lc_end +lc_end:I(log(sl_)) +
+  (1|indiv_step_id) +
+  (0|I(log(sl_)):id) + (0:I(log(sl_)):tod_start_:id) +
+  (0|lc_end:id) + (0|lc_end:I(log(sl_)):id)"
 
 # Targets -----------------------------------------------------------------
 list(
@@ -152,15 +155,13 @@ list(
   # Rename weird name
   tar_target(
     named,
-    make_good_names(mergelc, old, new),
-    pattern = map(mergelc)
+    make_good_names(mergelc, oldname, newname)
   ),
   
   # create step ID across individuals
   tar_target(
     stepID,
-    make_step_id(named),
-    pattern = map(named)
+    named[,indiv_step_id := paste(id, step_id_, sep = '_')]
   )
   
 )
