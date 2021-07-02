@@ -4,7 +4,7 @@
 
 
 ### Packages ----
-libs <- c('data.table', 'readxl', 'fs', 'tidyr', 'purrr', 'janitor')
+libs <- c('data.table', 'readxl', 'fs', 'tidyr', 'purrr', 'janitor', 'raster','sf')
 lapply(libs, require, character.only = TRUE)
 
 
@@ -57,6 +57,7 @@ dat_sk <- dat_sk[complete.cases(long,lat, datetime)]
 dat_sk <- dat_sk[long<0&lat>0]
 crs <- CRS(st_crs(4326)$wkt)
 outcrs <- st_crs(3978)
+#outcrs <- st_crs(42304) #canada NAD83 R didn't recognizes 
 
 sfboo <- st_as_sf(dat_sk, coords = c('long', 'lat'),
                    crs = crs)
