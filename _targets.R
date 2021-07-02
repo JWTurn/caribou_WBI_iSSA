@@ -24,7 +24,7 @@ tar_option_set(format = 'qs',
 
 # Variables ---------------------------------------------------------------
 path <- file.path('data', 'derived-data', 'prepped-data', 'SKprepDat.RDS')
-land <- file.path('data', 'raw-data', 'WB_LCC.tif')
+land <- file.path('data', 'raw-data', 'WB_LC.tif')
 landclass <- fread(file.path('data', 'raw-data', 'rcl.csv'))
 
 id <- 'id'
@@ -33,7 +33,7 @@ longlat = FALSE
 #not actually longitude and latitude, just don't want to change code
 long <- 'x'
 lat <- 'y'
-crs <- CRS(st_crs(3857)$wkt)
+crs <- CRS(st_crs(3978)$wkt)
 
 
 # Split by: within which column or set of columns (eg. c(id, yr))
@@ -70,15 +70,10 @@ list(
   # Remove duplicated and incomplete observations
   tar_target(
     mkunique,
-    make_unique_complete(input, id, datetime, x, y)
+    make_unique_complete(input, id, datetime, long, lat)
   ),
   
-  # # Remove impossible GPS points in a different hemisphere
-  # tar_target(
-  #   realpts,
-  #   mkunique[long<0&lat>0]
-  # ),
-  
+
   # load land raster
   tar_target(
     lc,
@@ -88,7 +83,7 @@ list(
   # Extract land cover
   tar_target(
     extracts,
-    extract_lc(realpts, lc, long, lat, landclass)
+    extract_lc(mkunique, lc, long, lat, landclass)
   ),
   
   # Set up split -- these are our iteration units
