@@ -52,6 +52,17 @@ for (dd in 1:length(ls_sk)) {
 }
 
 dat_sk <- rbindlist(prep_sk)
+#dat_sk <- readRDS(paste0(derived, 'prepped-data/SKprepDat_longlat.RDS'))
+dat_sk <- dat_sk[complete.cases(long,lat, datetime)]
+dat_sk <- dat_sk[long<0&lat>0]
+crs <- CRS(st_crs(4326)$wkt)
+outcrs <- st_crs(3978)
 
-saveRDS(dat_sk, paste0(derived, 'prepped-data/SKprepDat.RDS'))
+sfboo <- st_as_sf(dat_sk, coords = c('long', 'lat'),
+                   crs = crs)
+outboo <- st_transform(sfboo, outcrs)
+boo <- sfheaders::sf_to_df(outboo, fill = T)
+
+
+saveRDS(boo, paste0(derived, 'prepped-data/SKprepDat.RDS'))
 
