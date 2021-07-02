@@ -29,9 +29,11 @@ landclass <- fread(file.path('data', 'raw-data', 'rcl.csv'))
 
 id <- 'id'
 datetime <- 'datetime'
-long <- 'long'
-lat <- 'lat'
-crs <- CRS(st_crs(4326)$wkt)
+longlat = FALSE
+#not actually longitude and latitude, just don't want to change code
+long <- 'x'
+lat <- 'y'
+crs <- CRS(st_crs(3857)$wkt)
 
 
 # Split by: within which column or set of columns (eg. c(id, yr))
@@ -68,14 +70,14 @@ list(
   # Remove duplicated and incomplete observations
   tar_target(
     mkunique,
-    make_unique_complete(input, id, datetime, long, lat)
+    make_unique_complete(input, id, datetime, x, y)
   ),
   
-  # Remove impossible GPS points in a different hemisphere
-  tar_target(
-    realpts,
-    mkunique[long<0&lat>0]
-  ),
+  # # Remove impossible GPS points in a different hemisphere
+  # tar_target(
+  #   realpts,
+  #   mkunique[long<0&lat>0]
+  # ),
   
   # load land raster
   tar_target(

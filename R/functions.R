@@ -37,7 +37,7 @@ resample_tracks <- function(tracks, rate, tolerance) {
   if (nrow(t) < 20) return()
   # filter out steps that are outside the 95%: there were unnaturally long steps
   # 3000m was the 95%, but I made it a bit higher as a buffer
-  t %>% steps_by_burst(., lonlat = TRUE, keep_cols = 'start') %>%
+  t %>% steps_by_burst(., lonlat = longlat, keep_cols = 'start') %>%
     dplyr::filter(sl_<=3500)
 }
 
@@ -48,7 +48,7 @@ make_random_steps <- function(DT, lc) {
   if (is.null(DT)) return()
   if (nrow(DT) == 0) return()
 
-  random_steps(DT, n = 10, lonlat = T) %>%
+  random_steps(DT, n = 10, lonlat = longlat) %>%
     extract_covariates(lc, where = "end") %>%
     time_of_day(where = 'start')
 }
