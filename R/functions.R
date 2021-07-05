@@ -61,7 +61,7 @@ make_mergelc <- function(DT, meta) {
    merge(
     DT,
     meta,
-    by.x = 'WB_LCC',
+    by.x = 'WB_LC',
     by.y = 'value',
     all.x = TRUE
   )

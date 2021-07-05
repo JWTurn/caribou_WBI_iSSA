@@ -62,7 +62,7 @@ outcrs <- st_crs(3978)
 sfboo <- st_as_sf(dat_sk, coords = c('long', 'lat'),
                    crs = crs)
 outboo <- st_transform(sfboo, outcrs)
-boo <- sfheaders::sf_to_df(outboo, fill = T)
+boo <- setDT(sfheaders::sf_to_df(outboo, fill = T))
 
 
 saveRDS(boo, paste0(derived, 'prepped-data/SKprepDat.RDS'))
