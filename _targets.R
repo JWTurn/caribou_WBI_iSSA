@@ -158,7 +158,7 @@ list(
   # create step ID across individuals
   tar_target(
     stepID,
-    named[,indiv_step_id := paste(id, step_id_, sep = '_')]
+    setDT(named)[,indiv_step_id := paste(id, step_id_, sep = '_')]
   )
   
 )
