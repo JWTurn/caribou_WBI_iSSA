@@ -2,8 +2,16 @@ require(Require)
 Require('reproducible')
 Require('move')
 Require('data.table')
+Require('sf')
+
+### Input data ----
+raw <- 'data/raw-data/'
+sk <- 'data/raw-data/SK_data/'
+derived <- 'data/derived-data/'
 
 cPath <- file.path(tempdir(), "cache")
+
+# This will have to be set up in the .Renviron on your own computer
 loginStored <- movebankLogin(username=Sys.getenv('moveUserID'), 
                              password=Sys.getenv('movePwd'))
 # NWT dataset names to fill in loop
@@ -19,17 +27,28 @@ for (ds in 1:length(dsNames)) {
 }
 
 # pull just the data
-habitat <-c('dehcho', 'inuvik', 'north.slave', 'sahtu', 'south.slave') 
+hab <-c('dehcho', 'inuvik', 'north.slave', 'sahtu', 'south.slave') 
 
-nwt<-data.table()
-nwt <- rbindlist(lapply(1:length(habitat), function(hh){
-  prep_nwt[,.(area=habitat[[hh]], dat=list(setDT(nwt.move[[hh]]@data)))]
+
+nwt <- rbindlist(lapply(1:length(hab), function(hh){
+  nwt[,.(area=hab[[hh]], dat=list(setDT(nwt.move[[hh]]@data)))]
 })
 )
-for (hh in 1:length(habitat)) {
-  #hh=1
+
+#colnames(nwt$dat[[2]])
+nwt.long <- rbindlist(lapply(1:length(hab), function(hh){
+  nwt$dat[[hh]][,.(area = hab[[hh]], habitat, id=tag_id, 
+                location_long, location_lat, datetime = timestamp)]
   
-}
-dat_dehcho <- setDT(dehcho@data)
-dat_dehcho <- dat_dehcho[,.(id=tag_id, herd=habitat, 
-                            location_long, location_lat, datetime = timestamp)]
+}))
+
+crs <- CRS(st_crs(4326)$wkt)
+outcrs <- st_crs(3978)
+
+sfboo <- st_as_sf(nwt.long, coords = c('location_long', 'location_lat'),
+                  crs = crs)
+outboo <- st_transform(sfboo, outcrs)
+boo <- setDT(sfheaders::sf_to_df(outboo, fill = T))
+
+
+saveRDS(boo, paste0(derived, 'prepped-data/NWTprepDat.RDS'))
