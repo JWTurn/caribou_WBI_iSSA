@@ -1,3 +1,7 @@
+### Prepare Data ====
+# Julie Turner
+# Started: July 14 2021
+
 require(Require)
 Require('reproducible')
 Require('move')
@@ -6,7 +10,7 @@ Require('sf')
 
 ### Input data ----
 raw <- 'data/raw-data/'
-sk <- 'data/raw-data/SK_data/'
+raw.nwt <- 'data/raw-data/NWT_data/'
 derived <- 'data/derived-data/'
 
 cPath <- file.path(tempdir(), "cache")
@@ -25,6 +29,7 @@ for (ds in 1:length(dsNames)) {
   nwt.move[[ds]]<-getMovebankData(study =paste0( 'ABoVE: NWT ', dsNames[[ds]],' Caribou'),
                                   login = loginStored)
 }
+#saveRDS(nwt.move, paste0(raw.nwt, 'NWTmoveDat.RDS'))
 
 # pull just the data
 hab <-c('dehcho', 'inuvik', 'north.slave', 'sahtu', 'south.slave') 
