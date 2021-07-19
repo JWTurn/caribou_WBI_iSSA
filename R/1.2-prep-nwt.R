@@ -40,13 +40,14 @@ nwt <- rbindlist(lapply(1:length(hab), function(hh){
 })
 )
 
-#colnames(nwt$dat[[2]])
+# gathering just the columns needed
 nwt.long <- rbindlist(lapply(1:length(hab), function(hh){
   nwt$dat[[hh]][,.(area = hab[[hh]], habitat, id=tag_id, 
                 location_long, location_lat, datetime = timestamp)]
   
 }))
 
+# convert from long/lat to NAD83/Canada Atlas Lambert (need units to be m)
 crs <- CRS(st_crs(4326)$wkt)
 outcrs <- st_crs(3978)
 
@@ -55,5 +56,5 @@ sfboo <- st_as_sf(nwt.long, coords = c('location_long', 'location_lat'),
 outboo <- st_transform(sfboo, outcrs)
 boo <- setDT(sfheaders::sf_to_df(outboo, fill = T))
 
-
+# save 'clean' data 
 saveRDS(boo, paste0(derived, 'prepped-data/NWTprepDat.RDS'))
