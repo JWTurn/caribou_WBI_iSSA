@@ -2,10 +2,14 @@
 
 require(targets)
 
+require(Require)
 require(data.table)
 require(glmmTMB)
 require(broom.mixed)
 
+### Input data ----
+raw <- 'data/raw-data/'
+derived <- 'data/derived-data/'
 
 tar_load(stepID)
 
@@ -32,3 +36,4 @@ mod <- glmmTMB(case_ ~
 )
 
 summary(mod)
+saveRDS(mod, file.path(derived, 'toy_ssa.RDS'))
