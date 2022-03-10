@@ -51,12 +51,14 @@ resample_tracks <- function(tracks, rate, tolerance) {
 
 
 # Make random steps ------------------------------------------------------
-make_random_steps <- function(DT, lc) {
+make_random_steps <- function(DT, lc, lcvalues) {
   if (is.null(DT)) return()
   if (nrow(DT) == 0) return()
 
   random_steps(DT, n = 10, lonlat = longlat) %>%
-    extract_covariates(lc, where = "end") %>%
+    #extract_lc(DT, lc, x2_, y2_, lcvalues) %>%
+    ### HAVE TO USE RASTER STILL***
+    #extract_covariates(lc, where = "end") %>%
     time_of_day(where = 'start')
 }
 

@@ -89,22 +89,17 @@ list(
     load_sf(linfeat, crs)
   ),
   
-  # Extract land cover
-  tar_target(
-    extracts,
-    extract_lc(mkunique, lc, long, lat, landclass)
-  ),
   
   # Set up split -- these are our iteration units
   tar_target(
     splits,
-    extracts[, tar_group := .GRP, by = splitBy],
+    mkunique[, tar_group := .GRP, by = splitBy],
     iteration = 'group'
   ),
   
   tar_target(
     splitsnames,
-    unique(extracts[, .(path = path), by = splitBy])
+    unique(mkunique[, .(path = path), by = splitBy])
   ),
   
 
@@ -155,27 +150,33 @@ list(
     pattern = map(randsteps)
   ),
   
+  # Extract land cover
+  tar_target(
+    extracts,
+    extract_lc(dattab, lc, x2_, y2_, landclass)
+  ),
+  
   # Calculate distance to linear features
   tar_target(
     distto,
-    calc_distto(dattab, lf, 'lf_end', 'x2_', 'y2_', crs),
-    pattern = map(dattab)
+    calc_distto(extracts, lf, 'lf_end', 'x2_', 'y2_', crs),
+    pattern = map(extracts)
   ),
   
   # Merge covariate legend
-  tar_target(
-    mergelc,
-    make_mergelc(
-      distto,
-      landclass
-    ),
-    pattern = map(distto)
-  ),
+  # tar_target(
+  #   mergelc,
+  #   make_mergelc(
+  #     distto,
+  #     landclass
+  #   ),
+  #   pattern = map(distto)
+  # ),
   
   # Rename weird name
   tar_target(
     named,
-    make_good_names(mergelc, oldname, newname)
+    make_good_names(distto, oldname, newname)
   ),
   
   # create step ID across individuals
