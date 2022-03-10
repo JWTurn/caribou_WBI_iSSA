@@ -25,14 +25,13 @@ extract_lc <- function(DT, lc, x, y, lcvalues) {
 
 
 # Load features ----------------------------------------------------
-load_sf<- function(obj, crs) {
+load_sf<- function(obj, outcrs) {
   sf <- st_read(obj)
-  if(CRS(st_crs(sf)$wkt) == crs)
+  if(st_crs(sf)$wkt == st_crs(outcrs)$wkt)
     return(sf)
   else
-    st_transform(sf, crs)
+    st_transform(sf, outcrs)
 }
-
 
 # Check resamples ---------------------------------------------------------
 resample_tracks <- function(tracks, rate, tolerance) {
