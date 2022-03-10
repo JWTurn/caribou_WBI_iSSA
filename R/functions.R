@@ -16,7 +16,7 @@ make_unique_complete <- function(DT, id, datetime, long, lat) {
 # Extract land cover ------------------------------------------------------
 extract_lc <- function(DT, lc, x, y, lcvalues) {
   merge(
-    DT[, value := raster::extract(lc, do.call(cbind, .SD)),
+    DT[, value := terra::extract(lc, do.call(cbind, .SD)),
            .SDcols = c(x, y)],
     lcvalues,
     by = 'value',
@@ -24,6 +24,14 @@ extract_lc <- function(DT, lc, x, y, lcvalues) {
 }
 
 
+# Load features ----------------------------------------------------
+load_sf<- function(obj, crs) {
+  sf <- st_read(obj)
+  if(CRS(st_crs(sf)$wkt) == crs)
+    return(sf)
+  else
+    st_transform(sf, crs)
+}
 
 
 # Check resamples ---------------------------------------------------------
@@ -66,6 +74,24 @@ make_mergelc <- function(DT, meta) {
     all.x = TRUE
   )
 }
+
+# make data.table ------------------------------------------------------
+make_data_table <- function(DT) {
+  if (is.null(DT)) return()
+  if (nrow(DT) == 0) return()
+  
+  as.data.table(DT)
+}
+
+# Calculate distance to ------------------------------------------------------
+calc_distto <- function(DT, feature, featurename, x, y, crs) {
+  if (is.null(DT)) return()
+  if (nrow(DT) == 0) return()
+  
+  DT[, paste0('dist_', featurename) := distance_to(st_as_sf(.SD, coords = c(x, y),
+                                                            crs = crs), feature)]
+}
+
 
 # Make unique step ID across individuals -----------------------------------
 make_step_id <- function(DT) {

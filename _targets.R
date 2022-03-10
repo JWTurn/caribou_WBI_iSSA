@@ -8,10 +8,12 @@ library(targets)
 
 library(amt)
 library(data.table)
+library(terra)
 library(sf)
 library(sp)
 library(ggplot2)
 library(glmmTMB)
+library(distanceto)
 
 # Functions ---------------------------------------------------------------
 source('R/functions.R')
@@ -26,6 +28,7 @@ tar_option_set(format = 'qs',
 path <- file.path('data', 'derived-data', 'prepped-data', 'SKprepDat.RDS')
 land <- file.path('data', 'raw-data', 'WB_LC.tif')
 landclass <- fread(file.path('data', 'raw-data', 'rcl.csv'))
+linfeat <- file.path('data', 'raw-data', 'wbi_roads.shp')
 
 id <- 'id'
 datetime <- 'datetime'
@@ -77,7 +80,13 @@ list(
   # load land raster
   tar_target(
     lc,
-    raster(land)
+    rast(land)
+  ),
+  
+  # load linear features
+  tar_target(
+    lf,
+    load_sf(linfeat, crs)
   ),
   
   # Extract land cover
@@ -139,14 +148,28 @@ list(
     pattern = map(randsteps)
   ),
   
+  # make a data.table for future manipulations
+  tar_target(
+    dattab,
+    make_data_table(randsteps),
+    pattern = map(randsteps)
+  ),
+  
+  # Calculate distance to linear features
+  tar_target(
+    distto,
+    calc_distto(dattab, lf, 'lf_end', 'x2_', 'y2_', crs),
+    pattern = map(dattab)
+  ),
+  
   # Merge covariate legend
   tar_target(
     mergelc,
     make_mergelc(
-      randsteps,
+      distto,
       landclass
     ),
-    pattern = map(randsteps)
+    pattern = map(distto)
   ),
   
   # Rename weird name
