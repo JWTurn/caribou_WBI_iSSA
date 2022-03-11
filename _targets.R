@@ -77,11 +77,11 @@ list(
   ),
   
 
-  # load land raster
-  tar_target(
-    lc,
-    rast(land)
-  ),
+  # # load land raster
+  # tar_target(
+  #   lc,
+  #   rast(land)
+  # ),
   
   # load linear features
   tar_target(
@@ -153,7 +153,8 @@ list(
   # Extract land cover
   tar_target(
     extracts,
-    extract_lc(dattab, lc, x2_, y2_, landclass)
+    extract_lc(dattab, land, 'x2_', 'y2_', landclass),
+    pattern = map(dattab)
   ),
   
   # Calculate distance to linear features
