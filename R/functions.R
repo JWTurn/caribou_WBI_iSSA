@@ -13,17 +13,6 @@ make_unique_complete <- function(DT, id, datetime, long, lat) {
 
 
 
-# Extract land cover ------------------------------------------------------
-extract_lc <- function(DT, lc, x, y, lcvalues) {
-  merge(
-    DT[, value := terra::extract(lc, do.call(cbind, .SD)),
-           .SDcols = c(x, y)],
-    lcvalues,
-    by = 'value',
-    all.x = TRUE)
-}
-
-
 # Load features ----------------------------------------------------
 load_sf<- function(obj, outcrs) {
   sf <- st_read(obj)
@@ -82,6 +71,19 @@ make_data_table <- function(DT) {
   if (nrow(DT) == 0) return()
   
   as.data.table(DT)
+}
+
+# Extract land cover ------------------------------------------------------
+extract_lc <- function(DT, lcpath, x, y, lcvalues) {
+  if (is.null(DT)) return()
+  if (nrow(DT) == 0) return()
+  lc <- rast(lcpath)
+  merge(
+    DT[, value := terra::extract(lc, do.call(cbind, .SD)),
+       .SDcols = c(x, y)],
+    lcvalues,
+    by = 'value',
+    all.x = TRUE)
 }
 
 # Calculate distance to ------------------------------------------------------
