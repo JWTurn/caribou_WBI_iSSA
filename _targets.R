@@ -25,7 +25,7 @@ tar_option_set(format = 'qs',
 
 
 # Variables ---------------------------------------------------------------
-path <- file.path('data', 'derived-data', 'prepped-data', 'SKprepDat.RDS')
+path <- file.path('data', 'derived-data', 'prepped-data', 'NWTprepDat.RDS')
 land <- file.path('data', 'raw-data', 'WB_LC.tif')
 landclass <- fread(file.path('data', 'raw-data', 'rcl.csv'))
 linfeat <- file.path('data', 'raw-data', 'wbi_roads.shp')
@@ -45,10 +45,10 @@ splitBy <- id
 
 
 # Resampling rate 
-rate <- hours(5)
+rate <- hours(12)
 
 # Tolerance
-tolerance <- minutes(30)
+tolerance <- minutes(120)
 
 # columns to rename
 oldname <- c('becomes')
