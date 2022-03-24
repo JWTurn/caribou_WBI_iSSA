@@ -12,14 +12,14 @@ raw <- 'data/raw-data/'
 derived <- 'data/derived-data/'
 
 tar_load(stepID)
-saveRDS(stepID, file.path(derived, 'yt_derived.RDS'))
+saveRDS(stepID, file.path(derived, 'bc_derived.RDS'))
 
 dat <- stepID
 dat[,id:=as.factor(id)]
 dat[,lc_end_adj := lc_end]
-dat[lc_end %in% c('barren', 'grassland', 'lichen-grass', 'lichen-shrub', 'shrub', 'urban', 'snow'),lc_end_adj:= 'open-forage']
+dat[lc_end %in% c('barren', 'grassland', 'lichen-grass', 'lichen-shrub', 'shrub', 'urban', 'cropland'),lc_end_adj:= 'open-forage']
 dat[lc_end %in% c('deciduous', 'mixedforest'),lc_end_adj:= 'deciduous']
-dat[lc_end %in% c('water', 'wetland'),lc_end_adj:= 'wet']
+dat[lc_end %in% c('water', 'wetland', 'snow'),lc_end_adj:= 'wet']
 
 dat[, lc_end_adj := factor(lc_end_adj)]
 
@@ -44,5 +44,8 @@ mod <- glmmTMB(case_ ~
                start = list(theta =c(log(1000), seq(0,0, length.out = 22)))
 )
 
+#11
+#22
+
 summary(mod)
-saveRDS(mod, file.path(derived, 'yt_ssa.RDS'))
+saveRDS(mod, file.path(derived, 'bc_ssa.RDS'))
