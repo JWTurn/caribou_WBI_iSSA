@@ -25,7 +25,8 @@ tar_option_set(format = 'qs',
 
 
 # Variables ---------------------------------------------------------------
-path <- file.path('data', 'derived-data', 'prepped-data', 'BCprepDat.RDS')
+set.seed(53)
+path <- file.path('data', 'derived-data', 'prepped-data', 'MBprepDat.RDS')
 land <- file.path('data', 'raw-data', 'WB_LC.tif')
 landclass <- fread(file.path('data', 'raw-data', 'rcl.csv'))
 linfeat <- file.path('data', 'raw-data', 'wbi_roads.shp')
@@ -45,22 +46,14 @@ splitBy <- id
 
 
 # Resampling rate 
-rate <- hours(12)
+rate <- hours(3)
 
 # Tolerance
-tolerance <- minutes(120)
+tolerance <- minutes(60)
 
 # columns to rename
 oldname <- c('becomes')
 newname <- c('lc_end')
-
-# build iSSA 
-response <- 'case_'
-explanatory <- "I(log(sl_)) + I(log(sl_)):tod_start_ + 
-  lc_end +lc_end:I(log(sl_)) +
-  (1|indiv_step_id) +
-  (0|I(log(sl_)):id) + (0:I(log(sl_)):tod_start_:id) +
-  (0|lc_end:id) + (0|lc_end:I(log(sl_)):id)"
 
 # Targets -----------------------------------------------------------------
 list(
