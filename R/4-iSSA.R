@@ -12,18 +12,26 @@ raw <- 'data/raw-data/'
 derived <- 'data/derived-data/'
 
 tar_load(stepID)
-saveRDS(stepID, file.path(derived, 'bc_derived.RDS'))
+saveRDS(stepID, file.path(derived, 'mb_derived.RDS'))
 
-dat <- stepID
+
+#dat <- stepID
+
+dat <- readRDS(file.path(derived, 'mb_derived.RDS'))
 dat[,id:=as.factor(id)]
 dat[,lc_end_adj := lc_end]
 dat[lc_end %in% c('barren', 'grassland', 'lichen-grass', 'lichen-shrub', 'shrub', 'urban', 'cropland'),lc_end_adj:= 'open-forage']
 dat[lc_end %in% c('deciduous', 'mixedforest'),lc_end_adj:= 'deciduous']
 dat[lc_end %in% c('water', 'wetland', 'snow'),lc_end_adj:= 'wet']
 
+# quick way to get rid of outliers that slipped into MB
+# TODO figure out if really outliers
+dat <- dat[!is.na(lc_end_adj)]
 dat[, lc_end_adj := factor(lc_end_adj)]
 
+
 summary(dat$lc_end_adj)
+
 
 ##TODO incorporate season?
 
@@ -48,4 +56,4 @@ mod <- glmmTMB(case_ ~
 #22
 
 summary(mod)
-saveRDS(mod, file.path(derived, 'bc_ssa.RDS'))
+saveRDS(mod, file.path(derived, 'mb_ssa.RDS'))
