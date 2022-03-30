@@ -2,7 +2,7 @@
 
 require(targets)
 
-require(Require)
+#require(Require)
 require(data.table)
 require(glmmTMB)
 require(broom.mixed)
@@ -28,9 +28,14 @@ dat[lc_end %in% c('water', 'wetland', 'snow'),lc_end_adj:= 'wet']
 # TODO figure out if really outliers
 dat <- dat[!is.na(lc_end_adj)]
 dat[, lc_end_adj := factor(lc_end_adj)]
+dat[,uniqueN(id), Range]
 
 
 summary(dat$lc_end_adj)
+
+# MB is too big for my computer to run all at once, so subset
+quantile(year(dat$t1_))
+dat.sub <- dat[year(t1_)>2015]
 
 
 ##TODO incorporate season?
@@ -38,16 +43,16 @@ summary(dat$lc_end_adj)
 ## model ----
 
 mod <- glmmTMB(case_ ~
-                 I(log(sl_)) +
-                 I(log(sl_)):lc_end_adj +
+                 I(log(sl_+1)) +
+                 I(log(sl_+1)):lc_end_adj +
                  lc_end_adj +
-                 I(log(dist_lf_end)) +
+                 I(log(dist_lf_end+1)) +
                  (1|indiv_step_id) +
-                 (0 + I(log(sl_))|id) +
-                 (0 + I(log(sl_)):lc_end_adj|id) +
+                 (0 + I(log(sl_ +1))|id) +
+                 (0 + I(log(sl_+1)):lc_end_adj|id) +
                  (0 + lc_end_adj|id) +
-                 (0 + I(log(dist_lf_end))|id),
-               family = poisson(), data = dat,
+                 (0 + I(log(dist_lf_end+1))|id),
+               family = poisson(), data = dat.sub,
                map= list(theta = factor(c(NA,1:22))), 
                start = list(theta =c(log(1000), seq(0,0, length.out = 22)))
 )

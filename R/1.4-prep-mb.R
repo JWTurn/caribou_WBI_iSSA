@@ -303,6 +303,7 @@ dat_cleaner[,any(duplicated(datetime)), by = id]
 
 # We have some duplicated time stamps, these need to be removed prior to creating a track.
 DT <- unique(dat_cleaner, by = c('id', 'datetime'))
+DT <- unique(DT, by = c('id', 'x', 'y'))
 
 
 ### track ####
