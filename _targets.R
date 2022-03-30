@@ -46,10 +46,10 @@ splitBy <- id
 
 
 # Resampling rate 
-rate <- hours(3)
+rate <- hours(6)
 
 # Tolerance
-tolerance <- minutes(60)
+tolerance <- minutes(20)
 
 # columns to rename
 oldname <- c('becomes')
