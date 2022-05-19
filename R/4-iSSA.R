@@ -18,7 +18,7 @@ saveRDS(stepID, file.path(derived, 'mb_derived.RDS'))
 #dat <- stepID
 
 dat <- readRDS(file.path(derived, 'mb_derived.RDS'))
-dat[,id:=as.factor(id)]
+
 dat[,lc_end_adj := lc_end]
 dat[lc_end %in% c('barren', 'grassland', 'lichen-grass', 'lichen-shrub', 'shrub', 'urban', 'cropland'),lc_end_adj:= 'open-forage']
 dat[lc_end %in% c('deciduous', 'mixedforest'),lc_end_adj:= 'deciduous']
@@ -28,10 +28,11 @@ dat[lc_end %in% c('water', 'wetland', 'snow'),lc_end_adj:= 'wet']
 # TODO figure out if really outliers
 dat <- dat[!is.na(lc_end_adj)]
 dat[, lc_end_adj := factor(lc_end_adj)]
-dat[,uniqueN(id), Range]
-
 
 summary(dat$lc_end_adj)
+
+dat[,id:=as.factor(id)]
+dat[,indiv_step_id := as.factor(indiv_step_id)]
 
 # MB is too big for my computer to run all at once, so subset
 quantile(year(dat$t1_))

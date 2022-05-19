@@ -57,9 +57,16 @@ DT <- unique(boo, by = c('id', 'datetime'))
 
 
 ### track ####
-trk <- DT %>% make_track(x,y, datetime, crs = st_crs(3978))
-#trk <- trk %>% nest(data = -"id")
-
+trk <- DT %>% make_track(x,y, datetime, crs = st_crs(3978), all_cols = T)
+trk2 <- trk %>% nest(data = -"Population_Unit") %>%
+  mutate(steps = map(data, function(x) 
+    x %>% track_resample(rate = hours(12), tolerance = hours(2)) %>% 
+      #filter_min_n_burst() %>%
+      steps_by_burst(.,keep_cols = 'start') %>%
+      random_steps(., n =10)
+    )
+    )
+trk3 <- trk2 %>% unnest(c(Population_Unit, steps))
 View(summarize_sampling_rate(trk))
 fixrate <- trk %>% mutate(sr = lapply(data, summarize_sampling_rate)) %>%
   dplyr::select(sr) #%>% unnest(cols = c(sr))
@@ -69,3 +76,4 @@ fixrate <- trk %>% mutate(sr = lapply(data, summarize_sampling_rate)) %>%
 
 # save 'clean' data 
 saveRDS(boo, paste0(derived, 'prepped-data/BCprepDat.RDS'))
+dat <- readRDS(file.path(derived, 'prepped-data/BCprepDat.RDS'))
