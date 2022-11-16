@@ -16,7 +16,8 @@ library(glmmTMB)
 library(distanceto)
 
 # Functions ---------------------------------------------------------------
-source('R/functions.R')
+lapply(dir('R', '*.R', full.names = TRUE), source)
+#source('R/functions.R')
 
 
 # Options -----------------------------------------------------------------
@@ -46,17 +47,14 @@ splitBy <- id
 
 
 # Resampling rate 
-rate <- hours(6)
+rate <- hours(12)
 
 # Tolerance
-tolerance <- minutes(20)
+tolerance <- hours(4)
 
-# columns to rename
-oldname <- c('becomes')
-newname <- c('lc_end')
 
-# Targets -----------------------------------------------------------------
-list(
+# Targets: prep -----------------------------------------------------------------
+targets_prep <- c(
   # Read input data
   tar_target(
     input,
@@ -69,12 +67,6 @@ list(
     make_unique_complete(input, id, datetime, long, lat)
   ),
   
-
-  # # load land raster
-  # tar_target(
-  #   lc,
-  #   rast(land)
-  # ),
   
   # load linear features
   tar_target(
@@ -93,11 +85,13 @@ list(
   tar_target(
     splitsnames,
     unique(mkunique[, .(path = path), by = splitBy])
-  ),
+  ))
   
 
-  # Make tracks. Note from here on, when we want to iterate use pattern = map(x)
-  #  where x is the upstream target name
+# Targets: tracks -----------------------------------------------------------------------
+# Make tracks. Note from here on, when we want to iterate use pattern = map(x)
+#  where x is the upstream target name
+targets_tracks <- c(
   tar_target(
     tracks,
     make_track(splits, long, lat, datetime, crs = crs, id = id),
@@ -134,44 +128,39 @@ list(
     distparams,
     calc_distribution_parameters(randsteps),
     pattern = map(randsteps)
-  ),
-  
+  )
+)
+
+# Targets: extract ------------------------------------------------------------------
+targets_extract <- c(    
   # make a data.table for future manipulations
   tar_target(
     dattab,
-    make_data_table(randsteps),
-    pattern = map(randsteps)
+    make_data_table(randsteps)
   ),
   
   # Extract land cover
   tar_target(
     extracts,
-    extract_lc(dattab, land, 'x2_', 'y2_', landclass),
-    pattern = map(dattab)
+    extract_pt(dattab, land, step.end = T)
   ),
   
   # Calculate distance to linear features
   tar_target(
     distto,
-    calc_distto(extracts, lf, 'lf_end', 'x2_', 'y2_', crs),
-    pattern = map(extracts)
+    extract_distto(extracts, lf, 'lf_end', 'x2_', 'y2_', crs)
   ),
   
-  # Merge covariate legend
-  # tar_target(
-  #   mergelc,
-  #   make_mergelc(
-  #     distto,
-  #     landclass
-  #   ),
-  #   pattern = map(distto)
-  # ),
-  
-  # Rename weird name
+ # Merge covariate legend
   tar_target(
-    named,
-    make_good_names(distto, oldname, newname)
+    mergelc,
+    make_mergelc(
+      distto,
+      landclass,
+      'land_end'
+    )
   ),
+  
   
   # create step ID across individuals
   tar_target(
