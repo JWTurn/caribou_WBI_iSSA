@@ -27,10 +27,11 @@ tar_option_set(format = 'qs',
 
 # Variables ---------------------------------------------------------------
 set.seed(53)
-path <- file.path('data', 'derived-data', 'prepped-data', 'MBprepDat.RDS')
+path <- file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.RDS')
 land <- file.path('data', 'raw-data', 'WB_LC.tif')
 landclass <- fread(file.path('data', 'raw-data', 'rcl.csv'))
 linfeat <- file.path('data', 'raw-data', 'wbi_roads.shp')
+fires <- file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', 'fires')
 
 id <- 'id'
 datetime <- 'datetime'
@@ -139,16 +140,34 @@ targets_extract <- c(
     make_data_table(randsteps)
   ),
   
+  # add a year column
+  tar_target(
+    addyear,
+    dattab[,year:=lubridate::year(t2_)]
+  ),
+  
   # Extract land cover
   tar_target(
-    extracts,
-    extract_pt(dattab, land, step.end = T)
+    extract_lc,
+    extract_pt(addyear, land, step.end = T)
+  ),
+  
+  # Extract fires
+  tar_target(
+    extract_fires,
+    extract_by_year(extract_lc, fires, startyr = 1986, endyr =2020, step.end = T)
+  ),
+  
+  # calculate time since fire
+  tar_target(
+    tsfire,
+    calc_tsf(extract_fire, step.end = T, nofire=100)
   ),
   
   # Calculate distance to linear features
   tar_target(
     distto,
-    extract_distto(extracts, lf, 'lf_end', 'x2_', 'y2_', crs)
+    extract_distto(tsfire, lf, 'lf_end', 'x2_', 'y2_', crs)
   ),
   
  # Merge covariate legend
