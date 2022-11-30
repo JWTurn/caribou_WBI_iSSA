@@ -20,6 +20,70 @@ coords<- dat.clean%>%st_as_sf(coords = c('x','y'))%>%
 studyArea <- st_buffer(coords, dist = 10000)
 land <- rast(file.path('data', 'raw-data', 'WB_LC.tif'))
 
+# What to buffer for proportion of landclasses
+buff.diam <- 500  ## median step length = 752, I chose something a bit less
+
+needleleaf <- land %in% c(1,2)
+names(needleleaf) <- "needleleaf"
+deciduous <- land == 5
+names(deciduous) <- "deciduous"
+mixed <- land == 6
+names(mixed) <- "mixed"
+shrub <- land == 8
+names(shrub) <- "shrub"
+grassland <- land == 10
+names(grassland) <- "grassland"
+lichenshrub <- land == 11
+names(lichenshrub) <- "lichenshrub"
+lichengrass <- land == 12
+names(lichengrass) <- "lichengrass"
+wet <- land == 14
+names(wet) <- "wetland"
+cropland <- land == 15
+names(cropland) <- "cropland"
+barrenland <- land == 16
+names(barrenland) <- "barrenland"
+urban <- land == 17
+names(urban) <- "urban"
+water <- land == 18
+names(water) <- "water"
+snow <- land == 19
+names(snow) <- "snow"
+## This creates an object which can be used to make a layer of specified diameter
+# The d value is what determines the buffer size if you want to change it.
+## If you're doing multiple landcover classes, you only need to run this line once, as long as each of the habitat variables has the same resolution
+# (e.g., the "Wetland" here could be any cover type)
+Buff <- focalMat(land, d=buff.diam, type = 'circle')
+## This generates a new raster where each cell corresponds to the mean wetland within a 100m buffer.
+# Since it's all 1s and 0s, this is the same as the proportion of wetland surrounding the focal variable
+propneedle <- focal(needleleaf, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
+propdecid <- focal(deciduous, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
+propmixed <- focal(mixed, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
+propshrub <- focal(shrub, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
+propgrass <- focal(grassland, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
+proplichshrub <- focal(lichenshrub, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
+proplichgrass <- focal(lichengrass, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
+propwet <- focal(wet, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
+propcrop <- focal(cropland, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
+propbarren <- focal(barrenland, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
+propurban <- focal(urban, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
+propwater <- focal(water, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
+propsnow <- focal(snow, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
+
+writeRaster(propneedle, file.path('data', 'raw-data', 'prop_needleleaf.tif'))
+writeRaster(propdecid, file.path('data', 'raw-data', 'prop_deciduous.tif'))
+writeRaster(propmixed, file.path('data', 'raw-data', 'prop_mixed.tif'))
+writeRaster(propshrub, file.path('data', 'raw-data', 'prop_shrub.tif'))
+writeRaster(propgrass, file.path('data', 'raw-data', 'prop_grassland.tif'))
+writeRaster(proplichshrub, file.path('data', 'raw-data', 'prop_lichenshrub.tif'))
+writeRaster(proplichgrass, file.path('data', 'raw-data', 'prop_lichengrass.tif'))
+writeRaster(propwet, file.path('data', 'raw-data', 'prop_wetland.tif'))
+writeRaster(propcrop, file.path('data', 'raw-data', 'prop_cropland.tif'))
+writeRaster(propbarren, file.path('data', 'raw-data', 'prop_barrenland.tif'))
+writeRaster(propurban, file.path('data', 'raw-data', 'prop_urban.tif'))
+writeRaster(propwater, file.path('data', 'raw-data', 'prop_water.tif'))
+writeRaster(propsnow, file.path('data', 'raw-data', 'prop_snow.tif'))
+
 
 roads <- st_read(file.path('data', 'raw-data', 'wbi_nrn.shp'))
 rail <- st_read(file.path('data', 'raw-data', 'wbi_rail.shp'))
@@ -36,7 +100,7 @@ writeVector(fires.proj, file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', 
 lyr <- vect(file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', 'fires_1986_2020.shp'))
 fires <- readRDS(file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', 'fires_list.RDS'))
 fires<- rast(fires)
-DT <- DT[1:100]
+DT <- dattab[1:100]
 DT[,year:= lubridate::year(t2_)]
 lyr.sub <- subset(lyr, lyr$YEAR<= year)
 DT[,fires_end:= 
