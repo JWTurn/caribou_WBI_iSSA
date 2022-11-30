@@ -30,6 +30,20 @@ set.seed(53)
 path <- file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.RDS')
 land <- file.path('data', 'raw-data', 'WB_LC.tif')
 landclass <- fread(file.path('data', 'raw-data', 'rcl.csv'))
+needleleaf <- file.path('data', 'raw-data', 'prop_needleleaf.tif')
+deciduous <- file.path('data', 'raw-data', 'prop_deciduous.tif')
+mixed <- file.path('data', 'raw-data', 'prop_mixed.tif')
+shrub <- file.path('data', 'raw-data', 'prop_shrub.tif')
+grass <- file.path('data', 'raw-data', 'prop_grassland.tif')
+lichshrub <- file.path('data', 'raw-data', 'prop_lichenshrub.tif')
+lichgrass <- file.path('data', 'raw-data', 'prop_lichengrass.tif')
+wetland <- file.path('data', 'raw-data', 'prop_wetland.tif')
+crop <- file.path('data', 'raw-data', 'prop_cropland.tif')
+barren <- file.path('data', 'raw-data', 'prop_barrenland.tif')
+urban <- file.path('data', 'raw-data', 'prop_urban.tif')
+water <- file.path('data', 'raw-data', 'prop_water.tif')
+snow <- file.path('data', 'raw-data', 'prop_snow.tif')
+
 linfeat <- file.path('data', 'raw-data', 'wbi_roads.shp')
 fires <- file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', 'fires')
 
@@ -51,7 +65,8 @@ splitBy <- id
 rate <- hours(12)
 
 # Tolerance
-tolerance <- hours(4)
+tolerance <- hours(2)
+
 
 
 # Targets: prep -----------------------------------------------------------------
@@ -119,7 +134,7 @@ targets_tracks <- c(
   # create random steps and extract covariates
   tar_target(
     randsteps,
-    make_random_steps(resamples, lc),
+    make_random_steps(resamples),
     pattern = map(resamples)
   ),
   
@@ -149,25 +164,33 @@ targets_extract <- c(
   # Extract land cover
   tar_target(
     extract_lc,
-    extract_pt(addyear, land, step.end = T)
+    extract_pt(addyear, land, where = 'end')
+  ),
+  
+  # Extract proportion land cover
+  tar_target(
+    extract_proplc,
+    extract_prop_layers(extract_lc, needleleaf, deciduous, mixed,
+                        shrub, grass, lichshrub, lichgrass, wetland,
+                        crop, barren, urban, water, snow, where = 'both')
   ),
   
   # Extract fires
   tar_target(
     extract_fires,
-    extract_by_year(extract_lc, fires, startyr = 1986, endyr =2020, step.end = T)
+    extract_by_year(extract_proplc, fires, startyr = 1986, endyr =2020, where = 'both')
   ),
   
   # calculate time since fire
   tar_target(
     tsfire,
-    calc_tsf(extract_fire, step.end = T, nofire=100)
+    calc_tsf(extract_fires, where = 'both', nofire=100)
   ),
   
   # Calculate distance to linear features
   tar_target(
     distto,
-    extract_distto(tsfire, lf, 'lf_end', 'x2_', 'y2_', crs)
+    extract_distto(tsfire, lf, where = 'both', crs)
   ),
   
  # Merge covariate legend
@@ -184,7 +207,12 @@ targets_extract <- c(
   # create step ID across individuals
   tar_target(
     stepID,
-    setDT(named)[,indiv_step_id := paste(id, step_id_, sep = '_')]
+    setDT(mergelc)[,indiv_step_id := paste(id, step_id_, sep = '_')]
   )
   
 )
+
+# Targets: all ------------------------------------------------------------------
+# Automatically grab and combine all the 'targets_*' lists above
+lapply(grep('targets', ls(), value = TRUE), get)
+
