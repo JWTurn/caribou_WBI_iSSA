@@ -2,20 +2,28 @@
 #' @export
 #' @author Julie W. Turner
 #' 
-extract_pt <- function(DT, layer, step.end  = T){
+extract_pt <- function(DT, layer, where  = 'end'){
   lyr <- rast(layer)
   object_name <- deparse(substitute(layer))
   
-  if (isTRUE(step.end)) {
-    coords <-  c('x2_', 'y2_')
-    object_end <- 'end'
+  coords_start  <-  c('x1_', 'y1_')
+  coords_end  <-  c('x2_', 'y2_')
+  
+  if (where == 'end') {
+    DT[,(paste(object_name, 'end', sep = "_")):= terra::extract(lyr, cbind(.SD))[,-1],
+       .SDcols = c(coords_end)]
   }
   
-  if(isFALSE(step.end)){
-    coords <-  c('x1_', 'y1_') 
-    object_end <- 'start'
+  if (where == 'start') {
+    DT[,(paste(object_name, 'start', sep = "_")):= terra::extract(lyr, cbind(.SD))[,-1],
+       .SDcols = c(coords_start)]
   }
-  DT[,(paste(object_name, object_end, sep = "_")):= terra::extract(lyr, cbind(.SD))[,-1],
-     .SDcols = c(coords)]
+  
+  if (where == 'both') {
+    DT[,(paste(object_name, 'start', sep = "_")):= terra::extract(lyr, cbind(.SD))[,-1],
+       .SDcols = c(coords_start)]
+    DT[,(paste(object_name, 'end', sep = "_")):= terra::extract(lyr, cbind(.SD))[,-1],
+       .SDcols = c(coords_end)]
+  }
   
 }
