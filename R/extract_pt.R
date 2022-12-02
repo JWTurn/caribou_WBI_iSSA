@@ -2,7 +2,7 @@
 #' @export
 #' @author Julie W. Turner
 #' 
-extract_pt <- function(DT, layer, where  = 'end'){
+extract_pt <- function(DT, layer, where){
   lyr <- rast(layer)
   object_name <- deparse(substitute(layer))
   
@@ -25,5 +25,5 @@ extract_pt <- function(DT, layer, where  = 'end'){
     DT[,(paste(object_name, 'end', sep = "_")):= terra::extract(lyr, cbind(.SD))[,-1],
        .SDcols = c(coords_end)]
   }
-  
+  return(DT)
 }

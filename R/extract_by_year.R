@@ -38,7 +38,6 @@ extract_by_year <- function(DT, var, startyr, endyr, where = 'end'){
     .SDcols = c(coords_start)]
   }
   
-  
   if(where == 'both'){
     DT[, paste(object_name, 'start', sep = "_") := terra::extract(
       rast(ls_rast[as.integer(names(ls_rast)) == .BY[[1]]]),
@@ -61,4 +60,5 @@ extract_by_year <- function(DT, var, startyr, endyr, where = 'end'){
     .SDcols = c(coords_end)]
   }
   
+  return(DT)
 }

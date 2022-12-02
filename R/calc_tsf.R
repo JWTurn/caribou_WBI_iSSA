@@ -20,6 +20,6 @@ calc_tsf <- function(DT, where  = 'end', nofire=100){
     DT[is.na(tsf_end), tsf_end:=nofire]
   }
   
- 
+ return(DT)
   
 }

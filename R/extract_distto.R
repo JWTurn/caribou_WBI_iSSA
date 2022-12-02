@@ -25,4 +25,5 @@ extract_distto <- function(DT, feature, where = 'end', crs) {
                                                                    crs = crs), feature)]
   }
   
+  return(DT)
 }
