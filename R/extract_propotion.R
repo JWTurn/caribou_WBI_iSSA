@@ -1,0 +1,69 @@
+#' @title extract proportion within buffer
+#' @export
+#' @author Julie W. Turner
+#' 
+extract_proportion <- function(DT, feature, where = 'end', buff, crs) {
+  object_name <- paste(deparse(substitute(feature)))
+  
+  coords_start  <-  c('x1_', 'y1_')
+  coords_end  <-  c('x2_', 'y2_')
+  
+  DT[,pt:= 1:.N, by = .(id, step_id_)]
+  DT[,step_pt_id:= paste(id, step_id_, pt, sep = '.')]
+  
+  
+  if(where == 'start'){
+    samp <- DT[,sample_lsm(land, st_as_sf(.SD, coords = coords_start, crs = crs), 
+                   what = "lsm_c_pland", size = buff, shape = 'circle', 
+                   plot_id = paste(id, step_id_, pt, sep = '.'))]
+    classd <- setDT(merge(samp, landclass, by.x = 'class', by.y = 'value'))
+    classd[,landtype := paste(becomes, 'start', sep = '_')]
+    
+    
+    transDT <- dcast(classd[,.(plot_id, landtype, value)], plot_id ~ landtype, 
+                     value.var = 'value', fun.aggregate = mean, fill = 0)
+    mrg <- merge(DT, transDT, by.x = 'step_pt_id', by.y = 'plot_id')
+  }
+  
+  if(where == 'end'){
+    samp <- DT[,sample_lsm(land, st_as_sf(.SD, coords = coords_end, crs = crs), 
+                           what = "lsm_c_pland", size = buff, shape = 'circle', 
+                           plot_id = paste(id, step_id_, pt, sep = '.'))]
+    classd <- setDT(merge(samp, landclass, by.x = 'class', by.y = 'value'))
+    classd[,landtype := paste(becomes, 'end', sep = '_')]
+    
+    
+    transDT <- dcast(classd[,.(plot_id, landtype, value)], plot_id ~ landtype, 
+                     value.var = 'value', fun.aggregate = mean, fill = 0)
+    mrg <- merge(DT, transDT, by.x = 'step_pt_id', by.y = 'plot_id')
+  }
+  
+  if(where == 'both'){
+    samp.start <- DT[,sample_lsm(land, st_as_sf(.SD, coords = coords_start, crs = crs), 
+                           what = "lsm_c_pland", size = buff, shape = 'circle', 
+                           plot_id = paste(id, step_id_, pt, sep = '.'))]
+    classd.start <- setDT(merge(samp.start, landclass, by.x = 'class', by.y = 'value'))
+    classd.start[,landtype := paste(becomes, 'start', sep = '_')]
+    
+    
+    transDT.start <- dcast(classd[,.(plot_id, landtype, value)], plot_id ~ landtype, 
+                     value.var = 'value', fun.aggregate = mean, fill = 0)
+    
+    mrg.start <- merge(DT, transDT.start, by.x = 'step_pt_id', by.y = 'plot_id')
+    
+    samp.end <- DT[,sample_lsm(land, st_as_sf(.SD, coords = coords_end, crs = crs), 
+                                 what = "lsm_c_pland", size = buff, shape = 'circle', 
+                                 plot_id = paste(id, step_id_, pt, sep = '.'))]
+    classd.end <- setDT(merge(samp.end, landclass, by.x = 'class', by.y = 'value'))
+    classd.end[,landtype := paste(becomes, 'end', sep = '_')]
+    
+    
+    transDT.end <- dcast(classd[,.(plot_id, landtype, value)], plot_id ~ landtype, 
+                           value.var = 'value', fun.aggregate = mean, fill = 0)
+    
+    mrg <- merge(mrg.start, transDT.end, by.x = 'step_pt_id', by.y = 'plot_id')
+  }
+  
+  return(mrg)
+}
+
