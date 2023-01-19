@@ -17,7 +17,7 @@ extract_proportion <- function(DT, feature, where = 'end', buff, crs) {
                    what = "lsm_c_pland", size = buff, shape = 'circle', 
                    plot_id = paste(id, step_id_, pt, sep = '.'))]
     classd <- setDT(merge(samp, landclass, by.x = 'class', by.y = 'value'))
-    classd[,landtype := paste(becomes, 'start', sep = '_')]
+    classd[,`:=` (landtype = paste(becomes, 'start', sep = '_'), value = value/100)]
     
     
     transDT <- dcast(classd[,.(plot_id, landtype, value)], plot_id ~ landtype, 
@@ -30,7 +30,7 @@ extract_proportion <- function(DT, feature, where = 'end', buff, crs) {
                            what = "lsm_c_pland", size = buff, shape = 'circle', 
                            plot_id = paste(id, step_id_, pt, sep = '.'))]
     classd <- setDT(merge(samp, landclass, by.x = 'class', by.y = 'value'))
-    classd[,landtype := paste(becomes, 'end', sep = '_')]
+    classd[,`:=` (landtype = paste(becomes, 'end', sep = '_'), value = value/100)]
     
     
     transDT <- dcast(classd[,.(plot_id, landtype, value)], plot_id ~ landtype, 
@@ -43,7 +43,7 @@ extract_proportion <- function(DT, feature, where = 'end', buff, crs) {
                            what = "lsm_c_pland", size = buff, shape = 'circle', 
                            plot_id = paste(id, step_id_, pt, sep = '.'))]
     classd.start <- setDT(merge(samp.start, landclass, by.x = 'class', by.y = 'value'))
-    classd.start[,landtype := paste(becomes, 'start', sep = '_')]
+    classd.start[,`:=` (landtype = paste(becomes, 'start', sep = '_'), value = value/100)]
     
     
     transDT.start <- dcast(classd[,.(plot_id, landtype, value)], plot_id ~ landtype, 
@@ -55,7 +55,7 @@ extract_proportion <- function(DT, feature, where = 'end', buff, crs) {
                                  what = "lsm_c_pland", size = buff, shape = 'circle', 
                                  plot_id = paste(id, step_id_, pt, sep = '.'))]
     classd.end <- setDT(merge(samp.end, landclass, by.x = 'class', by.y = 'value'))
-    classd.end[,landtype := paste(becomes, 'end', sep = '_')]
+    classd.end[,`:=` (landtype = paste(becomes, 'end', sep = '_'), value = value/100)]
     
     
     transDT.end <- dcast(classd[,.(plot_id, landtype, value)], plot_id ~ landtype, 
