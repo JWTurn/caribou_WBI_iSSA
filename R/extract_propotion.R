@@ -2,7 +2,8 @@
 #' @export
 #' @author Julie W. Turner
 #' 
-extract_proportion <- function(DT, feature, where = 'end', buff, crs) {
+extract_proportion <- function(DT, feature, landclass, buff, crs, where = 'end') {
+  feat <- rast(feature)
   object_name <- paste(deparse(substitute(feature)))
   
   coords_start  <-  c('x1_', 'y1_')
@@ -13,7 +14,7 @@ extract_proportion <- function(DT, feature, where = 'end', buff, crs) {
   
   
   if(where == 'start'){
-    samp <- DT[,sample_lsm(land, st_as_sf(.SD, coords = coords_start, crs = crs), 
+    samp <- DT[,sample_lsm(feat, st_as_sf(.SD, coords = coords_start, crs = crs), 
                    what = "lsm_c_pland", size = buff, shape = 'circle', 
                    plot_id = paste(id, step_id_, pt, sep = '.'))]
     classd <- setDT(merge(samp, landclass, by.x = 'class', by.y = 'value'))
@@ -21,12 +22,12 @@ extract_proportion <- function(DT, feature, where = 'end', buff, crs) {
     
     
     transDT <- dcast(classd[,.(plot_id, landtype, value)], plot_id ~ landtype, 
-                     value.var = 'value', fun.aggregate = mean, fill = 0)
+                     value.var = 'value', fun.aggregate = sum, fill = 0)
     mrg <- merge(DT, transDT, by.x = 'step_pt_id', by.y = 'plot_id')
   }
   
   if(where == 'end'){
-    samp <- DT[,sample_lsm(land, st_as_sf(.SD, coords = coords_end, crs = crs), 
+    samp <- DT[,sample_lsm(feat, st_as_sf(.SD, coords = coords_end, crs = crs), 
                            what = "lsm_c_pland", size = buff, shape = 'circle', 
                            plot_id = paste(id, step_id_, pt, sep = '.'))]
     classd <- setDT(merge(samp, landclass, by.x = 'class', by.y = 'value'))
@@ -34,12 +35,12 @@ extract_proportion <- function(DT, feature, where = 'end', buff, crs) {
     
     
     transDT <- dcast(classd[,.(plot_id, landtype, value)], plot_id ~ landtype, 
-                     value.var = 'value', fun.aggregate = mean, fill = 0)
+                     value.var = 'value', fun.aggregate = sum, fill = 0)
     mrg <- merge(DT, transDT, by.x = 'step_pt_id', by.y = 'plot_id')
   }
   
   if(where == 'both'){
-    samp.start <- DT[,sample_lsm(land, st_as_sf(.SD, coords = coords_start, crs = crs), 
+    samp.start <- DT[,sample_lsm(feat, st_as_sf(.SD, coords = coords_start, crs = crs), 
                            what = "lsm_c_pland", size = buff, shape = 'circle', 
                            plot_id = paste(id, step_id_, pt, sep = '.'))]
     classd.start <- setDT(merge(samp.start, landclass, by.x = 'class', by.y = 'value'))
@@ -47,11 +48,11 @@ extract_proportion <- function(DT, feature, where = 'end', buff, crs) {
     
     
     transDT.start <- dcast(classd[,.(plot_id, landtype, value)], plot_id ~ landtype, 
-                     value.var = 'value', fun.aggregate = mean, fill = 0)
+                     value.var = 'value', fun.aggregate = sum, fill = 0)
     
     mrg.start <- merge(DT, transDT.start, by.x = 'step_pt_id', by.y = 'plot_id')
     
-    samp.end <- DT[,sample_lsm(land, st_as_sf(.SD, coords = coords_end, crs = crs), 
+    samp.end <- DT[,sample_lsm(feat, st_as_sf(.SD, coords = coords_end, crs = crs), 
                                  what = "lsm_c_pland", size = buff, shape = 'circle', 
                                  plot_id = paste(id, step_id_, pt, sep = '.'))]
     classd.end <- setDT(merge(samp.end, landclass, by.x = 'class', by.y = 'value'))
@@ -59,7 +60,7 @@ extract_proportion <- function(DT, feature, where = 'end', buff, crs) {
     
     
     transDT.end <- dcast(classd[,.(plot_id, landtype, value)], plot_id ~ landtype, 
-                           value.var = 'value', fun.aggregate = mean, fill = 0)
+                           value.var = 'value', fun.aggregate = sum, fill = 0)
     
     mrg <- merge(mrg.start, transDT.end, by.x = 'step_pt_id', by.y = 'plot_id')
   }

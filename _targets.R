@@ -14,6 +14,7 @@ library(sp)
 library(ggplot2)
 library(glmmTMB)
 library(distanceto)
+library(landscapemetrics)
 
 # Functions ---------------------------------------------------------------
 lapply(dir('R', '*.R', full.names = TRUE), source)
@@ -161,24 +162,23 @@ targets_extract <- c(
     dattab[,year:=lubridate::year(t2_)]
   ),
   
+  # calculate median step length for buffer
+  tar_target(
+    buff,
+    plyr::round_any(median(addyear$sl_, na.rm = T), 50)
+  ),
+  
   # Extract land cover
   tar_target(
     extract_lc,
-    extract_pt(addyear, land, where = 'end')
+    extract_proportion(addyear, feature = land, landclass, buff, crs, where = 'both')
   ),
   
-  # Extract proportion land cover
-  tar_target(
-    extract_proplc,
-    extract_prop_layers(extract_lc, needleleaf, deciduous, mixed,
-                        shrub, grass, lichshrub, lichgrass, wetland,
-                        crop, barren, urban, water, snow, where = 'both')
-  ),
   
   # Extract fires
   tar_target(
     extract_fires,
-    extract_by_year(extract_proplc, fires, startyr = 1986, endyr =2020, where = 'both')
+    extract_by_year(extract_lc, fires, startyr = 1986, endyr =2020, where = 'both')
   ),
   
   # calculate time since fire
@@ -193,21 +193,11 @@ targets_extract <- c(
     extract_distto(tsfire, lf, where = 'both', crs)
   ),
   
- # Merge covariate legend
-  tar_target(
-    mergelc,
-    make_mergelc(
-      distto,
-      landclass,
-      'land_end'
-    )
-  ),
-  
   
   # create step ID across individuals
   tar_target(
     stepID,
-    setDT(mergelc)[,indiv_step_id := paste(id, step_id_, sep = '_')]
+    setDT(distto)[,indiv_step_id := paste(id, step_id_, sep = '_')]
   )
   
 )
