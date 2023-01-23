@@ -2,7 +2,7 @@
 #' @export
 #' @author Julie W. Turner
 #' 
-extract_pt <- function(DT, layer, name, where, out = 'all'){
+extract_pt <- function(DT, layer, name, where, out){
   lyr <- rast(layer)
   object_name <- name
   #object_name <- deparse(substitute(name))
@@ -27,7 +27,7 @@ extract_pt <- function(DT, layer, name, where, out = 'all'){
        .SDcols = c(coords_end)]
   }
   
-  if (out == 'all'){
+  if (is.null(out)){
     return(DT)
   }
   if (out == 'new'){
