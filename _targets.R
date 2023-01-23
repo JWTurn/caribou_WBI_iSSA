@@ -6,6 +6,7 @@
 # Packages ----------------------------------------------------------------
 library(targets)
 
+library(tarchetypes)
 library(amt)
 library(data.table)
 library(terra)
@@ -14,7 +15,7 @@ library(sp)
 library(ggplot2)
 library(glmmTMB)
 library(distanceto)
-library(landscapemetrics)
+#library(landscapemetrics)
 
 # Functions ---------------------------------------------------------------
 lapply(dir('R', '*.R', full.names = TRUE), source)
@@ -44,6 +45,20 @@ barren <- file.path('data', 'raw-data', 'prop_barrenland.tif')
 urban <- file.path('data', 'raw-data', 'prop_urban.tif')
 water <- file.path('data', 'raw-data', 'prop_water.tif')
 snow <- file.path('data', 'raw-data', 'prop_snow.tif')
+
+landvals <- c(
+  needleleaf, deciduous, mixed,
+  shrub, grass, lichshrub, lichgrass, wetland,
+  crop, barren, urban, water, snow
+)
+values <- list(
+  r_path = landvals
+)
+values$raster_name <- basename(xfun::sans_ext(values$r_path))
+values$raster_name_sym <- lapply(values$raster_name, as.symbol)
+# Extraction
+values$extract_name_sym <- lapply(paste0('extract_', values$raster_name), as.symbol)
+
 
 linfeat <- file.path('data', 'raw-data', 'wbi_roads.shp')
 fires <- file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', 'fires')
@@ -162,45 +177,52 @@ targets_extract <- c(
     dattab[,year:=lubridate::year(t2_)]
   ),
   
-  # calculate median step length for buffer
-  tar_target(
-    buff,
-    plyr::round_any(median(addyear$sl_, na.rm = T), 50, f = floor)
-  ),
-  
-  # Extract land cover
-  tar_target(
-    extract_lc,
-    extract_proportion(addyear, feature = land, landclass, buff, crs, where = 'both')
-  ),
-  
   
   # Extract fires
   tar_target(
-    extract_fires,
-    extract_by_year(extract_lc, fires, startyr = 1986, endyr =2020, where = 'both')
+    extrfires,
+    extract_by_year(addyear, fires, startyr = 1986, endyr =2020, where = 'both')
   ),
   
   # calculate time since fire
   tar_target(
     tsfire,
-    calc_tsf(extract_fires, where = 'both', nofire=100)
+    calc_tsf(extrfires, where = 'both', nofire=100)
   ),
   
   # Calculate distance to linear features
-  tar_target(
+  distto <- tar_target(
     distto,
     extract_distto(tsfire, lf, where = 'both', crs)
+  ),
+  
+  mapland <- tar_map(
+    values,
+    tar_target(extract,
+               extract_pt(distto, r_path, raster_name, where = 'both', out = 'new')),
+    unlist = TRUE),
+  
+  tar_combine(
+    extrland,
+    list(distto, 
+      mapland),
+    command = dplyr::bind_cols(!!!.x)
   ),
   
   
   # create step ID across individuals
   tar_target(
     stepID,
-    setDT(distto)[,indiv_step_id := paste(id, step_id_, sep = '_')]
+    setDT(extrland)[,indiv_step_id := paste(id, step_id_, sep = '_')]
   )
+)
+
+
+# Targets: combine ------------------------------------------------------------------
+targets_combine <- c(
   
 )
+
 
 # Targets: all ------------------------------------------------------------------
 # Automatically grab and combine all the 'targets_*' lists above
