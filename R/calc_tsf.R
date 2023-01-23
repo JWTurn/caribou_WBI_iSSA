@@ -15,7 +15,7 @@ calc_tsf <- function(DT, where  = 'end', nofire=100){
   }
   
   if (where == 'both') {
-    DT[,`:=`(tsf_end = year - fires_end, tsf_start:= year - fires_start)]
+    DT[,`:=`(tsf_end = year - fires_end, tsf_start = year - fires_start)]
     DT[is.na(tsf_start), tsf_start:=nofire]
     DT[is.na(tsf_end), tsf_end:=nofire]
   }
