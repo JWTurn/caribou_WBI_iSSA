@@ -165,7 +165,7 @@ targets_extract <- c(
   # calculate median step length for buffer
   tar_target(
     buff,
-    plyr::round_any(median(addyear$sl_, na.rm = T), 50)
+    plyr::round_any(median(addyear$sl_, na.rm = T), 50, f = floor)
   ),
   
   # Extract land cover
