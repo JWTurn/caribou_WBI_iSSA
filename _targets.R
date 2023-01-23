@@ -164,7 +164,7 @@ targets_tracks <- c(
 )
 
 # Targets: extract ------------------------------------------------------------------
-targets_extract <- c(    
+targets_fires <- c(    
   # make a data.table for future manipulations
   tar_target(
     dattab,
@@ -188,24 +188,31 @@ targets_extract <- c(
   tar_target(
     tsfire,
     calc_tsf(extrfires, where = 'both', nofire=100)
-  ),
+  )
+)
+
+targets_land <- c(
   
   # Calculate distance to linear features
-  distto <- tar_target(
-    distto,
+  tar_target(
+    disttolf,
     extract_distto(tsfire, lf, where = 'both', crs)
   ),
   
-  mapland <- tar_map(
+  tar_map(
     values,
     tar_target(extract,
-               extract_pt(distto, r_path, raster_name, where = 'both', out = 'new')),
-    unlist = TRUE),
+               extract_pt(disttolf, r_path, raster_name, where = 'both', out = 'new')),
+    unlist = TRUE)
   
+)
+
+
+# Targets: combine ------------------------------------------------------------------
+targets_combine <- c(
   tar_combine(
     extrland,
-    list(distto, 
-      mapland),
+    targets_land,
     command = dplyr::bind_cols(!!!.x)
   ),
   
@@ -215,12 +222,6 @@ targets_extract <- c(
     stepID,
     setDT(extrland)[,indiv_step_id := paste(id, step_id_, sep = '_')]
   )
-)
-
-
-# Targets: combine ------------------------------------------------------------------
-targets_combine <- c(
-  
 )
 
 
