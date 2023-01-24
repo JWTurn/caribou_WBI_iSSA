@@ -14,9 +14,8 @@ extract_proportion <- function(DT, feature, landclass, buff, crs, where = 'end')
   
   
   if(where == 'start'){
-    samp <- DT[,sample_lsm(feat, st_as_sf(.SD, coords = coords_start, crs = crs), 
-                   what = "lsm_c_pland", size = buff, shape = 'circle', 
-                   plot_id = paste(id, step_id_, pt, sep = '.'))]
+    samp <- DT[,terra::zonal(vect(st_buffer(st_as_sf(.SD, coords = coords_start, crs = crs), dist = buff)), 
+                   feat, fun = 'notNA')]
     classd <- setDT(merge(samp, landclass, by.x = 'class', by.y = 'value'))
     classd[,`:=` (landtype = paste(becomes, 'start', sep = '_'), value = value/100)]
     
