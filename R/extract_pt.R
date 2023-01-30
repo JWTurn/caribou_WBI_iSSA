@@ -37,11 +37,15 @@ extract_pt <- function(DT, layer, name, where, out){
        .SDcols = c(coords_start)]
     DT[,(paste(object_name, 'end', sep = "_")):= terra::extract(lyr, cbind(.SD))[,-1],
        .SDcols = c(coords_end)]
+    
     if (is.null(out)){
       return(DT)
     }
+    
     if (out == 'new'){
-      return(DT %>% dplyr::select(last_col(1), last_col()))
+      return(DT %>% 
+               dplyr::select(paste(object_name, 'start', sep = "_"), paste(object_name, 'end', sep = "_"))
+             )
     }
   }
   
