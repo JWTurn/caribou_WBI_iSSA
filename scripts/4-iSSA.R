@@ -11,7 +11,11 @@ require(broom.mixed)
 raw <- 'data/raw-data/'
 derived <- 'data/derived-data/'
 
+# prepped <- readRDS(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.RDS'))
+# meta <- unique(prepped[,.(id, jurisdiction, pop=tolower(gsub(' ', '.',pop)), subpop)])
+
 dat <- tar_read(stepID)
+# dat <- merge(dat, meta, by = 'id', all.x = T)
 #saveRDS(stepID, file.path(derived, 'mb_derived.RDS'))
 
 
@@ -51,34 +55,41 @@ dat[, prop_wets_end := prop_wetland_end + prop_water_end]
 
 dat[,id:=as.factor(id)]
 dat[,indiv_step_id := as.factor(indiv_step_id)]
+dat[,jurisdiction := as.factor(jurisdiction)]
 
 # MB is too big for my computer to run all at once, so subset
 # quantile(year(dat$t1_))
-# dat.sub <- dat[year(t1_)>2015]
 # 
+# 
+
+range(dat$year)
+# yr <- dat[case_==TRUE, .(year)]
+# hist(yr$year)
+dat.sub <- dat[year>2015]
 
 ##TODO incorporate season?
 
 ## model ----
 
-mod.sel <- glmmTMB(case_ ~
-                 I(log(sl_+1)) +
-                 prop_forest_end + prop_forage_end + prop_open_end + prop_wets_end +
-                 I(log(tsf_end+1)) +
-                 I(log(distlf_end+1)) +
-                 (1|indiv_step_id) +
-                 (0 + I(log(sl_ +1))|id) +
-                 (0 + prop_forest_end|id) + (0 + prop_forage_end|id) + 
-                 (0 + prop_open_end|id) + (0 + prop_wets_end|id) +
-                 (0 + I(log(tsf_end+1))|id) +
-                 (0 + I(log(distlf_end+1))|id),
-               family = poisson(), data = dat,
-               map= list(theta = factor(c(NA,1:7))), 
-               start = list(theta =c(log(1000), seq(0,0, length.out = 7)))
+mod.sel <- glmmTMB(case_ ~ -1 +
+             I(log(sl_+1)) +
+             prop_forest_end + prop_forage_end + prop_open_end + prop_wets_end +
+             I(log(tsf_end+1)) +
+             I(log(distlf_end+1)) +
+             (1|indiv_step_id) +
+             (0 + I(log(sl_ +1))|id) +
+             (0 + prop_forest_end|id) + (0 + prop_forage_end|id) + 
+             (0 + prop_open_end|id) + (0 + prop_wets_end|id) +
+             (0 + I(log(tsf_end+1))|id) +
+             (0 + I(log(distlf_end+1))|id) +
+             (1|jurisdiction),
+             family = poisson(), data = dat.sub,
+             map= list(theta = factor(c(NA,1:8))), 
+             start = list(theta =c(log(1000), seq(0,0, length.out = 8)))
 )
 
 #11
 #22
 
 summary(mod.sel)
-saveRDS(mod, file.path(derived, 'mb_ssa.RDS'))
+saveRDS(mod.sel, file.path(derived, 'ssa_2015-2020.RDS'))
