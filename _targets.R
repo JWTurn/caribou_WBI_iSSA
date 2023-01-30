@@ -126,7 +126,7 @@ targets_prep <- c(
 targets_tracks <- c(
   tar_target(
     tracks,
-    make_track(splits, long, lat, datetime, crs = crs, id = id),
+    make_track(splits, long, lat, datetime, crs = crs, all_cols = T),
     pattern = map(splits)
   ),
   
@@ -181,7 +181,7 @@ targets_fires <- c(
   # Extract fires
   tar_target(
     extrfires,
-    extract_by_year(addyear, fires, startyr = 1986, endyr =2020, where = 'both')
+    extract_by_year(addyear, fires, startyr = 1986, endyr =2020, interval = 1, where = 'both')
   ),
   
   # calculate time since fire
@@ -203,7 +203,7 @@ targets_land <- c(
     values,
     tar_target(extract,
                extract_pt(disttolf, r_path, raster_name, where = 'both', out = 'new')),
-    unlist = TRUE)
+    unlist = FALSE)
   
 )
 
@@ -212,7 +212,7 @@ targets_land <- c(
 targets_combine <- c(
   tar_combine(
     extrland,
-    targets_land,
+    list(targets_land),
     command = dplyr::bind_cols(!!!.x)
   ),
   

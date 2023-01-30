@@ -2,10 +2,10 @@
 #' @export
 #' @author Julie W. Turner, Alec L. Robitaille
 #' 
-extract_by_year <- function(DT, var, startyr, endyr, where = 'end'){
+extract_by_year <- function(DT, var, startyr, endyr, interval, where = 'end'){
   #lyr <- vect(layer)
   object_name <- deparse(substitute(var))
-  yrs <- startyr:endyr
+  yrs <- seq(startyr, endyr, by = interval)
   ls_rast <-c(paste0(var, '_', yrs, '.tif'))
   names(ls_rast) <- as.character(yrs)
   # one year with gps data but no yearly rasters
