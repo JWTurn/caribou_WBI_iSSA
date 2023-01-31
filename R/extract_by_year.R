@@ -2,7 +2,7 @@
 #' @export
 #' @author Julie W. Turner, Alec L. Robitaille
 #' 
-extract_by_year <- function(DT, var, startyr, endyr, interval, where = 'end'){
+extract_by_year <- function(DT, var, startyr, endyr, interval, where = 'end', out){
   #lyr <- vect(layer)
   object_name <- deparse(substitute(var))
   yrs <- seq(startyr, endyr, by = interval)
@@ -14,6 +14,11 @@ extract_by_year <- function(DT, var, startyr, endyr, interval, where = 'end'){
   coords_start  <-  c('x1_', 'y1_')
   coords_end  <-  c('x2_', 'y2_')
   
+  if(interval > 1){
+    # if this doesn't work, try hard coding new var as "interval.year" or something
+    DT[,paste0(interval, 'year'):= plyr::round_any(year, interval, f = 'floor')]
+  }
+  
   if (where == 'end') {
     DT[, paste(object_name, 'end', sep = "_") := terra::extract(
       rast(ls_rast[as.integer(names(ls_rast)) == .BY[[1]]]),
@@ -22,8 +27,18 @@ extract_by_year <- function(DT, var, startyr, endyr, interval, where = 'end'){
       xy = FALSE,
       ID = FALSE
     ),
-    by = year,
+    by = ifelse(interval ==1, year, paste0(interval, 'year')),
     .SDcols = c(coords_end)]
+    
+    if (is.null(out)){
+      return(DT)
+    }
+    
+    if (out == 'new'){
+      return(DT %>% 
+               dplyr::select(paste(object_name, 'start', sep = "_"))
+      )
+    }
   }
   
   if(where == 'start'){
@@ -34,8 +49,18 @@ extract_by_year <- function(DT, var, startyr, endyr, interval, where = 'end'){
       xy = FALSE,
       ID = FALSE
     ),
-    by = year,
+    by = ifelse(interval ==1, year, paste0(interval, 'year')),
     .SDcols = c(coords_start)]
+    
+    if (is.null(out)){
+      return(DT)
+    }
+    
+    if (out == 'new'){
+      return(DT %>% 
+               dplyr::select(paste(object_name, 'end', sep = "_"))
+      )
+    }
   }
   
   if(where == 'both'){
@@ -46,7 +71,7 @@ extract_by_year <- function(DT, var, startyr, endyr, interval, where = 'end'){
       xy = FALSE,
       ID = FALSE
     ),
-    by = year,
+    by = ifelse(interval ==1, year, paste0(interval, 'year')),
     .SDcols = c(coords_start)]
     
     DT[, paste(object_name, 'end', sep = "_") := terra::extract(
@@ -56,9 +81,18 @@ extract_by_year <- function(DT, var, startyr, endyr, interval, where = 'end'){
       xy = FALSE,
       ID = FALSE
     ),
-    by = year,
+    by = ifelse(interval ==1, year, paste0(interval, 'year')),
     .SDcols = c(coords_end)]
+    
+    if (is.null(out)){
+      return(DT)
+    }
+    
+    if (out == 'new'){
+      return(DT %>% 
+               dplyr::select(paste(object_name, 'start', sep = "_"), paste(object_name, 'end', sep = "_"))
+      )
+    }
   }
   
-  return(DT)
 }
