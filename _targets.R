@@ -15,7 +15,7 @@ library(sp)
 library(ggplot2)
 library(glmmTMB)
 library(distanceto)
-#library(landscapemetrics)
+library(landscapemetrics)
 
 # Functions ---------------------------------------------------------------
 lapply(dir('R', '*.R', full.names = TRUE), source)
@@ -30,7 +30,8 @@ tar_option_set(format = 'qs',
 # Variables ---------------------------------------------------------------
 set.seed(53)
 path <- file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.RDS')
-land <- file.path('data', 'raw-data', 'WB_LC.tif')
+#land <- file.path('data', 'raw-data', 'WB_LC.tif')
+land <- file.path('data', 'derived-data', 'prepped-data')
 landclass <- fread(file.path('data', 'raw-data', 'rcl.csv'))
 needleleaf <- file.path('data', 'raw-data', 'prop_needleleaf.tif')
 deciduous <- file.path('data', 'raw-data', 'prop_deciduous.tif')
@@ -75,6 +76,7 @@ crs <- CRS(st_crs(3978)$wkt)
 # Split by: within which column or set of columns (eg. c(id, yr))
 #  do we want to split our analysis?
 splitBy <- id
+interval <- 5
 
 
 # Resampling rate 
@@ -174,24 +176,27 @@ targets_fires <- c(
   # add a year column
   tar_target(
     addyear,
-    dattab[,year:=lubridate::year(t2_)]
+    dattab[,`:=`(year=lubridate::year(t2_), 
+                 int.year=plyr::round_any(lubridate::year(t2_), interval, floor))]
   ),
   
+  # calculate buffer
+  tar_target(
+    buffer,
+    plyr::round_any(median(dattab$sl_, na.rm = T), 50, floor)
+  ),
   
   # Extract fires
   tar_target(
     extrfires,
-    extract_by_year(addyear, fires, startyr = 1986, endyr =2020, interval = 1, where = 'both')
+    extract_by_year(addyear, fires, startyr = 1986, endyr =2020, where = 'both')
   ),
   
   # calculate time since fire
   tar_target(
     tsfire,
     calc_tsf(extrfires, where = 'both', nofire=100)
-  )
-)
-
-targets_land <- c(
+  ),
   
   # Calculate distance to linear features
   tar_target(
@@ -199,30 +204,60 @@ targets_land <- c(
     extract_distto(tsfire, lf, where = 'both', crs)
   ),
   
-  tar_map(
-    values,
-    tar_target(extract,
-               extract_pt(disttolf, r_path, raster_name, where = 'both', out = 'new')),
-    unlist = FALSE)
-  
-)
-
-
-# Targets: combine ------------------------------------------------------------------
-targets_combine <- c(
-  tar_combine(
-    extrland,
-    list(targets_land),
-    command = dplyr::bind_cols(!!!.x)
+  # Set up split -- these are our iteration units
+  tar_target(
+    yrsplits,
+    disttolf[, tar_groupyr := .GRP, by = int.year],
+    iteration = 'group'
   ),
   
+  # extract proportion of land types
+  tar_target(
+    extrland,
+    extract_proportion(yrsplits, feature = land, landclass, buff = buffer, crs, where = 'both'),
+    pattern = map(yrsplits)
+  ),
   
   # create step ID across individuals
   tar_target(
     stepID,
     setDT(extrland)[,indiv_step_id := paste(id, step_id_, sep = '_')]
   )
+  
 )
+
+# targets_land <- c(
+#   
+  # # Calculate distance to linear features
+  # tar_target(
+  #   disttolf,
+  #   extract_distto(tsfire, lf, where = 'both', crs)
+  # ),
+#   
+#   tar_map(
+#     values,
+#     tar_target(extract,
+#                extract_pt(disttolf, r_path, raster_name, where = 'both', out = 'new')),
+#     unlist = FALSE)
+#   
+# )
+
+
+# Targets: combine ------------------------------------------------------------------
+# targets_combine <- c(
+#   tar_combine(
+#     extrland,
+#     list(targets_land),
+#     command = dplyr::bind_cols(!!!.x)
+#   ),
+#   
+#   
+#   # create step ID across individuals
+#   tar_target(
+#     stepID,
+#     setDT(extrland)[,indiv_step_id := paste(id, step_id_, sep = '_')]
+#   )
+# )
 
 
 # Targets: all ------------------------------------------------------------------
