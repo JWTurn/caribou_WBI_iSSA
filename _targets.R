@@ -31,7 +31,7 @@ tar_option_set(format = 'qs',
 set.seed(53)
 path <- file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.RDS')
 #land <- file.path('data', 'raw-data', 'WB_LC.tif')
-land <- file.path('data', 'derived-data', 'prepped-data')
+land <- file.path('data', 'derived-data', 'prepped-data', 'land')
 landclass <- fread(file.path('data', 'raw-data', 'rcl.csv'))
 needleleaf <- file.path('data', 'raw-data', 'prop_needleleaf.tif')
 deciduous <- file.path('data', 'raw-data', 'prop_deciduous.tif')
@@ -72,6 +72,9 @@ long <- 'x'
 lat <- 'y'
 crs <- CRS(st_crs(3978)$wkt)
 
+# minimum year we want to pull data for
+minyr <- 2010
+
 
 # Split by: within which column or set of columns (eg. c(id, yr))
 #  do we want to split our analysis?
@@ -108,18 +111,24 @@ targets_prep <- c(
     load_sf(linfeat, crs)
   ),
   
+  # subsample data to that greater than minimum year
+  tar_target(
+    subdt,
+    mkunique[lubridate::year(datetime)>= minyr]
+    ),
   
   # Set up split -- these are our iteration units
   tar_target(
     splits,
-    mkunique[, tar_group := .GRP, by = splitBy],
+    subdt[, tar_group := .GRP, by = splitBy],
     iteration = 'group'
   ),
   
   tar_target(
     splitsnames,
-    unique(mkunique[, .(path = path), by = splitBy])
-  ))
+    unique(subdt[, .(path = path), by = splitBy])
+  )
+  )
   
 
 # Targets: tracks -----------------------------------------------------------------------
@@ -207,7 +216,7 @@ targets_fires <- c(
   # Set up split -- these are our iteration units
   tar_target(
     yrsplits,
-    disttolf[, tar_groupyr := .GRP, by = int.year],
+    disttolf[, tar_groupyr := .GRP, by = 'int.year'],
     iteration = 'group'
   ),
   
