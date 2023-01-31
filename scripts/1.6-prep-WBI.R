@@ -29,5 +29,7 @@ dat.all <- rbind(nwt[,.(id, jurisdiction = 'nwt', pop = area, subpop = habitat, 
                 bc[,.(id, jurisdiction = 'bc', pop = Population_Unit, subpop = NA, datetime, x, y)],
                 yt[,.(id, jurisdiction = 'yt', pop = "Yukon", subpop = NA, datetime, x, y)]
                 )
-saveRDS(dat.all, file.path(prepped, "WBIprepDat.RDS"))
+# remove crazy points
+dat.clean <- dat.all[complete.cases(x,y, datetime) & between(x, -1665110, 458200) &between(y, -98940, 2626920)]
+saveRDS(dat.clean, file.path(prepped, "WBIprepDat.RDS"))
 
