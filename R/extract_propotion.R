@@ -3,7 +3,14 @@
 #' @author Julie W. Turner
 #' 
 extract_proportion <- function(DT, feature, landclass, buff, crs, where = 'end') {
-  feat <- rast(feature)
+  # setting this up for splitby mapping in targets
+  yrs <- c(2010,2015,2020)
+  ls_rast <-c(paste0(feature, '_', yrs, '.tif'))
+  names(ls_rast) <- as.character(yrs)
+  yr <- ifelse(unique(DT$int.year) %in% yrs, unique(DT$int.year), 2010)
+  
+  # select the right raster
+  feat <- rast(ls_rast %like% yr)
   object_name <- paste(deparse(substitute(feature)))
   
   coords_start  <-  c('x1_', 'y1_')
