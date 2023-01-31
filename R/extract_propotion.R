@@ -15,7 +15,7 @@ extract_proportion <- function(DT, feature, landclass, buff, crs, where = 'end')
   
   if(where == 'start'){
     samp <- DT[,terra::zonal(vect(st_buffer(st_as_sf(.SD, coords = coords_start, crs = crs), dist = buff)), 
-                   feat, fun = 'notNA')]
+                             feat, fun = 'notNA')]
     classd <- setDT(merge(samp, landclass, by.x = 'class', by.y = 'value'))
     classd[,`:=` (landtype = paste(becomes, 'start', sep = '_'), value = value/100)]
     
@@ -40,26 +40,26 @@ extract_proportion <- function(DT, feature, landclass, buff, crs, where = 'end')
   
   if(where == 'both'){
     samp.start <- DT[,sample_lsm(feat, st_as_sf(.SD, coords = coords_start, crs = crs), 
-                           what = "lsm_c_pland", size = buff, shape = 'circle', 
-                           plot_id = paste(id, step_id_, pt, sep = '.'))]
+                                 what = "lsm_c_pland", size = buff, shape = 'circle', 
+                                 plot_id = paste(id, step_id_, pt, sep = '.'))]
     classd.start <- setDT(merge(samp.start, landclass, by.x = 'class', by.y = 'value'))
     classd.start[,`:=` (landtype = paste(becomes, 'start', sep = '_'), value = value/100)]
     
     
     transDT.start <- dcast(classd[,.(plot_id, landtype, value)], plot_id ~ landtype, 
-                     value.var = 'value', fun.aggregate = sum, fill = 0)
+                           value.var = 'value', fun.aggregate = sum, fill = 0)
     
     mrg.start <- merge(DT, transDT.start, by.x = 'step_pt_id', by.y = 'plot_id')
     
     samp.end <- DT[,sample_lsm(feat, st_as_sf(.SD, coords = coords_end, crs = crs), 
-                                 what = "lsm_c_pland", size = buff, shape = 'circle', 
-                                 plot_id = paste(id, step_id_, pt, sep = '.'))]
+                               what = "lsm_c_pland", size = buff, shape = 'circle', 
+                               plot_id = paste(id, step_id_, pt, sep = '.'))]
     classd.end <- setDT(merge(samp.end, landclass, by.x = 'class', by.y = 'value'))
     classd.end[,`:=` (landtype = paste(becomes, 'end', sep = '_'), value = value/100)]
     
     
     transDT.end <- dcast(classd[,.(plot_id, landtype, value)], plot_id ~ landtype, 
-                           value.var = 'value', fun.aggregate = sum, fill = 0)
+                         value.var = 'value', fun.aggregate = sum, fill = 0)
     
     mrg <- merge(mrg.start, transDT.end, by.x = 'step_pt_id', by.y = 'plot_id')
   }
