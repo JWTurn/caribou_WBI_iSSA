@@ -2,10 +2,10 @@
 #' @export
 #' @author Julie W. Turner, Alec L. Robitaille
 #' 
-extract_by_year <- function(DT, var, startyr, endyr, interval, where = 'end', out){
+extract_by_year <- function(DT, var, startyr, endyr, where = 'end', out = NULL){
   #lyr <- vect(layer)
   object_name <- deparse(substitute(var))
-  yrs <- seq(startyr, endyr, by = interval)
+  yrs <- startyr:endyr
   ls_rast <-c(paste0(var, '_', yrs, '.tif'))
   names(ls_rast) <- as.character(yrs)
   # one year with gps data but no yearly rasters
@@ -14,10 +14,6 @@ extract_by_year <- function(DT, var, startyr, endyr, interval, where = 'end', ou
   coords_start  <-  c('x1_', 'y1_')
   coords_end  <-  c('x2_', 'y2_')
   
-  if(interval > 1){
-    # if this doesn't work, try hard coding new var as "interval.year" or something
-    DT[,paste0(interval, 'year'):= plyr::round_any(year, interval, f = 'floor')]
-  }
   
   if (where == 'end') {
     DT[, paste(object_name, 'end', sep = "_") := terra::extract(
@@ -27,7 +23,7 @@ extract_by_year <- function(DT, var, startyr, endyr, interval, where = 'end', ou
       xy = FALSE,
       ID = FALSE
     ),
-    by = ifelse(interval ==1, year, paste0(interval, 'year')),
+    by = year,
     .SDcols = c(coords_end)]
     
     if (is.null(out)){
@@ -49,7 +45,7 @@ extract_by_year <- function(DT, var, startyr, endyr, interval, where = 'end', ou
       xy = FALSE,
       ID = FALSE
     ),
-    by = ifelse(interval ==1, year, paste0(interval, 'year')),
+    by = year,
     .SDcols = c(coords_start)]
     
     if (is.null(out)){
@@ -71,7 +67,7 @@ extract_by_year <- function(DT, var, startyr, endyr, interval, where = 'end', ou
       xy = FALSE,
       ID = FALSE
     ),
-    by = ifelse(interval ==1, year, paste0(interval, 'year')),
+    by = year,
     .SDcols = c(coords_start)]
     
     DT[, paste(object_name, 'end', sep = "_") := terra::extract(
@@ -81,7 +77,7 @@ extract_by_year <- function(DT, var, startyr, endyr, interval, where = 'end', ou
       xy = FALSE,
       ID = FALSE
     ),
-    by = ifelse(interval ==1, year, paste0(interval, 'year')),
+    by = year,
     .SDcols = c(coords_end)]
     
     if (is.null(out)){
