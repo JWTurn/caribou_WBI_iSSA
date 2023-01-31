@@ -2,23 +2,60 @@ require(terra)
 require(sf)
 require(data.table)
 
-
+### Input data ----
+raw <- 'data/raw-data/'
+derived <- 'data/derived-data/'
+canada <- file.path('~/Dropbox', 'ActiveDocs', 'Git-local', 'Can_GIS_layers')
 
 crs <- st_crs(3978)$wkt
 
 
 dat<- readRDS(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.RDS'))
-dat.clean <- dat[complete.cases(x,y, datetime) & between(x, -1665110, 458200) &between(y, -98940, 2626920),
-           .(x,y, datetime, id)]
-coords<- dat.clean%>%st_as_sf(coords = c('x','y'))%>%
-  st_set_crs(crs)
+# dat.clean <- dat[complete.cases(x,y, datetime) & between(x, -1665110, 458200) &between(y, -98940, 2626920),
+#            .(x,y, datetime, id)]
+# saveRDS(dat.clean, file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.RDS'))
+# coords<- dat.clean%>%st_as_sf(coords = c('x','y'))%>%
+#   st_set_crs(crs)
 
 #coords <- vect(coords)
 #st_write(coords, file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.shp'), append = F)
 
+coords <- st_read(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.shp'))
 
-studyArea <- st_buffer(coords, dist = 10000)
-land <- rast(file.path('data', 'raw-data', 'WB_LC.tif'))
+# stepID[case_==TRUE, quantile(sl_, na.rm = T, 0.95)]
+# # max = 51233.12 -- This is probably an error 
+# # 95% 4422
+
+### 10 km buffer around points to get an idea of extent of study area
+# studyArea <- st_buffer(coords, dist = 10000)
+# sa.union <- st_union(studyArea)
+# sa.union
+# plot(sa.union)
+#sa.vect <- vect(sa.union)
+#st_write(sa.union, file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBuff.shp'), append = F)
+
+#land <- rast(file.path('data', 'raw-data', 'WB_LC.tif'))
+
+studyArea <- vect(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBuff.shp'))
+can2010 <- rast(file.path(canada, 'canada_2010', 'CAN_LC_2010_CAL.tif'))
+can2015 <- rast(file.path(canada, 'canada_2015', 'CAN_LC_2015_CAL.tif'))
+can2020 <- rast(file.path(canada, 'canada_2020', 'landcover-2020-classification.tif'))
+can2020 <- project(can2020, can2015, method = 'near')
+
+wb2020 <- crop(can2020, studyArea)
+#plot(wb2020)
+writeRaster(wb2020, file.path('data', 'derived-data', 'prepped-data', 'WB_LC_2020.tif'))
+
+gc()
+wb2015 <- crop(can2015, studyArea)
+#plot(wb2015)
+writeRaster(wb2015, file.path('data', 'derived-data', 'prepped-data', 'WB_LC_2015.tif'))
+
+gc()
+wb2010 <- crop(can2010, studyArea)
+#plot(wb2010)
+writeRaster(wb2010, file.path('data', 'derived-data', 'prepped-data', 'WB_LC_2010.tif'))
+
 
 # What to buffer for proportion of landclasses
 buff.diam <- 500  ## median step length = 752, I chose something a bit less
