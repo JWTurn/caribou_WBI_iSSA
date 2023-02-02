@@ -24,8 +24,9 @@ extract_proportion <- function(DT, feature, landclass, buff, crs, where = 'end')
   
   
   if(where == 'start'){
-    samp <- DT[,terra::zonal(vect(st_buffer(st_as_sf(.SD, coords = coords_start, crs = crs), dist = buff)), 
-                             feat, fun = 'notNA')]
+    samp <- DT[,sample_lsm(feat, st_as_sf(.SD, coords = coords_start, crs = crs), 
+                           what = "lsm_c_pland", size = buff, shape = 'circle', 
+                           plot_id = paste(id, step_id_, pt, sep = '.'))]
     classd <- setDT(merge(samp, landclass, by.x = 'class', by.y = 'value'))
     classd[,`:=` (landtype = paste(becomes, 'start', sep = '_'), value = value/100)]
     
@@ -56,7 +57,7 @@ extract_proportion <- function(DT, feature, landclass, buff, crs, where = 'end')
     classd.start[,`:=` (landtype = paste(becomes, 'start', sep = '_'), value = value/100)]
     
     
-    transDT.start <- dcast(classd[,.(plot_id, landtype, value)], plot_id ~ landtype, 
+    transDT.start <- dcast(classd.start[,.(plot_id, landtype, value)], plot_id ~ landtype, 
                            value.var = 'value', fun.aggregate = sum, fill = 0)
     
     mrg.start <- merge(DT, transDT.start, by.x = 'step_pt_id', by.y = 'plot_id')
@@ -68,7 +69,7 @@ extract_proportion <- function(DT, feature, landclass, buff, crs, where = 'end')
     classd.end[,`:=` (landtype = paste(becomes, 'end', sep = '_'), value = value/100)]
     
     
-    transDT.end <- dcast(classd[,.(plot_id, landtype, value)], plot_id ~ landtype, 
+    transDT.end <- dcast(classd.end[,.(plot_id, landtype, value)], plot_id ~ landtype, 
                          value.var = 'value', fun.aggregate = sum, fill = 0)
     
     mrg <- merge(mrg.start, transDT.end, by.x = 'step_pt_id', by.y = 'plot_id')
