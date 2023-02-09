@@ -15,7 +15,7 @@ library(sp)
 library(ggplot2)
 library(glmmTMB)
 library(distanceto)
-library(landscapemetrics)
+#library(landscapemetrics)
 
 # Functions ---------------------------------------------------------------
 lapply(dir('R', '*.R', full.names = TRUE), source)
@@ -30,35 +30,41 @@ tar_option_set(format = 'qs',
 # Variables ---------------------------------------------------------------
 set.seed(53)
 path <- file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.RDS')
+canada <- file.path('~/Dropbox', 'ActiveDocs', 'Git-local', 'Can_GIS_layers')
+studyArea <- file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBuff.shp')
+can2010 <- file.path(canada, 'canada_2010', 'CAN_LC_2010_CAL.tif')
+can2015 <- file.path(canada, 'canada_2015', 'CAN_LC_2015_CAL.tif')
+can2020 <- file.path(canada, 'canada_2020', 'landcover-2020-classification.tif')
 #land <- file.path('data', 'raw-data', 'WB_LC.tif')
-land <- file.path('data', 'derived-data', 'prepped-data', 'land')
-landclass <- fread(file.path('data', 'raw-data', 'rcl.csv'))
-needleleaf <- file.path('data', 'raw-data', 'prop_needleleaf.tif')
-deciduous <- file.path('data', 'raw-data', 'prop_deciduous.tif')
-mixed <- file.path('data', 'raw-data', 'prop_mixed.tif')
-shrub <- file.path('data', 'raw-data', 'prop_shrub.tif')
-grass <- file.path('data', 'raw-data', 'prop_grassland.tif')
-lichshrub <- file.path('data', 'raw-data', 'prop_lichenshrub.tif')
-lichgrass <- file.path('data', 'raw-data', 'prop_lichengrass.tif')
-wetland <- file.path('data', 'raw-data', 'prop_wetland.tif')
-crop <- file.path('data', 'raw-data', 'prop_cropland.tif')
-barren <- file.path('data', 'raw-data', 'prop_barrenland.tif')
-urban <- file.path('data', 'raw-data', 'prop_urban.tif')
-water <- file.path('data', 'raw-data', 'prop_water.tif')
-snow <- file.path('data', 'raw-data', 'prop_snow.tif')
 
-landvals <- c(
-  needleleaf, deciduous, mixed,
-  shrub, grass, lichshrub, lichgrass, wetland,
-  crop, barren, urban, water, snow
-)
-values <- list(
-  r_path = landvals
-)
-values$raster_name <- basename(xfun::sans_ext(values$r_path))
-values$raster_name_sym <- lapply(values$raster_name, as.symbol)
-# Extraction
-values$extract_name_sym <- lapply(paste0('extract_', values$raster_name), as.symbol)
+# land <- file.path('data', 'derived-data', 'prepped-data', 'land')
+# landclass <- fread(file.path('data', 'raw-data', 'rcl.csv'))
+# needleleaf <- file.path('data', 'raw-data', 'prop_needleleaf.tif')
+# deciduous <- file.path('data', 'raw-data', 'prop_deciduous.tif')
+# mixed <- file.path('data', 'raw-data', 'prop_mixed.tif')
+# shrub <- file.path('data', 'raw-data', 'prop_shrub.tif')
+# grass <- file.path('data', 'raw-data', 'prop_grassland.tif')
+# lichshrub <- file.path('data', 'raw-data', 'prop_lichenshrub.tif')
+# lichgrass <- file.path('data', 'raw-data', 'prop_lichengrass.tif')
+# wetland <- file.path('data', 'raw-data', 'prop_wetland.tif')
+# crop <- file.path('data', 'raw-data', 'prop_cropland.tif')
+# barren <- file.path('data', 'raw-data', 'prop_barrenland.tif')
+# urban <- file.path('data', 'raw-data', 'prop_urban.tif')
+# water <- file.path('data', 'raw-data', 'prop_water.tif')
+# snow <- file.path('data', 'raw-data', 'prop_snow.tif')
+# 
+# landvals <- c(
+#   needleleaf, deciduous, mixed,
+#   shrub, grass, lichshrub, lichgrass, wetland,
+#   crop, barren, urban, water, snow
+# )
+# values <- list(
+#   r_path = landvals
+# )
+# values$raster_name <- basename(xfun::sans_ext(values$r_path))
+# values$raster_name_sym <- lapply(values$raster_name, as.symbol)
+# # Extraction
+# values$extract_name_sym <- lapply(paste0('extract_', values$raster_name), as.symbol)
 
 
 linfeat <- file.path('data', 'raw-data', 'wbi_roads.shp')
@@ -189,12 +195,7 @@ targets_fires <- c(
                  int.year=plyr::round_any(lubridate::year(t2_), interval, floor))]
   ),
   
-  # calculate buffer
-  tar_target(
-    buffer,
-    plyr::round_any(median(dattab$sl_, na.rm = T), 50, floor)
-  ),
-  
+
   # Extract fires
   tar_target(
     extrfires,
@@ -205,68 +206,105 @@ targets_fires <- c(
   tar_target(
     tsfire,
     calc_tsf(extrfires, where = 'both', nofire=100)
+  )
+  
+  # # Calculate distance to linear features
+  # tar_target(
+  #   disttolf,
+  #   extract_distto(tsfire, lf, where = 'both', crs)
+  # )
+  # 
+  # # Set up split -- these are our iteration units
+  # tar_target(
+  #   yrsplits,
+  #   disttolf[, tar_groupyr := .GRP, by = 'int.year'],
+  #   iteration = 'group'
+  # ),
+  # 
+  # # extract proportion of land types
+  # tar_target(
+  #   extrland,
+  #   extract_proportion(yrsplits, feature = land, landclass, buff = buffer, crs, where = 'both'),
+  #   pattern = map(yrsplits)
+  # ),
+  # 
+  # # create step ID across individuals
+  # tar_target(
+  #   stepID,
+  #   setDT(extrland)[,indiv_step_id := paste(id, step_id_, sep = '_')]
+  # )
+  
+)
+
+targets_proportions <- c(
+  # calculate buffer
+  tar_target(
+    buffer,
+    plyr::round_any(median(dattab$sl_, na.rm = T), 50, floor)
   ),
+  
+  # make proportion rasters
+  tar_target(
+    prop2010,
+    make_landsat_prop(layer = can2010, studyArea, crs, buff = buffer, year = 2010)
+  ),
+  
+  tar_target(
+    prop2015,
+    make_landsat_prop(layer = can2015, studyArea, crs, buff = buffer, year = 2015)
+  ),
+  
+  tar_target(
+    prop2020,
+    make_landsat_prop(layer = can2020, studyArea, crs, buff = buffer, year = 2020)
+  )
+  
+)
+
+targets_land <- c(
   
   # Calculate distance to linear features
   tar_target(
     disttolf,
     extract_distto(tsfire, lf, where = 'both', crs)
   ),
+
+  tar_map(
+    prop2010,
+    tar_target(extract,
+               extract_pt(disttolf, r_path, r_name, where = 'both', out = 'new', int.yr = 2010)),
+    unlist = FALSE),
+
+  tar_map(
+    prop2015,
+    tar_target(extract,
+               extract_pt(disttolf, r_path, r_name, where = 'both', out = 'new', int.yr = 2015)),
+    unlist = FALSE),
   
-  # Set up split -- these are our iteration units
-  tar_target(
-    yrsplits,
-    disttolf[, tar_groupyr := .GRP, by = 'int.year'],
-    iteration = 'group'
-  ),
-  
-  # extract proportion of land types
-  tar_target(
+  tar_map(
+    prop2020,
+    tar_target(extract,
+               extract_pt(disttolf, r_path, r_name, where = 'both', out = 'new', int.yr = 2020)),
+    unlist = FALSE)
+
+)
+
+
+Targets: combine ------------------------------------------------------------------
+targets_combine <- c(
+  tar_combine(
     extrland,
-    extract_proportion(yrsplits, feature = land, landclass, buff = buffer, crs, where = 'both'),
-    pattern = map(yrsplits)
+    list(targets_land),
+    command = dplyr::bind_cols(!!!.x)
   ),
-  
+
+
   # create step ID across individuals
   tar_target(
     stepID,
     setDT(extrland)[,indiv_step_id := paste(id, step_id_, sep = '_')]
   )
-  
 )
-
-# targets_land <- c(
-#   
-  # # Calculate distance to linear features
-  # tar_target(
-  #   disttolf,
-  #   extract_distto(tsfire, lf, where = 'both', crs)
-  # ),
-#   
-#   tar_map(
-#     values,
-#     tar_target(extract,
-#                extract_pt(disttolf, r_path, raster_name, where = 'both', out = 'new')),
-#     unlist = FALSE)
-#   
-# )
-
-
-# Targets: combine ------------------------------------------------------------------
-# targets_combine <- c(
-#   tar_combine(
-#     extrland,
-#     list(targets_land),
-#     command = dplyr::bind_cols(!!!.x)
-#   ),
-#   
-#   
-#   # create step ID across individuals
-#   tar_target(
-#     stepID,
-#     setDT(extrland)[,indiv_step_id := paste(id, step_id_, sep = '_')]
-#   )
-# )
 
 
 # Targets: all ------------------------------------------------------------------
