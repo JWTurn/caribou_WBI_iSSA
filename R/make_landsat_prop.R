@@ -4,7 +4,7 @@
 #' 
 make_landsat_prop <- function(layer, studyArea, crs, buff, year){
   land.full <- rast(layer)
-  if(crs(land.full) != crs){
+  if(st_crs(crs(land.full)) != st_crs(crs)){
     land.proj <- project(land.full, crs, method = 'near')
     land.full <- land.proj
     }
