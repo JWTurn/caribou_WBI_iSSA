@@ -2,13 +2,22 @@
 #' @export
 #' @author Julie W. Turner
 #' 
-extract_pt <- function(DT, layer, name, where, out){
+extract_pt <- function(DT, layer, name, where, out, yr = NULL, int.yr= NULL){
   lyr <- rast(layer)
   object_name <- name
   #object_name <- deparse(substitute(name))
   
   coords_start  <-  c('x1_', 'y1_')
   coords_end  <-  c('x2_', 'y2_')
+  
+  if(!is.null(yr)){
+    DT <- DT[year == yr]
+    DT
+  }
+  if(!is.null(int.yr)){
+    DT <- DT[int.year == int.yr]
+    DT
+  }
   
   if (where == 'end') {
     DT[,(paste(object_name, 'end', sep = "_")):= terra::extract(lyr, cbind(.SD))[,-1],
