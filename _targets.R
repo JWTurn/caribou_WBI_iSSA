@@ -15,8 +15,8 @@ library(sp)
 library(ggplot2)
 library(glmmTMB)
 library(distanceto)
-library(dtplyr)
-library(dplyr, warn.conflicts = FALSE)
+# library(dtplyr)
+# library(dplyr, warn.conflicts = FALSE)
 
 #library(landscapemetrics)
 
