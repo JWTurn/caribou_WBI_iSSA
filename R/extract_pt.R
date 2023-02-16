@@ -2,7 +2,7 @@
 #' @export
 #' @author Julie W. Turner
 #' 
-extract_pt <- function(DT, layer, name, where, out, yr = NULL, int.yr= NULL){
+extract_pt <- function(DT, layer, name, where, out = NULL, yr = NULL, int.yr= NULL){
   lyr <- rast(layer)
   object_name <- name
   #object_name <- deparse(substitute(name))
