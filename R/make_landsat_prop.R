@@ -12,7 +12,7 @@ make_landsat_prop <- function(layer, studyArea, crs, buff, year){
   land <- crop(land.full, sArea)
   
   # What to buffer for proportion of landclasses
-  buff.diam <- buff  ## median step length = 752, I chose something a bit less
+  buff.diam <- buff  ## median step length = 852, I chose something a bit less
   
   needleleaf <- land %in% c(1,2)
   names(needleleaf) <- "needleleaf"
@@ -48,82 +48,75 @@ make_landsat_prop <- function(layer, studyArea, crs, buff, year){
   ## This generates a new raster where each cell corresponds to the mean wetland within the buffer.
   # Since it's all 1s and 0s, this is the same as the proportion of wetland surrounding the focal variable
   propneedle <- focal(needleleaf, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
-  needleleaf <- file.path('data', 'raw-data','prop_land', 
-                           paste0('prop_needleleaf_', year, '.tif'))
-  writeRaster(propneedle, needleleaf)
-  
+
   propdecid <- focal(deciduous, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
-  deciduous <- file.path('data', 'raw-data', 'prop_land',
-                          paste0('prop_deciduous_', year, '.tif'))
-  writeRaster(propdecid, deciduous)
-  
+
   propmixed <- focal(mixed, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
-  mixed <- file.path('data', 'raw-data', 'prop_land',
-                          paste0('prop_mixed_', year, '.tif'))
-  writeRaster(propmixed, mixed)
-  
+
   propshrub <- focal(shrub, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
-  shrub <- file.path('data', 'raw-data', 'prop_land',
-                          paste0('prop_shrub_', year, '.tif'))
-  writeRaster(propshrub, shrub)
-  
+
   propgrass <- focal(grassland, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
-  grass <- file.path('data', 'raw-data', 'prop_land',
-                          paste0('prop_grassland_', year, '.tif'))
-  writeRaster(propgrass, grass)
   
   proplichshrub <- focal(lichenshrub, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
-  lichshrub <- file.path('data', 'raw-data', 'prop_land',
-                              paste0('prop_lichenshrub_', year, '.tif'))
-  writeRaster(proplichshrub, lichshrub)
-  
+
   proplichgrass <- focal(lichengrass, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
-  lichgrass <- file.path('data', 'raw-data', 'prop_land',
-                              paste0('prop_lichengrass_', year, '.tif'))
-  writeRaster(proplichgrass, lichgrass)
-  
+
   propwet <- focal(wet, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
-  wet <- file.path('data', 'raw-data', 'prop_land',
-                        paste0('prop_wetland_', year, '.tif'))
-  writeRaster(propwet, wet)
-  
+
   propcrop <- focal(cropland, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
-  crop <- file.path('data', 'raw-data', 'prop_land',
-                         paste0('prop_cropland_', year, '.tif'))
-  writeRaster(propcrop, crop)
-  
+
   propbarren <- focal(barrenland, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
-  barren <- file.path('data', 'raw-data', 'prop_land',
-                           paste0('prop_barrenland_', year, '.tif'))
-  writeRaster(propbarren, barren)
-  
+
   propurban <- focal(urban, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
-  urban <- file.path('data', 'raw-data', 'prop_land',
-                          paste0('prop_urban_', year, '.tif'))
-  writeRaster(propurban, urban)
   
   propwater <- focal(water, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
-  water <- file.path('data', 'raw-data', 'prop_land',
-                          paste0('prop_water_', year, '.tif'))
-  writeRaster(propwater, water)
   
   propsnow <- focal(snow, Buff, na.rm = TRUE, pad = TRUE, padValue = 0)
-  snow <- file.path('data', 'raw-data', 'prop_land',
-                         paste0('prop_snow_', year, '.tif'))
+
+  # paths
+  needleleaf <- file.path('data', 'raw-data','prop_land', year, 
+                          paste0('prop_needleleaf', '.tif'))
+  deciduous <- file.path('data', 'raw-data', 'prop_land', year,
+                         paste0('prop_deciduous', '.tif'))
+  mixed <- file.path('data', 'raw-data', 'prop_land', year,
+                     paste0('prop_mixed', '.tif'))
+  shrub <- file.path('data', 'raw-data', 'prop_land', year,
+                     paste0('prop_shrub', '.tif'))
+  grass <- file.path('data', 'raw-data', 'prop_land', year,
+                     paste0('prop_grassland', '.tif'))
+  lichshrub <- file.path('data', 'raw-data', 'prop_land', year,
+                         paste0('prop_lichenshrub', '.tif'))
+  lichgrass <- file.path('data', 'raw-data', 'prop_land', year,
+                         paste0('prop_lichengrass', '.tif'))
+  wetland <- file.path('data', 'raw-data', 'prop_land', year,
+                       paste0('prop_wetland', '.tif'))
+  crop <- file.path('data', 'raw-data', 'prop_land', year,
+                    paste0('prop_cropland', '.tif'))
+  barren <- file.path('data', 'raw-data', 'prop_land', year,
+                      paste0('prop_barrenland', '.tif'))
+  urban <- file.path('data', 'raw-data', 'prop_land', year,
+                     paste0('prop_urban', '.tif'))
+  water <- file.path('data', 'raw-data', 'prop_land', year,
+                     paste0('prop_water', '.tif'))
+  snow <- file.path('data', 'raw-data', 'prop_land', year,
+                    paste0('prop_snow', '.tif'))
+  
+  # write raster
+  writeRaster(propneedle, needleleaf)
+  writeRaster(propdecid, deciduous)
+  writeRaster(propmixed, mixed)
+  writeRaster(propshrub, shrub)
+  writeRaster(propgrass, grass)
+  writeRaster(proplichshrub, lichshrub)
+  writeRaster(proplichgrass, lichgrass)
+  writeRaster(propwet, wetland)
+  writeRaster(propcrop, crop)
+  writeRaster(propbarren, barren)
+  writeRaster(propurban, urban)
+  writeRaster(propwater, water)
   writeRaster(propsnow, snow)
   
-  values <- list(
-    r_path = c(
-      needleleaf, deciduous, mixed,
-      shrub, grass, lichshrub, lichgrass, wetland,
-      crop, barren, urban, water, snow
-    )
-  )
-  values$raster_name <- basename(xfun::sans_ext(values$r_path))
-  values$r_name <- gsub("_*[0-9]+", "", values$raster_name)
-  values$raster_name_sym <- lapply(values$raster_name, as.symbol)
-  # Extraction
-  values$extract_name_sym <- lapply(paste0('extract_', values$raster_name), as.symbol)
   
 }
+
 
