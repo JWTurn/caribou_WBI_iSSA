@@ -136,7 +136,7 @@ saveRDS(sel.2015.juris, file.path(derived, 'mod_ssa_juris_2015-2020.RDS'))
 
 gc()
 ### selection 2010 ----
-sel.2010.juris <- glmmTMB(case_ ~ -1 +
+sel.2010 <- glmmTMB(case_ ~ -1 +
                             I(log(sl_+1)) +
                                prop_forest_end + prop_forage_end + prop_open_end + prop_wets_end +
                                I(log(tsf_end+1)) +
@@ -152,8 +152,6 @@ sel.2010.juris <- glmmTMB(case_ ~ -1 +
                           start = list(theta =c(log(1000), seq(0,0, length.out = 7)))
 )
 
-#11
-#22
 
 summary(sel.2010)
 saveRDS(sel.2010, file.path(derived, 'mod_ssa_2010-2015.RDS'))
@@ -176,10 +174,17 @@ sel.2015 <- glmmTMB(case_ ~ -1 +
                           start = list(theta =c(log(1000), seq(0,0, length.out = 7)))
 )
 
-#11
-#22
+
 
 summary(sel.2015)
 saveRDS(sel.2015, file.path(derived, 'mod_ssa_2015-2020.RDS'))
 
+####
+sel.2010 <- readRDS(file.path(derived, 'mod_ssa_2010-2015.RDS'))
+sel.2015 <- readRDS(file.path(derived, 'mod_ssa_2015-2020.RDS'))
 
+sel.2010.juris <- readRDS(file.path(derived, 'mod_ssa_juris_2010-2015.RDS'))
+sel.2015.juris <- readRDS(file.path(derived, 'mod_ssa_juris_2015-2020.RDS'))
+
+bbmle::AICtab(sel.2010, sel.2010.juris)
+bbmle::AICtab(sel.2015, sel.2015.juris)
