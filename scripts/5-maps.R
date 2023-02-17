@@ -3,7 +3,8 @@
 # started 14 April 2022
 
 #### Packages ####
-libs <- c('Require', 'reproducible', 'data.table', 'terra','sf', 'prioritizr', 'glmmTMB')
+libs <- c('Require', 'reproducible', 'data.table', 'terra','sf', 'prioritizr', 
+          'glmmTMB', 'ggplot2', 'rasterVis', 'viridis', 'tidyterra')
 lapply(libs, Require::Require, character.only = TRUE)
 
 # my functions
@@ -118,6 +119,8 @@ mb <- subset(canPoly, canPoly$PREABBR == 'Man.')
 nwt <- subset(canPoly, canPoly$PREABBR == 'N.W.T.')
 sk <- subset(canPoly, canPoly$PREABBR == 'Sask.')
 yt <- subset(canPoly, canPoly$PREABBR == 'Y.T.')
+
+wbi.prov <- subset(canPoly, canPoly$PREABBR %in% c('Alta.', 'B.C.', 'Man.', 'N.W.T.', 'Sask.', 'Y.T.'))
 
 land.ab <- crop(land, ab, mask = T)
 land.bc <- crop(land, bc, mask = T)
@@ -595,3 +598,100 @@ plot(pde.avg.discrete.2015.sa.ab, breaks=0:10)
 
 
 #### plots
+p.2015 <- gplot(pde.discrete.2015) +
+  geom_tile(aes(fill = value), show.legend = T) +
+  #geom_sf(data = st_as_sf(wbi.prov), fill = NA) +
+  ggtitle('2015-2020 Jurisdictional model') +
+  scale_fill_gradientn(colours = viridis(10),na.value = "white", limits = c(0,10)) +
+  theme_bw() +
+  labs(fill = 'Intensity of use') +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  coord_equal()
+p.2015
+
+p.2015.ab <- gplot(pde.discrete.2015.sa.ab) +
+  geom_tile(aes(fill = value), show.legend = T) +
+  ggtitle('2015-2020  Jurisdictional model extrapolating AB') +
+  scale_fill_gradientn(colours = viridis(10),na.value = "white", limits = c(0,10)) +
+  theme_bw() +
+  labs(fill = 'Intensity of use') +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  coord_equal()
+p.2015.ab
+
+
+p.avg.2015 <- gplot(pde.avg.discrete.2015) +
+  geom_tile(aes(fill = value), show.legend = T) +
+  ggtitle('2015-2020  model') +
+  scale_fill_gradientn(colours = viridis(10),na.value = "white", limits = c(0,10)) +
+  theme_bw() +
+  labs(fill = 'Intensity of use') +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  coord_equal()
+p.avg.2015
+
+
+p.avg.2015.ab <- gplot(pde.avg.discrete.2015.sa.ab) +
+  #geom_spatvector(data = wbi.prov, fill = NA) + 
+  geom_tile(aes(fill = value), show.legend = T) +
+  ggtitle('2015-2020  model') +
+  scale_fill_gradientn(colours = viridis(10),na.value = "white", limits = c(0,10)) +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Intensity of use') +
+ # coord_equal() +
+  coord_sf(crs = 3978)
+
+p.avg.2015.ab
+
+
+####
+p.2015.wbi<- ggplot(wbi.prov) +
+  geom_spatvector(fill = NA) +
+  geom_spatraster(data = pde.2015.sa, show.legend = T) +
+  scale_fill_viridis(na.value = NA, breaks = c(0,10)) +
+  ggtitle('2015-2020 model') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Intensity of use') +
+  coord_sf(crs = 3978)
+p.2015.wbi
+
+p.2015.wbi.ab <- ggplot(wbi.prov) +
+  geom_spatvector(fill = NA) +
+  geom_spatraster(data = pde.2015.sa.ab, show.legend = T) +
+  scale_fill_viridis(na.value = NA, breaks = c(0,10)) +
+  ggtitle('2015-2020 model extrapolating AB') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  coord_sf(crs = 3978)
+p.015.wbi.ab
+
+p.avg.2015.wbi<- ggplot(wbi.prov) +
+  geom_spatvector(fill = NA) +
+  geom_spatraster(data = pde.avg.2015.sa, show.legend = T) +
+  scale_fill_viridis(na.value = NA, breaks = c(0,10)) +
+  ggtitle('2015-2020 model') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Intensity of use') +
+  coord_sf(crs = 3978)
+p.avg.2015.wbi
+
+p.avg.2015.wbi.ab <- ggplot(wbi.prov) +
+  geom_spatvector(fill = NA) +
+  geom_spatraster(data = pde.avg.2015.sa.ab, show.legend = T) +
+  scale_fill_viridis(na.value = NA, breaks = c(0,10)) +
+  ggtitle('2015-2020 model extrapolating AB') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  coord_sf(crs = 3978)
+p.avg.2015.wbi.ab
