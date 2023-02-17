@@ -75,7 +75,7 @@ values2010 <- file.path('data', 'raw-data', 'prop_land', '2010','propvalues.RDS'
 values2015 <- file.path('data', 'raw-data', 'prop_land', '2015','propvalues.RDS')
 values2020 <- file.path('data', 'raw-data', 'prop_land', '2020','propvalues.RDS')
 
-linfeat <- file.path('data', 'raw-data', 'wbi_roads.shp')
+linfeat <- file.path('data', 'raw-data', 'wbi_road_rail.shp')
 fires <- file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', 'fires')
 
 id <- 'id'
