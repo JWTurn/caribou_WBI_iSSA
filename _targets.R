@@ -265,7 +265,7 @@ targets_fires <- c(
   # Extract fires
   tar_target(
     extrfires,
-    extract_by_year(addyear, fires, startyr = 1986, endyr =2020, where = 'both')
+    extract_by_year(extractprop, fires, startyr = 1986, endyr =2020, where = 'both')
   ),
   
   # calculate time since fire
@@ -280,6 +280,12 @@ targets_distto <- c(
     tar_target(
       disttolf,
       extract_distto(tsfire, lf, where = 'both', crs)
+    ),
+    
+    # create step ID across individuals
+    tar_target(
+      stepID,
+      setDT(disttolf)[,indiv_step_id := paste(id, step_id_, sep = '_')]
     )
   
 )
@@ -312,21 +318,21 @@ targets_distto <- c(
 
 
 # Targets: combine ------------------------------------------------------------------
-
-targets_combine <- c(  
-  tar_combine(
-    extrland,
-    targets_distto, targets_proplandcombo,
-    command = list(!!!.x) %>% purrr::reduce(dplyr::full_join, by = names(addyear))
-  ),
-
-
-  # create step ID across individuals
-  tar_target(
-    stepID,
-    setDT(extrland)[,indiv_step_id := paste(id, step_id_, sep = '_')]
-  )
-)
+# 
+# targets_combine <- c(  
+#   tar_combine(
+#     extrland,
+#     targets_distto, targets_proplandcombo,
+#     command = list(!!!.x) %>% purrr::reduce(dplyr::full_join, by = names(addyear))
+#   ),
+# 
+# 
+#   # create step ID across individuals
+#   tar_target(
+#     stepID,
+#     setDT(extrland)[,indiv_step_id := paste(id, step_id_, sep = '_')]
+#   )
+# )
 
 
 # Targets: all ------------------------------------------------------------------
