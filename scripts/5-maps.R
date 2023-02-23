@@ -775,7 +775,8 @@ p.2015.ab + p.simp.2015.ab #+ p.avg.2015.ab
 p.2015.wbi.ab <- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
   geom_spatraster(data = as.numeric(pde.discrete.2015.sa.ab), show.legend = T) +
-  scale_fill_viridis(na.value = NA) +
+  scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
+  #scale_fill_viridis(na.value = NA) +
   ggtitle('2015-2020 fixed model extrapolating AB') +
   theme_bw() +
   theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
@@ -788,7 +789,8 @@ p.2015.wbi.ab
 p.simp.2015.wbi<- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
   geom_spatraster(data = as.numeric(pde.simp.discrete.2015), show.legend = T) +
-  scale_fill_viridis(na.value = NA) +
+  scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
+  #scale_fill_viridis(na.value = NA) +
   ggtitle('2015-2020 jurisdictional model') +
   theme_bw() +
   theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
@@ -800,7 +802,8 @@ p.simp.2015.wbi
 p.simp.2015.wbi.ab <- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
   geom_spatraster(data = as.numeric(pde.simp.discrete.2015.sa.ab), show.legend = T) +
-  scale_fill_viridis(na.value = NA) +
+  scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
+  #scale_fill_viridis(na.value = NA) +
   ggtitle('2015-2020 jurisdictional model extrapolating AB') +
   theme_bw() +
   theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
@@ -810,7 +813,7 @@ p.simp.2015.wbi.ab <- ggplot(wbi.prov) +
 p.simp.2015.wbi.ab
 
 
-
+p.2015.wbi.ab + p.simp.2015.wbi.ab
 
 p.avg.2015.wbi<- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
@@ -836,4 +839,4 @@ p.avg.2015.wbi.ab <- ggplot(wbi.prov) +
   coord_sf(crs = 3978)
 p.avg.2015.wbi.ab
 
-p.2015.ab + p.simp.2015.ab
+p.avg.2015.wbi + p.avg.2015.wbi.ab
