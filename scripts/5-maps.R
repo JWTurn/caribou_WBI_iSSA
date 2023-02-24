@@ -813,7 +813,7 @@ p.simp.2015.wbi.ab <- ggplot(wbi.prov) +
 p.simp.2015.wbi.ab
 
 
-p.2015.wbi.ab + p.simp.2015.wbi.ab
+p.simp.2015.wbi + p.simp.2015.wbi.ab
 
 p.avg.2015.wbi<- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
