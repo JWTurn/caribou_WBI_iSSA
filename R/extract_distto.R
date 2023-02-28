@@ -2,8 +2,9 @@
 #' @export
 #' @author Julie W. Turner
 #' 
-extract_distto <- function(DT, feature, where = 'end', crs) {
-  object_name <- deparse(substitute(feature))
+extract_distto <- function(DT, feature, name, where = 'end', crs) {
+  #object_name <- deparse(substitute(feature))
+  object_name <- name
   
   coords_start  <-  c('x1_', 'y1_')
   coords_end  <-  c('x2_', 'y2_')
