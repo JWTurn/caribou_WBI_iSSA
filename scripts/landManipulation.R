@@ -213,7 +213,7 @@ writeRaster(harv.crop, file.path(raw, 'WB_harv_1985-2020.tif'), overwrite =T)
 ## this has been run already
 # fires <- vect(file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', 'nbac_1986_to_2020_20210810.shp'))
 # fires.proj <- project(fires, crs)
-writeVector(fires.proj, file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', 'fires_1986_2020.shp'))
+#writeVector(fires.proj, file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', 'fires_1986_2020.shp'))
 
 lyr <- vect(file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', 'fires_1986_2020.shp'))
 fires <- readRDS(file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', 'fires_list.RDS'))
