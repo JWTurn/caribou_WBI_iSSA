@@ -47,8 +47,8 @@ values2020 <- file.path('data', 'raw-data', 'prop_land', '2020','propvalues.RDS'
 linfeat <- file.path('data', 'raw-data', 'wbi_road_rail.shp')
 fires <- file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', 'fires')
 
-lf_other_2010 <- file.path('data', 'raw-data', 'ECCC_disturbance', 'WB_lfother_2010.shp')
-lf_other_2015 <- file.path('data', 'raw-data', 'ECCC_disturbance', 'WB_lfother_2015.shp')
+linfeat_other_2010 <- file.path('data', 'raw-data', 'ECCC_disturbance', 'WB_lfother_2010.shp')
+linfeat_other_2015 <- file.path('data', 'raw-data', 'ECCC_disturbance', 'WB_lfother_2015.shp')
 
 disturb_2010 <- file.path('data', 'raw-data', 'ECCC_disturbance', 'WB_disturb_other_2010.tif')
 disturb_2015 <- file.path('data', 'raw-data', 'ECCC_disturbance', 'WB_disturb_other_2015.tif')
@@ -101,6 +101,18 @@ targets_prep <- c(
   tar_target(
     lf,
     load_sf(linfeat, crs)
+  ),
+  
+  # load other linear features
+  tar_target(
+    lf_other_2010,
+    load_sf(linfeat_other_2010, crs)
+  ),
+  
+  # load other linear features
+  tar_target(
+    lf_other_2015,
+    load_sf(linfeat_other_2015, crs)
   ),
   
   # subsample data to that greater than minimum year
@@ -272,17 +284,17 @@ targets_disttolf <- c(
     # Calculate distance to linear features
     tar_target(
       disttolf_2010,
-      extract_distto(tsfire, lf, 'lf', where = 'both', crs, int.year = 2010)
+      extract_distto(tsfire, lf, 'lf', where = 'both', crs, int.yr = 2010)
     ),
     
     tar_target(
       disttolf_2015,
-      extract_distto(tsfire, lf, 'lf', where = 'both', crs, int.year = 2015)
+      extract_distto(tsfire, lf, 'lf', where = 'both', crs, int.yr = 2015)
     ),
     
     tar_target(
       disttolf_2020,
-      extract_distto(tsfire, lf, 'lf', where = 'both', crs, int.year = 2020)
+      extract_distto(tsfire, lf, 'lf', where = 'both', crs, int.yr = 2020)
     )
     
 )
@@ -301,17 +313,17 @@ targets_disttolfother <- c(
   # Calculate distance to linear features other
   tar_target(
     disttolfother_2010,
-    extract_distto(extrdisttolf, lf_other_2010, 'lf_other', where = 'both', crs, int.year = 2010)
+    extract_distto(extrdisttolf, lf_other_2010, 'lf_other', where = 'both', crs, int.yr = 2010)
   ),
   
   tar_target(
     disttolfother_2015,
-    extract_distto(extrdisttolf, lf_other_2015, 'lf_other', where = 'both', crs, int.year = 2015)
+    extract_distto(extrdisttolf, lf_other_2015, 'lf_other', where = 'both', crs, int.yr = 2015)
   ),
   
   tar_target(
     disttolfother_2020,
-    extract_distto(extrdisttolf, lf_other_2015, 'lf_other', where = 'both', crs, int.year = 2020)
+    extract_distto(extrdisttolf, lf_other_2015, 'lf_other', where = 'both', crs, int.yr = 2020)
   )
   
 )
@@ -329,17 +341,17 @@ targets_disturb_other <- c(
   # extract other disturbance
   tar_target(
     distother_2010,
-    extract_pt(extrdisttolfother, disturb_2010, 'disturbance', where = 'both', int.year = 2010)
+    extract_pt(extrdisttolfother, disturb_2010, 'disturbance', where = 'both', int.yr = 2010)
   ),
   
   tar_target(
     distother_2015,
-    extract_pt(extrdisttolfother, disturb_2015, 'disturbance', where = 'both', int.year = 2015)
+    extract_pt(extrdisttolfother, disturb_2015, 'disturbance', where = 'both', int.yr = 2015)
   ),
   
   tar_target(
     distother_2020,
-    extract_pt(extrdisttolfother, disturb_2015, 'disturbance', where = 'both', int.year = 2020)
+    extract_pt(extrdisttolfother, disturb_2015, 'disturbance', where = 'both', int.yr = 2020)
   )
   
 )
@@ -353,7 +365,7 @@ targets_disturb_other_combo <- c(
 )
 
 ## Step ID ----
-target_stepID <- c(
+targets_stepID <- c(
     # create step ID across individuals
     tar_target(
       stepID,
