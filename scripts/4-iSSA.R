@@ -160,6 +160,85 @@ summary(m2)
 saveRDS(m2, file.path(derived, 'mod_sel_jurisRE_2015-2020.RDS'))
 
 
+gc()
+### selection 2010 jurisdictional w/squared terms ----
+m3 <- glmmTMB(case_ ~ -1 +
+                I(log(sl_+1)) +
+                prop_forest_end + prop_forage_end + prop_wets_end +
+                # prop_open_end + 
+                I(log(ts_fires_end+1)) +
+                I(scale(ts_fires_end)^2) +
+                I(log(ts_harv_end+1)) +
+                I(scale(ts_harv_end)^2) +
+                I(log(distlf_end+1)) +
+                I(log(distlf_other_end+1)) +
+                disturbance_end +
+                (1|indiv_step_id) +
+                (0 + I(log(sl_ +1))|id) +
+                (0 + prop_forest_end|id) + (0 + prop_forage_end|id) + 
+                #(0 + prop_open_end|id) + 
+                (0 + prop_wets_end|id) +
+                (0 + I(log(ts_fires_end+1))|id) +
+                (0 + I(scale(ts_fires_end)^2)|id) +
+                (0 + I(log(ts_harv_end+1))|id) +
+                (0 + I(scale(ts_harv_end)^2)|id) +
+                (0 + I(log(distlf_end+1))|id) +
+                (0 + I(log(distlf_other_end+1))|id) +
+                (0 + disturbance_end|id) +
+                (1|jurisdiction),
+              family = poisson(), data = dat.2010,
+              map= list(theta = factor(c(NA,1:12))), 
+              start = list(theta =c(log(1000), seq(0,0, length.out = 12)))
+)
+
+
+
+summary(m3)
+saveRDS(m3, file.path(derived, 'mod_sel_jurisREsqd_2010-2015.RDS'))
+
+
+gc()
+
+### selection 2015 jurisdictional w/squared terms ----
+m4 <- glmmTMB(case_ ~ -1 +
+                I(log(sl_+1)) +
+                prop_forest_end + prop_forage_end + prop_wets_end +
+                # prop_open_end + 
+                I(log(ts_fires_end+1)) +
+                I(scale(ts_fires_end)^2) +
+                I(log(ts_harv_end+1)) +
+                I(scale(ts_harv_end)^2) +
+                I(log(distlf_end+1)) +
+                I(log(distlf_other_end+1)) +
+                disturbance_end +
+                (1|indiv_step_id) +
+                (0 + I(log(sl_ +1))|id) +
+                (0 + prop_forest_end|id) + (0 + prop_forage_end|id) + 
+                #(0 + prop_open_end|id) + 
+                (0 + prop_wets_end|id) +
+                (0 + I(log(ts_fires_end+1))|id) +
+                (0 + I(scale(ts_fires_end)^2)|id) +
+                (0 + I(log(ts_harv_end+1))|id) +
+                (0 + I(scale(ts_harv_end)^2)|id) +
+                (0 + I(log(distlf_end+1))|id) +
+                (0 + I(log(distlf_other_end+1))|id) +
+                (0 + disturbance_end|id) +
+                (1|jurisdiction),
+              family = poisson(), data = dat.2015,
+              map= list(theta = factor(c(NA,1:12))), 
+              start = list(theta =c(log(1000), seq(0,0, length.out = 12)))
+)
+
+
+
+summary(m4)
+saveRDS(m4, file.path(derived, 'mod_sel_jurisREsqd_2015-2020.RDS'))
+
+
+#######
+m1 <- readRDS(file.path(derived, 'mod_sel_jurisRE_2010-2015.RDS'))
+bbmle::AICtab(m1, m3)
+
 ### selection 2015 jurisdictional simplified ----
 sel.2015.juris.simp <- glmmTMB(case_ ~ -1 +
                             I(log(sl_+1)) +
