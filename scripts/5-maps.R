@@ -22,7 +22,7 @@ studyArea <- vect(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_
 ab.range <- vect(file.path(canada, 'AB_CaribouSubregionalPlanBoundaries', 'CARIBOU_SUB_REGIONAL_PLAN_BOUNDARIES_2022_07_04.shp'))
 
 # load layers
-year = 2015
+year = 2010
 linfeat_other <- rast(file.path('data', 'raw-data', 'ECCC_disturbance', 
                                 paste0('WB_lfother_', year, '_distto.tif')))
 disturb <- rast(file.path('data', 'raw-data', 'ECCC_disturbance', 
@@ -140,6 +140,71 @@ canPoly <- project(canPoly, lf)
 wbi.prov <- subset(canPoly, canPoly$PREABBR %in% c('Alta.', 'B.C.', 'Man.', 'N.W.T.', 'Sask.', 'Y.T.'))
 
 
+
+#### full model PDE 2010 ----
+
+lf.cov.re.2010<- (2*as.double(mod2010re.tab[term %like% 'distlf_end', 
+                                            .(estimate)])*land$log_distlf)
+lfother.cov.re.2010<- (2*as.double(mod2010re.tab[term %like% 'distlf_other_end', 
+                                                 .(estimate)])*land$log_distlfother)
+tsf.cov.re.2010<- (2*as.double(mod2010re.tab[term %like% 'ts_fire', 
+                                             .(estimate)])*land$log_tsf)
+tsh.cov.re.2010<- (2*as.double(mod2010re.tab[term %like% 'ts_harv', 
+                                             .(estimate)])*land$log_tsh)
+forest.cov.re.2010 <- (2*as.double(mod2010re.tab[term %like% 'forest', 
+                                                 .(estimate)])*land$prop_forest)
+forage.cov.re.2010 <- (2*as.double(mod2010re.tab[term %like% 'forage', 
+                                                 .(estimate)])*land$prop_forage)
+# open.cov.re.2010 <- (2*as.double(mod2010re.tab[term %like% 'open', 
+#                                                 .(estimate)])*land$prop_open)
+wets.cov.re.2010 <- (2*as.double(mod2010re.tab[term %like% 'wets', 
+                                               .(estimate)])*land$prop_wets)
+disturb.cov.re.2010 <- (2*as.double(mod2010re.tab[term %like% 'disturb', 
+                                                  .(estimate)])*land$disturb)
+
+
+numerator.re.2010 <- exp(lf.cov.re.2010 + lfother.cov.re.2010 + 
+                           tsf.cov.re.2010 + tsh.cov.re.2010 + 
+                           forest.cov.re.2010 + forage.cov.re.2010 + 
+                           # open.cov.re.2010 + 
+                           wets.cov.re.2010 +
+                           disturb.cov.re.2010)
+
+#plot(numerator,  breaks=seq(min(numerator, na.rm = T), max(numerator, na.rm = T), length.out = 10))
+
+# the normalizing constant.
+C.re.2010 <- global(numerator.re.2010, sum, na.rm = T)
+pde.re.2010 <- numerator.re.2010/C.re.2010[[1]]
+
+
+pde.re.2010.sa <- crop(pde.re.2010, studyArea, mask = T)
+
+breaks.re.2010 <- global(pde.re.2010.sa, quantile, na.rm = T, probs = seq(0,1,.1))
+v.breaks.re.2010 <- unname(breaks.re.2010)
+t.breaks.re.2010 <- as.vector(t(v.breaks.re.2010))
+pde.re.discrete.2010 <- classify(pde.re.2010.sa, t.breaks.re.2010, include.lowest=TRUE, brackets=TRUE)
+plot(pde.re.discrete.2010, breaks=0:10)
+
+writeRaster(pde.re.discrete.2010, 
+            file.path(derived, 'pde2010_re.tif'))
+
+
+## with ab guestimate
+pde.re.2010.sa.ab <- crop(pde.re.2010, studyArea.ab, mask = T)
+
+breaks.re.2010.sa.ab <- global(pde.re.2010.sa.ab, quantile, na.rm = T, probs = seq(0,1,.1))
+v.breaks.re.2010.sa.ab <- unname(breaks.re.2010.sa.ab)
+t.breaks.re.2010.sa.ab <- as.vector(t(v.breaks.re.2010.sa.ab))
+pde.re.discrete.2010.sa.ab <- classify(pde.re.2010.sa.ab, t.breaks.re.2010.sa.ab, include.lowest=TRUE, brackets=TRUE)
+plot(pde.re.discrete.2010.sa.ab, breaks=0:10)
+
+writeRaster(pde.re.discrete.2010.sa.ab, 
+            file.path(derived, 'pde2010_re_ab.tif'))
+
+
+
+
+
 #### full model PDE 2015 ----
 
 lf.cov.re.2015<- (2*as.double(mod2015re.tab[term %like% 'distlf_end', 
@@ -184,6 +249,10 @@ t.breaks.re.2015 <- as.vector(t(v.breaks.re.2015))
 pde.re.discrete.2015 <- classify(pde.re.2015.sa, t.breaks.re.2015, include.lowest=TRUE, brackets=TRUE)
 plot(pde.re.discrete.2015, breaks=0:10)
 
+writeRaster(pde.re.discrete.2015, 
+            file.path(derived, 'pde2015_re.tif'))
+
+
 ## with ab guestimate
 pde.re.2015.sa.ab <- crop(pde.re.2015, studyArea.ab, mask = T)
 
@@ -192,6 +261,9 @@ v.breaks.re.2015.sa.ab <- unname(breaks.re.2015.sa.ab)
 t.breaks.re.2015.sa.ab <- as.vector(t(v.breaks.re.2015.sa.ab))
 pde.re.discrete.2015.sa.ab <- classify(pde.re.2015.sa.ab, t.breaks.re.2015.sa.ab, include.lowest=TRUE, brackets=TRUE)
 plot(pde.re.discrete.2015.sa.ab, breaks=0:10)
+
+writeRaster(pde.re.discrete.2015.sa.ab, 
+            file.path(derived, 'pde2015_re_ab.tif'))
 
 
 #### full model PDE 2015 jurisdiction random effect ----
@@ -242,6 +314,68 @@ pde.simp.discrete.2015.sa.ab.num <- as.numeric(pde.simp.discrete.2015.sa.ab)
 plot(pde.simp.discrete.2015.sa.ab.num)
 
 # plots ----
+p.re.2010.wbi<- ggplot(wbi.prov) +
+  geom_spatvector(fill = NA) +
+  geom_spatraster(data = as.numeric(pde.re.discrete.2010), show.legend = T) +
+  scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
+  ggtitle('2010-2015 model') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Intensity of selection') +
+  coord_sf(crs = 3978)
+p.re.2010.wbi
+
+p.re.2010.wbi.ab <- ggplot(wbi.prov) +
+  geom_spatvector(fill = NA) +
+  geom_spatraster(data = as.numeric(pde.re.discrete.2010.sa.ab), show.legend = T) +
+  scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
+  ggtitle('2010-2015 model extrapolating AB') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Intensity of selection') +
+  coord_sf(crs = 3978)
+p.re.2010.wbi.ab
+
+p.re.2010.wbi + p.re.2010.wbi.ab
+
+
+
+
+p.re.2015.wbi<- ggplot(wbi.prov) +
+  geom_spatvector(fill = NA) +
+  geom_spatraster(data = as.numeric(pde.re.discrete.2015), show.legend = T) +
+  scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
+  ggtitle('2015-2020 model') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Intensity of selection') +
+  coord_sf(crs = 3978)
+p.re.2015.wbi
+
+p.re.2015.wbi.ab <- ggplot(wbi.prov) +
+  geom_spatvector(fill = NA) +
+  geom_spatraster(data = as.numeric(pde.re.discrete.2015.sa.ab), show.legend = T) +
+  scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
+  ggtitle('2015-2020 model extrapolating AB') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Intensity of selection') +
+  coord_sf(crs = 3978)
+p.re.2015.wbi.ab
+
+p.re.2015.wbi + p.re.2015.wbi.ab
+
+p.re.2010.wbi.ab + p.re.2015.wbi.ab
+
+plot(pde.re.discrete.2015.sa.ab - pde.re.discrete.2010.sa.ab)
+
+
+
+
 p.2015 <- gplot(pde.discrete.2015) +
   geom_tile(aes(fill = value), show.legend = T) +
   #geom_sf(data = st_as_sf(wbi.prov), fill = NA) +
@@ -379,28 +513,3 @@ p.simp.2015.wbi.ab
 
 p.simp.2015.wbi + p.simp.2015.wbi.ab
 
-p.re.2015.wbi<- ggplot(wbi.prov) +
-  geom_spatvector(fill = NA) +
-  geom_spatraster(data = as.numeric(pde.re.discrete.2015), show.legend = T) +
-  scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
-  ggtitle('2015-2020 model') +
-  theme_bw() +
-  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
-  theme_void() +
-  labs(fill = 'Intensity of selection') +
-  coord_sf(crs = 3978)
-p.re.2015.wbi
-
-p.re.2015.wbi.ab <- ggplot(wbi.prov) +
-  geom_spatvector(fill = NA) +
-  geom_spatraster(data = as.numeric(pde.re.discrete.2015.sa.ab), show.legend = T) +
-  scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
-  ggtitle('2015-2020 model extrapolating AB') +
-  theme_bw() +
-  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
-  theme_void() +
-  labs(fill = 'Intensity of selection') +
-  coord_sf(crs = 3978)
-p.re.2015.wbi.ab
-
-p.re.2015.wbi + p.re.2015.wbi.ab
