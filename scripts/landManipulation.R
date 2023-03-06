@@ -172,6 +172,11 @@ notroads_2015 <- subset(eccc_lines_2015, !(eccc_lines_2015$Class %in% c('Road', 
 
 notroads_2010.crop <- crop(notroads_2010, ext(notroads_2015))
 
+notroads.mask <- mask(notroads_2010.crop, notroads_2015, inverse = T)
+notroads_2015_merge <- union(notroads_2015, notroads.mask)
+
+
+
 summary(as.factor(eccc_polys_2010$Class))
 disturb_2010 <- subset(eccc_polys_2010, !(eccc_polys_2010$Class %in% c('Cutblock')))
 
@@ -185,7 +190,7 @@ disturb_2015_merge <- union(disturb_2015, dist.mask)
 
 
 writeVector(notroads_2010.crop, file.path(raw, 'ECCC_disturbance', 'WB_lfother_2010.shp'))
-writeVector(notroads_2015, file.path(raw, 'ECCC_disturbance', 'WB_lfother_2015.shp'))
+writeVector(notroads_2015_merge, file.path(raw, 'ECCC_disturbance', 'WB_lfother_2015.shp'), overwrite = T)
 
 writeVector(disturb_2010.crop, file.path(raw, 'ECCC_disturbance', 'WB_disturb_other_2010.shp'))
 writeVector(disturb_2015_merge, file.path(raw, 'ECCC_disturbance', 'WB_disturb_other_2015.shp'))
