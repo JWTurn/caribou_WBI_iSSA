@@ -63,10 +63,6 @@ dat[,.(distlf_end =mean(distlf_end, na.rm = T), distlf_other_end = mean(distlf_o
 
 
 
-# MB is too big for my computer to run all at once, so subset
-# quantile(year(dat$t1_))
-# 
-# 
 
 range(dat$year)
 setindex(dat, NULL)
@@ -200,6 +196,7 @@ saveRDS(m3, file.path(derived, 'mod_sel_jurisREsqd_2010-2015.RDS'))
 gc()
 
 ### selection 2015 jurisdictional w/squared terms ----
+### DOESN'T CONVERGE
 m4 <- glmmTMB(case_ ~ -1 +
                 I(log(sl_+1)) +
                 prop_forest_end + prop_forage_end + prop_wets_end +
