@@ -114,15 +114,20 @@ studyArea.ab <- union(studyArea, ab.range)
 sel.2010 <- readRDS(file.path(derived, 'mod_sel_jurisRE_2010-2015.RDS'))
 sel.2015 <- readRDS(file.path(derived, 'mod_sel_jurisRE_2015-2020.RDS'))
 
-sel.2010.juris <- readRDS(file.path(derived, 'mod_ssa_juris_fixed_2010-2015.RDS'))
-sel.2015.juris <- readRDS(file.path(derived, 'mod_ssa_juris_fixed_2015-2020.RDS'))
+sel.2010.juris <- readRDS(file.path(derived,'mod_OLD', 'mod_ssa_juris_fixed_2010-2015.RDS'))
+sel.2015.juris <- readRDS(file.path(derived,'mod_OLD', 'mod_ssa_juris_fixed_2015-2020.RDS'))
 
 sel.2010.juris.simp <- readRDS(file.path(derived, 'mod_ssa_juris_simp_2010-2015.RDS'))
 sel.2015.juris.simp <- readRDS(file.path(derived, 'mod_ssa_juris_simp_2015-2020.RDS'))
 
 ### PDE ----
 #summary(sel.2010.juris)
-#summary(summer)$coef$cond[-1, "Estimate"]
+View(summary(sel.2010)$coef$cond)
+View(summary(sel.2015)$coef$cond)
+
+View(summary(sel.2010.juris)$coef$cond)
+View(summary(sel.2015.juris)$coef$cond)
+
 mod2010re.tab <- make_betas_tab(sel.2010)
 mod2015re.tab <- make_betas_tab(sel.2015)
 
@@ -314,6 +319,11 @@ pde.simp.discrete.2015.sa.ab.num <- as.numeric(pde.simp.discrete.2015.sa.ab)
 plot(pde.simp.discrete.2015.sa.ab.num)
 
 # plots ----
+pde.re.discrete.2010 <- rast(file.path(derived, 'pde2010_re.tif'))
+pde.re.discrete.2010.sa.ab <- rast(file.path(derived, 'pde2010_re_ab.tif'))
+pde.re.discrete.2015 <- rast(file.path(derived, 'pde2015_re.tif'))
+pde.re.discrete.2015.sa.ab <- rast(file.path(derived, 'pde2015_re_ab.tif'))
+
 p.re.2010.wbi<- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
   geom_spatraster(data = as.numeric(pde.re.discrete.2010), show.legend = T) +
