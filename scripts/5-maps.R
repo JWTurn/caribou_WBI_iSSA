@@ -30,27 +30,27 @@ disturb <- rast(file.path('data', 'raw-data', 'ECCC_disturbance',
 
 
 needleleaf <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                        paste0('needleleaf_500', '.tif')))
+                             paste0('needleleaf_500', '.tif')))
 deciduous <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                             paste0('deciduous_500', '.tif')))
+                            paste0('deciduous_500', '.tif')))
 mixed <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                             paste0('mixed_500', '.tif')))
+                        paste0('mixed_500', '.tif')))
 shrub <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                             paste0('shrub_500', '.tif')))
+                        paste0('shrub_500', '.tif')))
 grassland <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                             paste0('grassland_500', '.tif')))
+                            paste0('grassland_500', '.tif')))
 lichenshrub <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                             paste0('lichenshrub_500', '.tif')))
+                              paste0('lichenshrub_500', '.tif')))
 lichengrass <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                             paste0('lichengrass_500', '.tif')))
+                              paste0('lichengrass_500', '.tif')))
 wetland <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                             paste0('wet_500', '.tif')))
+                          paste0('wet_500', '.tif')))
 barrenland <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
                              paste0('barrenland_500', '.tif')))
 water <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                             paste0('water_500', '.tif')))
+                        paste0('water_500', '.tif')))
 snow <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                             paste0('snow_500', '.tif')))
+                       paste0('snow_500', '.tif')))
 
 prop_forest <- needleleaf + deciduous + mixed
 prop_forage <- shrub + grassland + lichenshrub+ lichengrass
@@ -191,7 +191,7 @@ pde.re.discrete.2010 <- classify(pde.re.2010.sa, t.breaks.re.2010, include.lowes
 plot(pde.re.discrete.2010, breaks=0:10)
 
 writeRaster(pde.re.discrete.2010, 
-            file.path(derived, 'pde2010_re.tif'))
+            file.path(derived, 'pde2010_re.tif'), overwrite = T)
 
 
 ## with ab guestimate
@@ -213,31 +213,31 @@ writeRaster(pde.re.discrete.2010.sa.ab,
 #### full model PDE 2015 ----
 
 lf.cov.re.2015<- (2*as.double(mod2015re.tab[term %like% 'distlf_end', 
-                                              .(estimate)])*land$log_distlf)
+                                            .(estimate)])*land$log_distlf)
 lfother.cov.re.2015<- (2*as.double(mod2015re.tab[term %like% 'distlf_other_end', 
-                                            .(estimate)])*land$log_distlfother)
+                                                 .(estimate)])*land$log_distlfother)
 tsf.cov.re.2015<- (2*as.double(mod2015re.tab[term %like% 'ts_fire', 
-                                               .(estimate)])*land$log_tsf)
+                                             .(estimate)])*land$log_tsf)
 tsh.cov.re.2015<- (2*as.double(mod2015re.tab[term %like% 'ts_harv', 
                                              .(estimate)])*land$log_tsh)
 forest.cov.re.2015 <- (2*as.double(mod2015re.tab[term %like% 'forest', 
-                                                  .(estimate)])*land$prop_forest)
+                                                 .(estimate)])*land$prop_forest)
 forage.cov.re.2015 <- (2*as.double(mod2015re.tab[term %like% 'forage', 
-                                                  .(estimate)])*land$prop_forage)
+                                                 .(estimate)])*land$prop_forage)
 # open.cov.re.2015 <- (2*as.double(mod2015re.tab[term %like% 'open', 
 #                                                 .(estimate)])*land$prop_open)
 wets.cov.re.2015 <- (2*as.double(mod2015re.tab[term %like% 'wets', 
-                                                .(estimate)])*land$prop_wets)
+                                               .(estimate)])*land$prop_wets)
 disturb.cov.re.2015 <- (2*as.double(mod2015re.tab[term %like% 'disturb', 
-                                               .(estimate)])*land$disturb)
+                                                  .(estimate)])*land$disturb)
 
 
 numerator.re.2015 <- exp(lf.cov.re.2015 + lfother.cov.re.2015 + 
                            tsf.cov.re.2015 + tsh.cov.re.2015 + 
                            forest.cov.re.2015 + forage.cov.re.2015 + 
-                       # open.cov.re.2015 + 
-                        wets.cov.re.2015 +
-                         disturb.cov.re.2015)
+                           # open.cov.re.2015 + 
+                           wets.cov.re.2015 +
+                           disturb.cov.re.2015)
 
 #plot(numerator,  breaks=seq(min(numerator, na.rm = T), max(numerator, na.rm = T), length.out = 10))
 
@@ -273,23 +273,23 @@ writeRaster(pde.re.discrete.2015.sa.ab,
 
 #### full model PDE 2015 jurisdiction random effect ----
 lf.cov.simp.2015<- (2*as.double(mod2015simp.tab[term %like% 'lf', 
-                                              .(estimate)])*land$log_distlf)
+                                                .(estimate)])*land$log_distlf)
 tsf.cov.simp.2015<- (2*as.double(mod2015simp.tab[term %like% 'tsf', 
-                                               .(estimate)])*land$log_tsf)
+                                                 .(estimate)])*land$log_tsf)
 forest.cov.simp.2015 <- (2*as.double(mod2015simp.tab[term %like% 'forest', 
-                                                   .(estimate)])*land$prop_forest)
+                                                     .(estimate)])*land$prop_forest)
 forage.cov.simp.2015 <- (2*as.double(mod2015simp.tab[term %like% 'forage', 
-                                                   .(estimate)])*land$prop_forage)
+                                                     .(estimate)])*land$prop_forage)
 # open.cov.simp.2015 <- (2*as.double(mod2015simp.tab[term %like% 'open', 
 #                                                 .(estimate)])*land$prop_open)
 wets.cov.simp.2015 <- (2*as.double(mod2015simp.tab[term %like% 'wets', 
-                                                 .(estimate)])*land$prop_wets)
+                                                   .(estimate)])*land$prop_wets)
 
 
 numerator.simp.2015 <- exp(lf.cov.simp.2015 + tsf.cov.simp.2015 + forest.cov.simp.2015 +
-                            forage.cov.simp.2015 + 
-                            # open.cov.simp.2015 + 
-                            wets.cov.simp.2015)
+                             forage.cov.simp.2015 + 
+                             # open.cov.simp.2015 + 
+                             wets.cov.simp.2015)
 
 #plot(numerator,  breaks=seq(min(numerator, na.rm = T), max(numerator, na.rm = T), length.out = 10))
 
@@ -323,6 +323,10 @@ pde.re.discrete.2010 <- rast(file.path(derived, 'pde2010_re.tif'))
 pde.re.discrete.2010.sa.ab <- rast(file.path(derived, 'pde2010_re_ab.tif'))
 pde.re.discrete.2015 <- rast(file.path(derived, 'pde2015_re.tif'))
 pde.re.discrete.2015.sa.ab <- rast(file.path(derived, 'pde2015_re_ab.tif'))
+
+nwt <- subset(canPoly, canPoly$PREABBR %in% c('N.W.T.'))
+nwt.2010 <- crop(pde.re.discrete.2010, nwt, mask = T)
+nwt.2015 <- crop(pde.re.discrete.2015, nwt, mask = T)
 
 p.re.2010.wbi<- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
@@ -382,9 +386,143 @@ p.re.2015.wbi + p.re.2015.wbi.ab
 p.re.2010.wbi.ab + p.re.2015.wbi.ab
 
 plot(pde.re.discrete.2015.sa.ab - pde.re.discrete.2010.sa.ab)
+###### nwt ----
+nwt.sf <- st_as_sf(nwt)
+nwt.2010.rast <- raster::raster(nwt.2010)
+nwt.2010_df <- as.data.frame(nwt.2010.rast, xy = TRUE) %>%
+  mutate(layer = factor(log_distlf))
+
+# ggplot(nwt) +
+#   geom_spatvector(fill = NA) +
+#   geom_spatraster(data = nwt.2010, show.legend = T) +
+ggplot() +
+  geom_tile(data = nwt.2010_df, aes(x = x, y=y, fill = layer), show.legend = F) +
+  scale_fill_manual(values = mako(10),na.value = NA, breaks = 0:10) +
+  geom_spatvector(data = nwt, colour = "black", fill = NA) + 
+  ggtitle('2010-2015 model') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Intensity of selection') +
+  coord_sf(crs = 3978)
+
+p.re.2010.nwt<- ggplot(nwt) +
+  geom_spatvector(fill = NA) +
+  geom_spatraster(data = as.numeric(nwt.2010), show.legend = T) +
+  scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
+  ggtitle('2010-2015 model') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Intensity of selection') +
+  coord_sf(crs = 3978)
+p.re.2010.nwt
+
+p.re.2015.nwt<- ggplot(nwt) +
+  geom_spatvector(fill = NA) +
+  geom_spatraster(data = as.numeric(nwt.2015), show.legend = T) +
+  scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
+  ggtitle('2010-2015 model') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Intensity of selection') +
+  coord_sf(crs = 3978)
+p.re.2015.nwt
+
+##### attempt 2 ----
+nwt.sf <- st_as_sf(nwt)
+nwt.2010.rast <- raster::raster(nwt.2010)
+nwt.2010_df <- as.data.frame(nwt.2010.rast, xy = TRUE) %>%
+  mutate(layer = factor(log_distlf))
+nwt.2015_df <- as.data.frame(raster::raster(nwt.2015), xy = TRUE) %>%
+  mutate(layer = factor(log_distlf))
+nwt.diff_df <- as.data.frame(raster::raster(nwt.2015-nwt.2010), xy = TRUE) %>%
+  mutate(layer = factor(log_distlf))
 
 
+p.nwt.2010 <- ggplot() +
+  geom_tile(data = nwt.2010_df, aes(x = x, y=y, fill = layer), show.legend = F) +
+  scale_fill_manual(values = mako(10),na.value = NA, breaks = 0:10) +
+  geom_spatvector(data = nwt, colour = "black", fill = NA) + 
+  ggtitle('2010-2015 model') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Intensity of selection') +
+  coord_sf(crs = 3978)
 
+p.nwt.2015 <- ggplot() +
+  geom_tile(data = nwt.2015_df, aes(x = x, y=y, fill = layer), show.legend = T) +
+  scale_fill_manual(values = mako(10),na.value = NA, breaks = 0:10) +
+  geom_spatvector(data = nwt, colour = "black", fill = NA) + 
+  ggtitle('2015-2020 model') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Intensity of selection') +
+  coord_sf(crs = 3978)
+
+p.nwt.diff <- ggplot() +
+  geom_tile(data = nwt.diff_df, aes(x = x, y=y, fill = layer), show.legend = T) +
+  scale_fill_manual(values = magma(20),na.value = NA, breaks= -10:10) +
+  geom_spatvector(data = nwt, colour = "black", fill = NA) + 
+  ggtitle('Change over time') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Change in selection') +
+  coord_sf(crs = 3978)
+p.nwt.diff
+
+p.nwt.2010 + p.nwt.2015 + p.nwt.diff
+
+wbi.sf <- st_as_sf(wbi.prov)
+wbi.2010_df <- as.data.frame(raster::raster(pde.re.discrete.2010*1), xy = TRUE) %>%
+  mutate(layer = factor(log_distlf))
+wbi.2015_df <- as.data.frame(raster::raster(pde.re.discrete.2015*1), xy = TRUE) %>%
+  mutate(layer = factor(log_distlf))
+wbi.diff_df <- as.data.frame(raster::raster(pde.re.discrete.2015-pde.re.discrete.2010), xy = TRUE) %>%
+  mutate(layer = factor(log_distlf))
+
+
+p.wbi.2010 <- ggplot() +
+  geom_tile(data = wbi.2010_df, aes(x = x, y=y, fill = layer), show.legend = F) +
+  scale_fill_manual(values = mako(10),na.value = NA, breaks = 0:10) +
+  geom_spatvector(data = wbi.prov, colour = "black", fill = NA) + 
+  ggtitle('2010-2015 model') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Intensity of selection') +
+  coord_sf(crs = 3978)
+
+p.wbi.2015 <- ggplot() +
+  geom_tile(data = wbi.2015_df, aes(x = x, y=y, fill = layer), show.legend = T) +
+  scale_fill_manual(values = mako(10),na.value = NA, breaks = 0:10) +
+  geom_spatvector(data = wbi.prov, colour = "black", fill = NA) + 
+  ggtitle('2015-2020 model') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Intensity of selection') +
+  coord_sf(crs = 3978)
+
+p.wbi.diff <- ggplot() +
+  geom_tile(data = wbi.diff_df, aes(x = x, y=y, fill = layer), show.legend = T) +
+  scale_fill_manual(values = magma(20),na.value = NA, breaks= -10:10) +
+  geom_spatvector(data = wbi.prov, colour = "black", fill = NA) + 
+  ggtitle('Change over time') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Change in selection') +
+  coord_sf(crs = 3978)
+p.wbi.diff
+
+p.wbi.2010 + p.wbi.2015 + p.wbi.diff
+
+#######
 
 p.2015 <- gplot(pde.discrete.2015) +
   geom_tile(aes(fill = value), show.legend = T) +
@@ -438,6 +576,17 @@ p.simp.2015.ab
 plot(pde.simp.discrete.2015.sa.ab, breaks=0:10)
 
 
+p.re.2010 <- gplot(pde.re.discrete.2010) +
+  geom_tile(aes(fill = value), show.legend = F) +
+  ggtitle('2010-2015  model') +
+  scale_fill_gradientn(colours = mako(10),na.value = "white", limits = c(0,10)) +
+  theme_bw() +
+  labs(fill = 'Intensity of use') +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  coord_equal()
+p.re.2010
+
 p.re.2015 <- gplot(pde.re.discrete.2015) +
   geom_tile(aes(fill = value), show.legend = T) +
   ggtitle('2015-2020  model') +
@@ -449,6 +598,53 @@ p.re.2015 <- gplot(pde.re.discrete.2015) +
   coord_equal()
 p.re.2015
 
+p.re.diff <- gplot(pde.re.discrete.2015 - pde.re.discrete.2010) +
+  geom_tile(aes(fill = value), show.legend = T) +
+  ggtitle('Change over time') +
+  scale_fill_gradientn(colours = magma(10),na.value = "white") +
+  theme_bw() +
+  labs(fill = 'Change in intensity') +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  coord_equal()
+p.re.diff
+
+p.re.2010 + p.re.2015 + p.re.diff
+
+p.nwt.2010 <- gplot(nwt.2010) +
+  geom_tile(aes(fill = value), show.legend = F) +
+  ggtitle('2010-2015  model') +
+  scale_fill_gradientn(colours = mako(10),na.value = "white", limits = c(0,10)) +
+  theme_bw() +
+  labs(fill = 'Intensity of use') +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  coord_equal()
+p.nwt.2010
+
+p.nwt.2015 <- gplot(nwt.2015) +
+  geom_tile(aes(fill = value), show.legend = T) +
+  ggtitle('2015-2020  model') +
+  scale_fill_gradientn(colours = mako(10),na.value = "white", limits = c(0,10)) +
+  theme_bw() +
+  labs(fill = 'Intensity of use') +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  coord_equal()
+p.nwt.2015
+
+p.nwt.diff <- gplot(nwt.2015 - nwt.2010) +
+  geom_tile(aes(fill = value), show.legend = T) +
+  ggtitle('Change over time') +
+  scale_fill_gradientn(colours = magma(10),na.value = "white") +
+  theme_bw() +
+  labs(fill = 'Change in intensity') +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  coord_equal()
+p.nwt.diff
+
+p.nwt.2010 + p.nwt.2015 + p.nwt.diff
 
 p.re.2015.ab <- gplot(pde.re.discrete.2015.sa.ab) +
   #geom_spatvector(data = wbi.prov, fill = NA) + 
@@ -459,7 +655,7 @@ p.re.2015.ab <- gplot(pde.re.discrete.2015.sa.ab) +
   theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
   theme_void() +
   labs(fill = 'Intensity of use') +
- # coord_equal() +
+  # coord_equal() +
   coord_sf(crs = 3978)
 
 p.re.2015.ab
