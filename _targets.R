@@ -35,14 +35,27 @@ set.seed(53)
 path <- file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.RDS')
 canada <- file.path('~/Dropbox', 'ActiveDocs', 'Git-local', 'Can_GIS_layers')
 studyArea <- file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBuff.shp')
-can2010 <- file.path(canada, 'canada_2010', 'CAN_LC_2010_CAL.tif')
-can2015 <- file.path(canada, 'canada_2015', 'CAN_LC_2015_CAL.tif')
-can2020 <- file.path(canada, 'canada_2020', 'landcover-2020-classification.tif')
+# can2010 <- file.path(canada, 'canada_2010', 'CAN_LC_2010_CAL.tif')
+# can2015 <- file.path(canada, 'canada_2015', 'CAN_LC_2015_CAL.tif')
+# can2020 <- file.path(canada, 'canada_2020', 'landcover-2020-classification.tif')
 
-## this is a short term crutch to get it to work
-values2010 <- file.path('data', 'raw-data', 'prop_land', '2010','propvalues.RDS')
-values2015 <- file.path('data', 'raw-data', 'prop_land', '2015','propvalues.RDS')
-values2020 <- file.path('data', 'raw-data', 'prop_land', '2020','propvalues.RDS')
+prop_water <- file.path('data', 'raw-data', 'prop_land', 'prop_water')
+prop_snow <- file.path('data', 'raw-data', 'prop_land', 'prop_snow')
+prop_rock <- file.path('data', 'raw-data', 'prop_land', 'prop_rock')
+prop_barren <- file.path('data', 'raw-data', 'prop_land', 'prop_barrenland')
+prop_bryoids <- file.path('data', 'raw-data', 'prop_land', 'prop_bryoids')
+prop_shrub <- file.path('data', 'raw-data', 'prop_land', 'prop_shrub')
+prop_wetland <- file.path('data', 'raw-data', 'prop_land', 'prop_wetland')
+prop_wettreed <- file.path('data', 'raw-data', 'prop_land', 'prop_wet_treed')
+prop_herbs <- file.path('data', 'raw-data', 'prop_land', 'prop_herbs')
+prop_needleleaf <- file.path('data', 'raw-data','prop_land', 'prop_needleleaf')
+prop_deciduous <- file.path('data', 'raw-data', 'prop_land', 'prop_deciduous')
+prop_mixed <- file.path('data', 'raw-data', 'prop_land', 'prop_mixed')
+
+# ## this is a short term crutch to get it to work
+# values2010 <- file.path('data', 'raw-data', 'prop_land', '2010','propvalues.RDS')
+# values2015 <- file.path('data', 'raw-data', 'prop_land', '2015','propvalues.RDS')
+# values2020 <- file.path('data', 'raw-data', 'prop_land', '2020','propvalues.RDS')
 
 linfeat <- file.path('data', 'raw-data', 'wbi_road_rail.shp')
 fires <- file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', 'fires')
@@ -66,19 +79,22 @@ crs <- st_crs(3978)$wkt
 
 # minimum year we want to pull data for
 minyr <- 2010
+maxyr <- 2021
 
 
 # Split by: within which column or set of columns (eg. c(id, yr))
 #  do we want to split our analysis?
 splitBy <- id
-interval <- 5
+interval <- 5 # to round by 5 year intervals
+sl.interval <- 50 # to round by 50m intervals
+
 
 
 # Resampling rate 
-rate <- hours(12)
+rate <- hours(13)
 
 # Tolerance
-tolerance <- hours(2)
+tolerance <- hours(3)
 
 
 
@@ -194,69 +210,143 @@ targets_tracks <- c(
 
 # Targets: extract ------------------------------------------------------------------
 ## Proportion of land ----
-# Targets: extract proportion of land
-targets_propland2010 <- c(
-  tar_map(
-    readRDS(values2010),
-    tar_target(extract2010,
-               extract_pt(addyear, r_path, raster_name, where = 'both', int.yr = 2010)),
-    unlist = FALSE)
-  )
-  
-targets_propland2015 <- c(  
-  tar_map(
-    readRDS(values2015),
-    tar_target(extract2015,
-               extract_pt(addyear, r_path, raster_name, where = 'both', int.yr = 2015)),
-    unlist = FALSE)
-  )
-  
-targets_propland2020 <- c(  
-  tar_map(
-    readRDS(values2020),
-    tar_target(extract2020,
-               extract_pt(addyear, r_path, raster_name, where = 'both', int.yr = 2020)),
-    unlist = FALSE)
-)
 
-
-targets_proplandcombo_year<- c(
-  tar_combine(
-    propland2010,
-    targets_propland2010,
-    command =  list(!!!.x) %>% purrr::reduce(dplyr::full_join, by = names(addyear))
+targets_propland <- c(
+  tar_target(
+    buffer,
+    plyr::round_any(median(addyear$sl_, na.rm = T), sl.interval, floor)
   ),
   
-
-    tar_combine(
-    propland2015,
-    targets_propland2015,
-    command = list(!!!.x) %>% purrr::reduce(dplyr::full_join, by = names(addyear))
+  tar_target(
+    make_propland,
+    make_landforest_prop(studyArea, crs, buff = buffer, startyr = minyr, endyr = 2019)
+  ), 
+  
+  tar_target(
+    extr_propwater,
+    extract_by_year(addyear, var = prop_water, startyr = minyr, endyr = 2019, maxyr, where = 'both')
   ),
   
+  tar_target(
+    extr_propsnow,
+    extract_by_year(extr_propwater, var = prop_snow, startyr = minyr, endyr = 2019, maxyr, where = 'both')
+  ),
+  
+  tar_target(
+    extr_proprock,
+    extract_by_year(extr_propsnow, var = prop_rock, startyr = minyr, endyr = 2019, maxyr, where = 'both')
+  ),
+  
+  tar_target(
+    extr_propbarren,
+    extract_by_year(extr_proprock, var = prop_barren, startyr = minyr, endyr = 2019, maxyr, where = 'both')
+  ),
+  
+  tar_target(
+    extr_propbryoids,
+    extract_by_year(extr_propbarren, var = prop_bryoids, startyr = minyr, endyr = 2019, maxyr, where = 'both')
+  ),
+  
+  tar_target(
+    extr_propshrub,
+    extract_by_year(extr_propbryoids, var = prop_shrub, startyr = minyr, endyr = 2019, maxyr, where = 'both')
+  ),
+  
+  tar_target(
+    extr_propwetland,
+    extract_by_year(extr_propshrub, var = prop_wetland, startyr = minyr, endyr = 2019, maxyr, where = 'both')
+  ),
+  
+  tar_target(
+    extr_wettreed,
+    extract_by_year(extr_propwetland, var = prop_wettreed, startyr = minyr, endyr = 2019, maxyr, where = 'both')
+  ),
+  
+  tar_target(
+    extr_propherbs,
+    extract_by_year(extr_propwettreed, var = prop_herbs, startyr = minyr, endyr = 2019, maxyr, where = 'both')
+  ),
+  
+  tar_target(
+    extr_propneedle,
+    extract_by_year(extr_propherbs, var = prop_needleleaf, startyr = minyr, endyr = 2019, maxyr, where = 'both')
+  ),
+  
+  tar_target(
+    extr_propdecid,
+    extract_by_year(extr_propneedle, var = prop_deciduous, startyr = minyr, endyr = 2019, maxyr, where = 'both')
+  ),
+  
+  tar_target(
+    extr_propmixed,
+    extract_by_year(extr_propdecid, var = prop_mixed, startyr = minyr, endyr = 2019, maxyr, where = 'both')
+  )
+)
 
-    tar_combine(
-    propland2020,
-    targets_propland2020,
-    command = list(!!!.x) %>% purrr::reduce(dplyr::full_join, by = names(addyear))
-  )
-)
-  
-  
-targets_proplandcombo <- c(  
-  tar_combine(
-    extractprop,
-    list(targets_proplandcombo_year),
-    command = dplyr::bind_rows(!!!.x)
-  )
-)
+
+# # Targets: extract proportion of land
+# targets_propland2010 <- c(
+#   tar_map(
+#     readRDS(values2010),
+#     tar_target(extract2010,
+#                extract_pt(addyear, r_path, raster_name, where = 'both', int.yr = 2010)),
+#     unlist = FALSE)
+#   )
+#   
+# targets_propland2015 <- c(  
+#   tar_map(
+#     readRDS(values2015),
+#     tar_target(extract2015,
+#                extract_pt(addyear, r_path, raster_name, where = 'both', int.yr = 2015)),
+#     unlist = FALSE)
+#   )
+#   
+# targets_propland2020 <- c(  
+#   tar_map(
+#     readRDS(values2020),
+#     tar_target(extract2020,
+#                extract_pt(addyear, r_path, raster_name, where = 'both', int.yr = 2020)),
+#     unlist = FALSE)
+# )
+# 
+# 
+# targets_proplandcombo_year<- c(
+#   tar_combine(
+#     propland2010,
+#     targets_propland2010,
+#     command =  list(!!!.x) %>% purrr::reduce(dplyr::full_join, by = names(addyear))
+#   ),
+#   
+# 
+#     tar_combine(
+#     propland2015,
+#     targets_propland2015,
+#     command = list(!!!.x) %>% purrr::reduce(dplyr::full_join, by = names(addyear))
+#   ),
+#   
+# 
+#     tar_combine(
+#     propland2020,
+#     targets_propland2020,
+#     command = list(!!!.x) %>% purrr::reduce(dplyr::full_join, by = names(addyear))
+#   )
+# )
+#   
+#   
+# targets_proplandcombo <- c(  
+#   tar_combine(
+#     extractprop,
+#     list(targets_proplandcombo_year),
+#     command = dplyr::bind_rows(!!!.x)
+#   )
+# )
 
 ## time since ----
 targets_timesince <- c(    
   # Extract harvest
   tar_target(
     extrharv,
-    extract_pt(extractprop, harv, 'harv', where = 'both')
+    extract_pt(extr_propmixed, harv, 'harv', where = 'both')
   ),
   
   # calculate time since harvest
@@ -268,7 +358,7 @@ targets_timesince <- c(
   # Extract fires
   tar_target(
     extrfires,
-    extract_by_year(tsharv, fires, startyr = 1986, endyr =2020, where = 'both')
+    extract_by_year(tsharv, fires, startyr = minyr, endyr =2020, maxyr = maxyr, where = 'both')
   ),
   
   # calculate time since fire
