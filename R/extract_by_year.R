@@ -12,7 +12,7 @@ extract_by_year <- function(DT, var, startyr, endyr, maxyr, where = 'end', out =
   if(endyr < maxyr){
     newyrs <- endyr:maxyr
     for (yy in newyrs) {
-      ls_rast[newyrs[yy]] <- c(paste0(var, '_', endyr, '.tif'))
+      ls_rast[as.character(newyrs[yy])] <- c(paste0(var, '_', endyr, '.tif'))
     }
     
   }

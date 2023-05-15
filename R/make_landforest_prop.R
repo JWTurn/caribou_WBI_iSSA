@@ -2,8 +2,7 @@
 #' @export
 #' @author Julie W. Turner
 #' 
-make_landforest_prop <- function(layer, studyArea, crs, buff, startyr, endyr){
-  object_name <- deparse(substitute(layer))
+make_landforest_prop <- function(studyArea, crs, buff, startyr, endyr){
   yrs <- startyr:endyr
   # TODO this is inelegant -> fix
   ls_loc <- c(file.path(canada, 'Landcover_1984-2019', paste0('CA_forest_VLCE2_', yrs), 
@@ -89,21 +88,21 @@ make_landforest_prop <- function(layer, studyArea, crs, buff, startyr, endyr){
                         paste0('prop_rock', rr, '.tif'))
     p.barren <- file.path('data', 'raw-data', 'prop_land',
                         paste0('prop_barrenland', rr, '.tif'))
-    p.bryoids <- file.path('data', 'raw-data', 'prop_land', year,
+    p.bryoids <- file.path('data', 'raw-data', 'prop_land', 
                          paste0('prop_bryoids', rr, '.tif'))
-    p.shrub <- file.path('data', 'raw-data', 'prop_land', year,
+    p.shrub <- file.path('data', 'raw-data', 'prop_land',
                        paste0('prop_shrub', rr, '.tif'))
-    p.wetland <- file.path('data', 'raw-data', 'prop_land', year,
+    p.wetland <- file.path('data', 'raw-data', 'prop_land',
                          paste0('prop_wetland', rr, '.tif'))
-    p.wettreed <- file.path('data', 'raw-data', 'prop_land', year,
+    p.wettreed <- file.path('data', 'raw-data', 'prop_land',
                             paste0('prop_wet_treed', rr, '.tif'))
-    p.herbs <- file.path('data', 'raw-data', 'prop_land', year,
+    p.herbs <- file.path('data', 'raw-data', 'prop_land',
                        paste0('prop_herbs', rr, '.tif'))
-    p.needleleaf <- file.path('data', 'raw-data','prop_land', year, 
+    p.needleleaf <- file.path('data', 'raw-data','prop_land', 
                             paste0('prop_needleleaf', rr, '.tif'))
-    p.deciduous <- file.path('data', 'raw-data', 'prop_land', year,
+    p.deciduous <- file.path('data', 'raw-data', 'prop_land',
                            paste0('prop_deciduous', rr, '.tif'))
-    p.mixed <- file.path('data', 'raw-data', 'prop_land', year,
+    p.mixed <- file.path('data', 'raw-data', 'prop_land',
                        paste0('prop_mixed', rr, '.tif'))
 
     
