@@ -14,9 +14,9 @@ make_landforest_prop <- function(studyArea, crs, buff, startyr, endyr){
    # What to buffer for proportion of landclasses
    buff.diam <- buff  ## median step length rounded down to nearest 50
   
-  lapply(ls_loc, function(rr){
-    land.full <- rast(ls_rast[as.integer(names(ls_rast[rr])))
-    if(st_crs(crs(land.full)) != st_crs(crs)){
+  foreach(rr = 1:length(ls_loc)) %dopar% {
+    land.full <- rast(ls_loc[[rr]])
+    if(st_crs(land.full) != st_crs(crs)){
       land.proj <- project(land.full, crs, method = 'near')
       land.full <- land.proj
     }
