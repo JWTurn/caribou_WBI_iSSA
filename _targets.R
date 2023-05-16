@@ -13,6 +13,7 @@ library(terra)
 library(sf)
 library(sp)
 library(ggplot2)
+library(maptools)
 #library(glmmTMB)
 library(distanceto)
 # library(dtplyr)
@@ -258,7 +259,7 @@ targets_propland <- c(
   ),
   
   tar_target(
-    extr_wettreed,
+    extr_propwettreed,
     extract_by_year(extr_propwetland, var = prop_wettreed, startyr = minyr, endyr = 2019, maxyr, where = 'both')
   ),
   
