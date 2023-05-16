@@ -2,6 +2,8 @@ require(terra)
 require(sf)
 require(data.table)
 
+lapply(dir('R', '*.R', full.names = TRUE), source)
+
 ### Input data ----
 raw <- 'data/raw-data/'
 derived <- 'data/derived-data/'
@@ -39,6 +41,8 @@ coords <- st_read(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.
 studyArea <- vect(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBuff.shp'))
 
 ## LAND ----
+make_landforest_prop(studyArea = file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBuff.shp'), crs, buff = 850, startyr = 2010, endyr = 2019)
+####
 can2010 <- rast(file.path(canada, 'canada_2010', 'CAN_LC_2010_CAL.tif'))
 can2015 <- rast(file.path(canada, 'canada_2015', 'CAN_LC_2015_CAL.tif'))
 can2020 <- rast(file.path(canada, 'canada_2020', 'landcover-2020-classification.tif'))

@@ -218,11 +218,12 @@ targets_propland <- c(
     plyr::round_any(median(addyear$sl_, na.rm = T), sl.interval, floor)
   ),
   
-  tar_target(
-    make_propland,
-    make_landforest_prop(studyArea, crs, buff = buffer, startyr = minyr, endyr = 2019)
-  ), 
-  
+  # # can't force this to run before needing to extract from it for some reason...
+  # tar_target(
+  #   make_propland,
+  #   make_landforest_prop(studyArea, crs, buff = buffer, startyr = minyr, endyr = 2019)
+  # ), 
+  # 
   tar_target(
     extr_propwater,
     extract_by_year(addyear, var = prop_water, startyr = minyr, endyr = 2019, maxyr, where = 'both')
