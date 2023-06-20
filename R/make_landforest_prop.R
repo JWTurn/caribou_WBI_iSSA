@@ -14,7 +14,7 @@ make_landforest_prop <- function(studyArea, crs, buff, startyr, endyr){
    # What to buffer for proportion of landclasses
    buff.diam <- buff  ## median step length rounded down to nearest 50
   
-  foreach(rr = 1:length(ls_loc)) %dopar% {
+  foreach(rr = 1:length(ls_loc)) %do% {
     land.full <- rast(ls_loc[[rr]])
     if(st_crs(land.full) != st_crs(crs)){
       land.proj <- project(land.full, crs, method = 'near')
@@ -81,29 +81,29 @@ make_landforest_prop <- function(studyArea, crs, buff, startyr, endyr){
     
     # paths
     p.water <- file.path('data', 'raw-data', 'prop_land',
-                       paste0('prop_water', rr, '.tif'))
+                       paste0('prop_water_', yrs[[rr]], '.tif'))
     p.snow <- file.path('data', 'raw-data', 'prop_land',
-                      paste0('prop_snow', rr, '.tif'))
+                      paste0('prop_snow_', yrs[[rr]], '.tif'))
     p.rock <- file.path('data', 'raw-data', 'prop_land',
-                        paste0('prop_rock', rr, '.tif'))
+                        paste0('prop_rock_', yrs[[rr]], '.tif'))
     p.barren <- file.path('data', 'raw-data', 'prop_land',
-                        paste0('prop_barrenland', rr, '.tif'))
+                        paste0('prop_barrenland_', yrs[[rr]], '.tif'))
     p.bryoids <- file.path('data', 'raw-data', 'prop_land', 
-                         paste0('prop_bryoids', rr, '.tif'))
+                         paste0('prop_bryoids_', yrs[[rr]], '.tif'))
     p.shrub <- file.path('data', 'raw-data', 'prop_land',
-                       paste0('prop_shrub', rr, '.tif'))
+                       paste0('prop_shrub_', yrs[[rr]], '.tif'))
     p.wetland <- file.path('data', 'raw-data', 'prop_land',
-                         paste0('prop_wetland', rr, '.tif'))
+                         paste0('prop_wetland_', yrs[[rr]], '.tif'))
     p.wettreed <- file.path('data', 'raw-data', 'prop_land',
-                            paste0('prop_wet_treed', rr, '.tif'))
+                            paste0('prop_wet_treed_', yrs[[rr]], '.tif'))
     p.herbs <- file.path('data', 'raw-data', 'prop_land',
-                       paste0('prop_herbs', rr, '.tif'))
+                       paste0('prop_herbs_', yrs[[rr]], '.tif'))
     p.needleleaf <- file.path('data', 'raw-data','prop_land', 
-                            paste0('prop_needleleaf', rr, '.tif'))
+                            paste0('prop_needleleaf_', yrs[[rr]], '.tif'))
     p.deciduous <- file.path('data', 'raw-data', 'prop_land',
-                           paste0('prop_deciduous', rr, '.tif'))
+                           paste0('prop_deciduous_', yrs[[rr]], '.tif'))
     p.mixed <- file.path('data', 'raw-data', 'prop_land',
-                       paste0('prop_mixed', rr, '.tif'))
+                       paste0('prop_mixed_', yrs[[rr]], '.tif'))
 
     
     # write raster
@@ -121,6 +121,6 @@ make_landforest_prop <- function(studyArea, crs, buff, startyr, endyr){
     writeRaster(propdecid, p.deciduous)
     writeRaster(propmixed, p.mixed)
   }
-    )
+    
 
 }

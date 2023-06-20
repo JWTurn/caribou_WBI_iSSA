@@ -163,9 +163,9 @@ m3 <- glmmTMB(case_ ~ -1 +
                 prop_forest_end + prop_forage_end + prop_wets_end +
                 # prop_open_end + 
                 I(log(ts_fires_end+1)) +
-                I(scale(ts_fires_end)^2) +
+                scale(I(ts_fires_end^2)) +
                 I(log(ts_harv_end+1)) +
-                I(scale(ts_harv_end)^2) +
+                scale(I(ts_harv_end^2)) +
                 I(log(distlf_end+1)) +
                 I(log(distlf_other_end+1)) +
                 disturbance_end +
@@ -175,9 +175,9 @@ m3 <- glmmTMB(case_ ~ -1 +
                 #(0 + prop_open_end|id) + 
                 (0 + prop_wets_end|id) +
                 (0 + I(log(ts_fires_end+1))|id) +
-                (0 + I(scale(ts_fires_end)^2)|id) +
+                (0 + scale(I(ts_fires_end^2))|id) +
                 (0 + I(log(ts_harv_end+1))|id) +
-                (0 + I(scale(ts_harv_end)^2)|id) +
+                (0 + scale(I(ts_harv_end)^2)|id) +
                 (0 + I(log(distlf_end+1))|id) +
                 (0 + I(log(distlf_other_end+1))|id) +
                 (0 + disturbance_end|id) +
@@ -202,9 +202,9 @@ m4 <- glmmTMB(case_ ~ -1 +
                 prop_forest_end + prop_forage_end + prop_wets_end +
                 # prop_open_end + 
                 scale(ts_fires_end) +
-                I(scale(ts_fires_end)^2) +
+                scale(I(ts_fires_end^2)) +
                 scale(ts_harv_end) +
-                I(scale(ts_harv_end)^2) +
+                scale(I(ts_harv_end^2)) +
                 I(log(distlf_end+1)) +
                 I(log(distlf_other_end+1)) +
                 disturbance_end +
@@ -214,9 +214,9 @@ m4 <- glmmTMB(case_ ~ -1 +
                 #(0 + prop_open_end|id) + 
                 (0 + prop_wets_end|id) +
                 (0 + scale(ts_fires_end)|id) +
-                (0 + I(scale(ts_fires_end)^2)|id) +
+                (0 + scale(I(ts_fires_end^2))|id) +
                 (0 + scale(ts_harv_end)|id) +
-                (0 + I(scale(ts_harv_end)^2)|id) +
+                (0 + scale(I(ts_harv_end^2))|id) +
                 (0 + I(log(distlf_end+1))|id) +
                 (0 + I(log(distlf_other_end+1))|id) +
                 (0 + disturbance_end|id) +
