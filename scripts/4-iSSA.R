@@ -14,35 +14,60 @@ derived <- 'data/derived-data/'
 # prepped <- readRDS(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.RDS'))
 # meta <- unique(prepped[,.(id, jurisdiction, pop=tolower(gsub(' ', '.',pop)), subpop)])
 
-dat <- tar_read(stepID)
+dat.derive <- tar_read(stepID)
 # dat <- merge(dat, meta, by = 'id', all.x = T)
-#saveRDS(stepID, file.path(derived, 'mb_derived.RDS'))
 
 
-#dat <- stepID
+# remove tracks that couldn't estimate movement parameters at this fix rate
+dat.steps <- dat.derive[!is.na(x2_) & !is.na(y2_),.(n = .N), by = .(indiv_step_id)]
 
-#dat <- readRDS(file.path(derived, 'mb_derived.RDS'))
+dat <- dat.derive[indiv_step_id %in% dat.steps[n ==11, .(indiv_step_id)]$indiv_step_id]
 
-dat[,.(needle =mean(prop_needleleaf_end, na.rm = T), decid = mean(prop_deciduous_end, na.rm = T),
-          mixed = mean(prop_mixed_end, na.rm = T), shrub = mean(prop_shrub_end, na.rm = T),
-          grass = mean(prop_grassland_end, na.rm = T), lichshrub = mean(prop_lichenshrub_end, na.rm = T),
-          lichgrass = mean(prop_lichengrass_end, na.rm = T), crop = mean(prop_cropland_end, na.rm = T),
-          wetland = mean(prop_wetland_end, na.rm = T), barren = mean(prop_barrenland_end, na.rm = T),
-          urban = mean(prop_urban_end, na.rm = T), water = mean(prop_water_end, na.rm = T),
-       snow = mean(prop_snow_end, na.rm = T)), by = .(int.year, jurisdiction)]
+# Check availability
+dat[,.(water = mean(prop_water_end, na.rm = T), snow = mean(prop_snow_end, na.rm = T),
+       rock = mean(prop_rock_end, na.rm = T), barren = mean(prop_barren_end, na.rm = T),
+       bryoids = mean(prop_bryoids_end, na.rm = T), shrub = mean(prop_shrub_end, na.rm = T),
+       wetland = mean(prop_wetland_end, na.rm = T), wettreed = mean(prop_wettreed_end, na.rm = T), 
+       herbs = mean(prop_herbs_end, na.rm = T), needle =mean(prop_needleleaf_end, na.rm = T),
+       decid = mean(prop_deciduous_end, na.rm = T),mixed = mean(prop_mixed_end, na.rm = T)), 
+    by = .(int.year, jurisdiction)]
+# snow, rock, barren, bryoids, generally below 1% availability
+# dominant: needle, wetland
 
+# aggregate habitat types
+dat[, prop_mixforest_start := prop_deciduous_start + prop_mixed_start]
+dat[, prop_veg_start := prop_shrub_start + prop_bryoids_start + prop_herbs_start]
+dat[, prop_wets_start := prop_wetland_start + prop_wettreed_start]
+dat[, prop_open_start := prop_rock_start + prop_barren_start]
+
+dat[, prop_mixforest_end := prop_deciduous_end + prop_mixed_end]
+dat[, prop_veg_end := prop_shrub_end + prop_bryoids_end + prop_herbs_end]
+dat[, prop_wets_end := prop_wetland_end + prop_wettreed_end] 
+dat[, prop_open_end := prop_rock_end + prop_barren_end]
+
+# TODO should wettreed be in wets or mixforest?
+# not include water, snow
+
+## this was for Canada LCC (landsat)
+# dat[,.(needle =mean(prop_needleleaf_end, na.rm = T), decid = mean(prop_deciduous_end, na.rm = T),
+#           mixed = mean(prop_mixed_end, na.rm = T), shrub = mean(prop_shrub_end, na.rm = T),
+#           grass = mean(prop_grassland_end, na.rm = T), lichshrub = mean(prop_lichenshrub_end, na.rm = T),
+#           lichgrass = mean(prop_lichengrass_end, na.rm = T), crop = mean(prop_cropland_end, na.rm = T),
+#           wetland = mean(prop_wetland_end, na.rm = T), barren = mean(prop_barrenland_end, na.rm = T),
+#           urban = mean(prop_urban_end, na.rm = T), water = mean(prop_water_end, na.rm = T),
+#        snow = mean(prop_snow_end, na.rm = T)), by = .(int.year, jurisdiction)]
 # not include urban or cropland
-dat[, prop_forest_start := prop_needleleaf_start + prop_deciduous_start + prop_mixed_start]
-dat[, prop_forage_start := prop_shrub_start + prop_grassland_start + prop_lichenshrub_start + prop_lichengrass_start]
-dat[, prop_open_start := prop_barrenland_start + prop_snow_start]
-dat[, prop_wets_start := prop_wetland_start + prop_water_start]
+# dat[, prop_forest_start := prop_needleleaf_start + prop_deciduous_start + prop_mixed_start]
+# dat[, prop_forage_start := prop_shrub_start + prop_grassland_start + prop_lichenshrub_start + prop_lichengrass_start]
+# dat[, prop_open_start := prop_barrenland_start + prop_snow_start]
+# dat[, prop_wets_start := prop_wetland_start + prop_water_start]
+# 
+# dat[, prop_forest_end := prop_needleleaf_end + prop_deciduous_end + prop_mixed_end]
+# dat[, prop_forage_end := prop_shrub_end + prop_grassland_end + prop_lichenshrub_end + prop_lichengrass_end]
+# dat[, prop_open_end := prop_barrenland_end + prop_snow_end]
+# dat[, prop_wets_end := prop_wetland_end + prop_water_end]
 
-dat[, prop_forest_end := prop_needleleaf_end + prop_deciduous_end + prop_mixed_end]
-dat[, prop_forage_end := prop_shrub_end + prop_grassland_end + prop_lichenshrub_end + prop_lichengrass_end]
-dat[, prop_open_end := prop_barrenland_end + prop_snow_end]
-dat[, prop_wets_end := prop_wetland_end + prop_water_end]
-
-dat[,.(forest =mean(prop_forest_end, na.rm = T), forage = mean(prop_forage_end, na.rm = T),
+dat[,.(needle =mean(prop_needleleaf_end, na.rm = T), mixforest =mean(prop_mixforest_end, na.rm = T), veg = mean(prop_veg_end, na.rm = T),
        open = mean(prop_open_end, na.rm = T), wets = mean(prop_wets_end, na.rm = T)), 
     by = .(int.year, jurisdiction)]
 
@@ -52,16 +77,15 @@ dat[,.(distlf_end =mean(distlf_end, na.rm = T), distlf_other_end = mean(distlf_o
     by = .(int.year, jurisdiction)]
 ## prop_open too low availability for most
 
-# dat[,lc_end_adj := lc_end]
-# dat[lc_end %in% c('barren', 'grassland', 'lichen-grass', 'lichen-shrub', 'shrub', 'urban', 'cropland'),lc_end_adj:= 'open-forage']
-# dat[lc_end %in% c('deciduous', 'mixedforest'),lc_end_adj:= 'deciduous']
-# dat[lc_end %in% c('water', 'wetland', 'snow'),lc_end_adj:= 'wet']
 
-# dat[, lc_end_adj := factor(lc_end_adj)]
-# 
-# summary(dat$lc_end_adj)
+# change arbitrary time since variable
+dat[ts_harv_start == 100, ts_harv_start:= 50]
+dat[ts_harv_end == 100, ts_harv_end:= 50]
+range(dat$ts_harv_end)
 
-
+dat[ts_fires_start == 100, ts_fires_start:= 50]
+dat[ts_fires_end == 100, ts_fires_end:= 50]
+range(dat$ts_fires_end)
 
 
 range(dat$year)
@@ -90,30 +114,31 @@ dat.2015[,jurisdiction := as.factor(jurisdiction)]
 ## models ----
 
 gc()
-### selection 2010 jurisdictional simplified ----
+### selection 2010  ----
 m1 <- glmmTMB(case_ ~ -1 +
-                            I(log(sl_+1)) +
-                               prop_forest_end + prop_forage_end + prop_wets_end +
-                           # prop_open_end + 
-                               I(log(ts_fires_end+1)) +
-                             I(log(ts_harv_end+1)) +
-                               I(log(distlf_end+1)) +
-                             I(log(distlf_other_end+1)) +
-                             disturbance_end +
-                            (1|indiv_step_id) +
-                            (0 + I(log(sl_ +1))|id) +
-                            (0 + prop_forest_end|id) + (0 + prop_forage_end|id) + 
-                            #(0 + prop_open_end|id) + 
-                            (0 + prop_wets_end|id) +
-                            (0 + I(log(ts_fires_end+1))|id) +
-                             (0 + I(log(ts_harv_end+1))|id) +
-                            (0 + I(log(distlf_end+1))|id) +
-                             (0 + I(log(distlf_other_end+1))|id) +
-                             (0 + disturbance_end|id) +
-                            (1|jurisdiction),
-                          family = poisson(), data = dat.2010,
-                          map= list(theta = factor(c(NA,1:10))), 
-                          start = list(theta =c(log(1000), seq(0,0, length.out = 10)))
+                I(log(sl_+1)) +
+                prop_needleleaf_end + prop_mixforest_end + 
+                prop_veg_end + prop_wets_end +
+                I(log(ts_fires_end+1)) + I(log(sl_+1)):I(log(ts_fires_end+1)) +
+                (prop_needleleaf_end + prop_mixforest_end + 
+                prop_veg_end + prop_wets_end ):I(log(ts_fires_end+1)) +
+                I(log(ts_harv_end+1)) + I(log(sl_+1)):I(log(ts_harv_end+1)) +
+                (prop_needleleaf_end + prop_mixforest_end):I(log(ts_harv_end+1)) +
+                I(log(distlf_end+1)) + I(log(distlf_other_end+1)) + disturbance_end +
+                (1|indiv_step_id) +
+                (0 + I(log(sl_ +1))|id) +
+                (0 + prop_needleleaf_end|id) + (0 + prop_mixforest_end|id) + 
+                (0 + prop_veg_end|id) + (0 + prop_wets_end|id) +
+                (0 + I(log(ts_fires_end+1))|id) + (0 + I(log(sl_+1)):I(log(ts_fires_end+1))|id) +
+                (0 + (prop_needleleaf_end + prop_mixforest_end + 
+                        prop_veg_end + prop_wets_end ):I(log(ts_fires_end+1))|id) +
+                (0 + I(log(ts_harv_end+1))|id) + (0 + I(log(sl_+1)):I(log(ts_harv_end+1))|id) + 
+                (0 + (prop_needleleaf_end + prop_mixforest_end):I(log(ts_harv_end+1))|id) +
+                (0 + I(log(distlf_end+1))|id) + (0 + I(log(distlf_other_end+1))|id) + (0 + disturbance_end|id) +
+                (1|jurisdiction),
+              family = poisson(), data = dat.2010,
+              map= list(theta = factor(c(NA,1:26))),
+              start = list(theta =c(log(1000), seq(0,0, length.out = 26)))
 )
 
 
@@ -124,26 +149,27 @@ saveRDS(m1, file.path(derived, 'mod_sel_jurisRE_2010-2015.RDS'))
 
 gc()
 
-### selection 2015 jurisdictional simplified ----
+### selection 2015 jurisdictional ----
 m2 <- glmmTMB(case_ ~ -1 +
                 I(log(sl_+1)) +
-                prop_forest_end + prop_forage_end + prop_wets_end +
-                # prop_open_end + 
-                I(log(ts_fires_end+1)) +
-                I(log(ts_harv_end+1)) +
-                I(log(distlf_end+1)) +
-                I(log(distlf_other_end+1)) +
-                disturbance_end +
+                prop_needleleaf_end + prop_mixforest_end + 
+                prop_veg_end + prop_wets_end +
+                I(log(ts_fires_end+1)) + I(log(sl_+1)):I(log(ts_fires_end+1)) +
+                (prop_needleleaf_end + prop_mixforest_end + 
+                   prop_veg_end + prop_wets_end ):I(log(ts_fires_end+1)) +
+                I(log(ts_harv_end+1)) + I(log(sl_+1)):I(log(ts_harv_end+1)) +
+                (prop_needleleaf_end + prop_mixforest_end):I(log(ts_harv_end+1)) +
+                I(log(distlf_end+1)) + I(log(distlf_other_end+1)) + disturbance_end +
                 (1|indiv_step_id) +
                 (0 + I(log(sl_ +1))|id) +
-                (0 + prop_forest_end|id) + (0 + prop_forage_end|id) + 
-                #(0 + prop_open_end|id) + 
-                (0 + prop_wets_end|id) +
-                (0 + I(log(ts_fires_end+1))|id) +
-                (0 + I(log(ts_harv_end+1))|id) +
-                (0 + I(log(distlf_end+1))|id) +
-                (0 + I(log(distlf_other_end+1))|id) +
-                (0 + disturbance_end|id) +
+                (0 + prop_needleleaf_end|id) + (0 + prop_mixforest_end|id) + 
+                (0 + prop_veg_end|id) + (0 + prop_wets_end|id) +
+                (0 + I(log(ts_fires_end+1))|id) + (0 + I(log(sl_+1)):I(log(ts_fires_end+1))|id) +
+                (0 + (prop_needleleaf_end + prop_mixforest_end + 
+                        prop_veg_end + prop_wets_end ):I(log(ts_fires_end+1))|id) +
+                (0 + I(log(ts_harv_end+1))|id) + (0 + I(log(sl_+1)):I(log(ts_harv_end+1))|id) + 
+                (0 + (prop_needleleaf_end + prop_mixforest_end):I(log(ts_harv_end+1))|id) +
+                (0 + I(log(distlf_end+1))|id) + (0 + I(log(distlf_other_end+1))|id) + (0 + disturbance_end|id) +
                 (1|jurisdiction),
               family = poisson(), data = dat.2015,
               map= list(theta = factor(c(NA,1:10))), 
