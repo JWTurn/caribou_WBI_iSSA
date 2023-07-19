@@ -7,8 +7,6 @@ make_random_steps <- function(DT) {
   if (nrow(DT) == 0) return()
   
   random_steps(DT, n = 10) 
-  
-  # TODO not working right now, something with maptools
   # %>%
   #   time_of_day(where = 'start', include.crepuscule = F)
 }
