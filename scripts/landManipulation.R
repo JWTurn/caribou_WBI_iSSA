@@ -44,7 +44,7 @@ coords <- st_read(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.
 studyArea <- vect(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBuff.shp'))
 
 ## LAND ----
-make_landforest_prop(studyArea = file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBuff.shp'), crs, buff = 850, startyr = 2016, endyr = 2019)
+make_landforest_prop(studyArea = file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBuff.shp'), crs, buff = 850, startyr = 2019, endyr = 2019)
 ####
 can2010 <- rast(file.path(canada, 'canada_2010', 'CAN_LC_2010_CAL.tif'))
 can2015 <- rast(file.path(canada, 'canada_2015', 'CAN_LC_2015_CAL.tif'))
