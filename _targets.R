@@ -32,7 +32,7 @@ tar_option_set(format = 'qs',
 
 
 # Variables ---------------------------------------------------------------
-set.seed(53)
+set.seed(37)
 path <- file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.RDS')
 canada <- file.path('~/Dropbox', 'ActiveDocs', 'Git-local', 'Can_GIS_layers')
 studyArea <- file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBuff.shp')
@@ -95,7 +95,7 @@ sl.interval <- 50 # to round by 50m intervals
 rate <- hours(13)
 
 # Tolerance
-tolerance <- hours(3)
+tolerance <- minutes(150)
 
 
 
