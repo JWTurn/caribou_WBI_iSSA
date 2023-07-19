@@ -20,14 +20,14 @@ extract_distto <- function(DT, feature, name, where = 'end', crs, int.yr= NULL) 
   }
   
   if(where == 'end'){
-    DT[, paste0('dist', object_name, '_end') := distance_to(st_as_sf(.SD, coords = coords_end,
+    DT[!is.na(x2_)&!is.na(y2_), paste0('dist', object_name, '_end') := distance_to(st_as_sf(.SD, coords = coords_end,
                                                                       crs = crs), feature)]
   }
   
   if(where == 'both'){
     DT[, paste0('dist', object_name, '_start') := distance_to(st_as_sf(.SD, coords = coords_start,
                                                                       crs = crs), feature)]
-    DT[, paste0('dist', object_name, '_end') := distance_to(st_as_sf(.SD, coords = coords_end,
+    DT[!is.na(x2_)&!is.na(y2_), paste0('dist', object_name, '_end') := distance_to(st_as_sf(.SD, coords = coords_end,
                                                                    crs = crs), feature)]
   }
   
