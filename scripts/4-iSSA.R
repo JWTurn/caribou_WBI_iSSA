@@ -177,27 +177,33 @@ dat.2015[,.(needle =mean(prop_needleleaf_end, na.rm = T), mixforest =mean(prop_m
        open = mean(prop_open_end, na.rm = T), wets = mean(prop_wets_end, na.rm = T)), 
     by = .(int.year, jurisdiction)]
 
+dat.2015[,.(log_sl = mean(log(sl_+1), na.rm = T), distlf_end =mean(log(distlf_end+1), na.rm = T), distlf_other_end = mean(log(distlf_other_end+1), na.rm = T),
+       disturbance = mean(disturbance_end, na.rm = T), tsf = mean(log(ts_fires_end+1), na.rm = T),
+       tsh = mean(log(ts_harv_end+1), na.rm = T)), 
+    by = .(int.year, jurisdiction)]
+
+gc()
 
 m2 <- glmmTMB(case_ ~ -1 +
-                I(log(sl_+1)) +
-                prop_needleleaf_end +# prop_mixforest_end + 
-                prop_veg_end + prop_wets_end +
-                I(log(ts_fires_end+1)) + I(log(sl_+1)):I(log(ts_fires_end+1)) +
-                I(log(ts_harv_end+1)) + I(log(sl_+1)):I(log(ts_harv_end+1)) +
-                I(log(distlf_end+1)) + I(log(distlf_other_end+1)) + disturbance_end +
-              #  I(log(sl_+1)):(I(log(distlf_end+1)) + I(log(distlf_other_end+1)) + disturbance_end) +
+                scale(I(log(sl_+1))) +
+                (prop_needleleaf_end) + (prop_mixforest_end) + 
+                (prop_veg_end) + (prop_wets_end) +
+                scale(I(log(ts_fires_end+1))) + #scale(I(log(sl_+1))):scale(I(log(ts_fires_end+1))) +
+                scale(I(log(ts_harv_end+1))) + #scale(I(log(sl_+1))):scale(I(log(ts_harv_end+1))) +
+                scale(I(log(distlf_end+1))) + scale(I(log(distlf_other_end+1))) + disturbance_end +
+               # scale(I(log(sl_+1))):(scale(I(log(distlf_end+1))) + scale(I(log(distlf_other_end+1))) + disturbance_end) +
                 (1|indiv_step_id) +
-                (0 + I(log(sl_ +1))|id) +
-                (0 + prop_needleleaf_end|id) + #(0 + prop_mixforest_end|id) + 
-                (0 + prop_veg_end|id) + (0 + prop_wets_end|id) +
-                (0 + I(log(ts_fires_end+1))|id) + (0 + I(log(sl_+1)):I(log(ts_fires_end+1))|id) +
-                (0 + I(log(ts_harv_end+1))|id) + (0 + I(log(sl_+1)):I(log(ts_harv_end+1))|id) + 
-                (0 + I(log(distlf_end+1))|id) + (0 + I(log(distlf_other_end+1))|id) + (0 + disturbance_end|id) +
-              #  (0 + I(log(sl_+1)):(I(log(distlf_end+1)) + I(log(distlf_other_end+1)) + disturbance_end)) +
+                (0 + scale(I(log(sl_ +1)))|id) +
+                (0 + (prop_needleleaf_end)|id) + (0 + (prop_mixforest_end)|id) + 
+                (0 + (prop_veg_end)|id) + (0 + (prop_wets_end)|id) +
+                (0 + scale(I(log(ts_fires_end+1)))|id) + #(0 + scale(I(log(sl_+1))):scale(I(log(ts_fires_end+1)))|id) +
+                (0 + scale(I(log(ts_harv_end+1)))|id) + #(0 + scale(I(log(sl_+1))):scale(I(log(ts_harv_end+1)))|id) + 
+                (0 + scale(I(log(distlf_end+1)))|id) + (0 + scale(I(log(distlf_other_end+1)))|id) + (0 + disturbance_end|id) +
+                #(0 + scale(I(log(sl_+1))):(scale(I(log(distlf_end+1))) + scale(I(log(distlf_other_end+1))) + disturbance_end)) +
                 (1|jurisdiction),
               family = poisson(), data = dat.2015,
-              map= list(theta = factor(c(NA,1:13))), 
-              start = list(theta =c(log(1000), seq(0,0, length.out = 13)))
+              map= list(theta = factor(c(NA,1:11))), 
+              start = list(theta =c(log(1000), seq(0,0, length.out = 11)))
 )
 
 
@@ -211,22 +217,22 @@ gc()
 
 m2.2 <- glmmTMB(case_ ~ -1 +
                   I(log(sl_+1)) +
-                  prop_needleleaf_end + prop_mixforest_end + 
+                  prop_needleleaf_end + #prop_mixforest_end + 
                   prop_veg_end + prop_wets_end +
                   I(log(ts_fires_end+1)) + I(log(sl_+1)):I(log(ts_fires_start+1)) +
                   I(log(ts_harv_end+1)) + I(log(sl_+1)):I(log(ts_harv_start+1)) +
                   I(log(distlf_end+1)) + I(log(distlf_other_end+1)) + disturbance_end +
                   (1|indiv_step_id) +
                   (0 + I(log(sl_ +1))|id) +
-                  (0 + prop_needleleaf_end|id) + (0 + prop_mixforest_end|id) + 
+                  (0 + prop_needleleaf_end|id) +# (0 + prop_mixforest_end|id) + 
                   (0 + prop_veg_end|id) + (0 + prop_wets_end|id) +
                   (0 + I(log(ts_fires_end+1))|id) + (0 + I(log(sl_+1)):I(log(ts_fires_start+1))|id) +
                   (0 + I(log(ts_harv_end+1))|id) + (0 + I(log(sl_+1)):I(log(ts_harv_start+1))|id) + 
                   (0 + I(log(distlf_end+1))|id) + (0 + I(log(distlf_other_end+1))|id) + (0 + disturbance_end|id) +
                   (1|jurisdiction),
                 family = poisson(), data = dat.2015,
-                map= list(theta = factor(c(NA,1:13))),
-                start = list(theta =c(log(1000), seq(0,0, length.out = 13)))
+                map= list(theta = factor(c(NA,1:12))),
+                start = list(theta =c(log(1000), seq(0,0, length.out = 12)))
 )
 
 
