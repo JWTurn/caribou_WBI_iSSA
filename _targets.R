@@ -162,22 +162,35 @@ targets_tracks <- c(
     pattern = map(splits)
   ),
   
-  # Resample sampling rate
+  # Resample sampling rate, filtering out extra long steps
   tar_target(
     resamples,
-    resample_tracks(tracks, rate, tolerance),
+    resample_tracks(tracks, rate, tolerance, probsfilter = 0.95),
     pattern = map(tracks)
   ),
+  
+  # # check for extra long steps
+  # tar_target(
+  #   quantiles,
+  #   quantile(resamples$sl_, probs = c(0.95, 0.99), na.rm = T)
+  # ), 
+  # 
+  # # remove extra long steps
+  # tar_target(
+  #   resamples2,
+  #   filter(resamples, sl_<=plyr::round_any(quantiles[['99%']], 50, floor))
+  # ),
   
   # Check step distributions
   #  iteration = 'list' used for returning a list of ggplots,
   #  instead of the usual combination with vctrs::vec_c()
   tar_target(
     distributions,
-    ggplot(resamples, aes(sl_)) + geom_density(alpha = 0.4),
-    pattern = map(resamples),
-    iteration = 'list'
+    ggplot(resamples, aes(sl_)) + geom_density(alpha = 0.4)#,
+    # pattern = map(resamples),
+    # iteration = 'list'
   ),
+  
   
   # create random steps and extract covariates
   tar_target(
