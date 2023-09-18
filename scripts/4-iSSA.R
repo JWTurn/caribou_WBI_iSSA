@@ -331,11 +331,12 @@ m2.2 <- glmmTMB(case_ ~ -1 +
                   I(log(sl_+1)):I(log(ts_fires_start+1)) +
                   #I(log(ts_harv_end+1)) + 
                   I(log(sl_+1)):I(log(ts_harv_start+1)) +
-                  I(log(distlf_end+1)) + 
+                  #I(log(distlf_end+1)) + 
                   I(log(sl_+1)):I(log(distlf_start+1)) +
-                  I(log(distlf_other_end+1)) + 
+                 # I(log(distlf_other_end+1)) + 
                   I(log(sl_+1)):I(log(distlf_other_start+1)) +
-                  disturbance_end +
+                 # disturbance_end +
+                  I(log(sl_+1)):disturbance_start +
                   (1|indiv_step_id) +
                   (0 + I(log(sl_ +1))|id) +
                   (0 + I(cos(ta_))|id) +
@@ -347,15 +348,16 @@ m2.2 <- glmmTMB(case_ ~ -1 +
                   (0 + I(log(sl_+1)):I(log(ts_fires_start+1))|id) +
                   #(0 + I(log(ts_harv_end+1))|id) + 
                   (0 + I(log(sl_+1)):I(log(ts_harv_start+1))|id) + 
-                  (0 + I(log(distlf_end+1))|id) + 
+                 # (0 + I(log(distlf_end+1))|id) + 
                   (0 + I(log(sl_+1)):I(log(distlf_start+1))|id) +
-                  (0 + I(log(distlf_other_end+1))|id) + 
+                 # (0 + I(log(distlf_other_end+1))|id) + 
                   (0 + I(log(sl_+1)):I(log(distlf_other_start+1))|id) +
-                  (0 + disturbance_end|id) +
+                  #(0 + disturbance_end|id) +
+                  (0 + I(log(sl_+1)):disturbance_start|id) +
                   (1|jurisdiction),
                 family = poisson(), data = dat.2015,
-                map= list(theta = factor(c(NA,1:24))),
-                start = list(theta =c(log(1000), seq(0,0, length.out = 24)))
+                map= list(theta = factor(c(NA,1:22))),
+                start = list(theta =c(log(1000), seq(0,0, length.out = 22)))
 )
 
 
