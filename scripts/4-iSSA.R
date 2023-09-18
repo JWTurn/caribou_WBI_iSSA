@@ -8,8 +8,8 @@ require(glmmTMB)
 require(broom.mixed)
 
 ### Input data ----
-raw <- 'data/raw-data/'
-derived <- 'data/derived-data/'
+raw <- file.path('data', 'raw-data')
+derived <- file.path('data', 'derived-data')
 
 # prepped <- readRDS(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.RDS'))
 # meta <- unique(prepped[,.(id, jurisdiction, pop=tolower(gsub(' ', '.',pop)), subpop)])
@@ -38,15 +38,21 @@ dat[,.(water = mean(prop_water_end, na.rm = T), snow = mean(prop_snow_end, na.rm
 dat[, prop_mixforest_start := prop_deciduous_start + prop_mixed_start + prop_wettreed_start]
 dat[, prop_veg_start := prop_shrub_start + prop_bryoids_start + prop_herbs_start]
 dat[, prop_wets_start := prop_wetland_start]
-dat[, prop_open_start := prop_rock_start + prop_barren_start]
+dat[, prop_openbarren_start := prop_rock_start + prop_barren_start + prop_water_start]
+dat[, prop_open_start := prop_rock_start + prop_barren_start + prop_bryoids_start + prop_herbs_start + prop_water_start]
+dat[, prop_otherveg_start := prop_deciduous_start + prop_mixed_start + prop_wettreed_start +
+      prop_shrub_start + prop_bryoids_start + prop_herbs_start]
 
 dat[, prop_mixforest_end := prop_deciduous_end + prop_mixed_end + prop_wettreed_end]
 dat[, prop_veg_end := prop_shrub_end + prop_bryoids_end + prop_herbs_end]
 dat[, prop_wets_end := prop_wetland_end] 
-dat[, prop_open_end := prop_rock_end + prop_barren_end]
+dat[, prop_openbarren_end := prop_rock_end + prop_barren_end + prop_water_end]
+dat[, prop_open_end := prop_rock_end + prop_barren_end + prop_bryoids_end + prop_herbs_end + prop_water_end]
+dat[, prop_otherveg_end := prop_deciduous_end + prop_mixed_end + prop_wettreed_end +
+      prop_shrub_end + prop_bryoids_end + prop_herbs_end]
 
 # TODO should wettreed be in wets or mixforest?
-# not include water, snow
+# not include snow
 
 ## this was for Canada LCC (landsat)
 # dat[,.(needle =mean(prop_needleleaf_end, na.rm = T), decid = mean(prop_deciduous_end, na.rm = T),
@@ -68,7 +74,8 @@ dat[, prop_open_end := prop_rock_end + prop_barren_end]
 # dat[, prop_wets_end := prop_wetland_end + prop_water_end]
 
 dat[,.(needle =mean(prop_needleleaf_end, na.rm = T), mixforest =mean(prop_mixforest_end, na.rm = T), veg = mean(prop_veg_end, na.rm = T),
-       open = mean(prop_open_end, na.rm = T), wets = mean(prop_wets_end, na.rm = T)), 
+       open = mean(prop_open_end, na.rm = T), wets = mean(prop_wets_end, na.rm = T),
+       openbarren = mean(prop_openbarren_end, na.rm = T), otherveg = mean(prop_otherveg_end, na.rm = T)), 
     by = .(int.year, jurisdiction)]
 
 dat[,.(distlf_end =mean(distlf_end, na.rm = T), distlf_other_end = mean(distlf_other_end, na.rm = T),
@@ -79,13 +86,17 @@ dat[,.(distlf_end =mean(distlf_end, na.rm = T), distlf_other_end = mean(distlf_o
 
 
 # change arbitrary time since variable
-dat[ts_harv_start == 100, ts_harv_start:= 50]
-dat[ts_harv_end == 100, ts_harv_end:= 50]
+quantile(dat$ts_harv_end)
+dat[ts_harv_start == 100, ts_harv_start:= 40]
+dat[ts_harv_end == 100, ts_harv_end:= 40]
 range(dat$ts_harv_end)
+quantile(dat$ts_harv_end)
 
-dat[ts_fires_start == 100, ts_fires_start:= 50]
-dat[ts_fires_end == 100, ts_fires_end:= 50]
+quantile(dat$ts_fires_end)
+dat[ts_fires_start == 100, ts_fires_start:= 40]
+dat[ts_fires_end == 100, ts_fires_end:= 40]
 range(dat$ts_fires_end)
+quantile(dat$ts_fires_end)
 
 
 range(dat$year)
@@ -172,9 +183,10 @@ saveRDS(m1.2, file.path(derived, 'mod_selmove_2010-2015.RDS'))
 
 gc()
 
-### selection 2015 jurisdictional ----
+### selection 2015 ----
 dat.2015[,.(needle =mean(prop_needleleaf_end, na.rm = T), mixforest =mean(prop_mixforest_end, na.rm = T), veg = mean(prop_veg_end, na.rm = T),
-       open = mean(prop_open_end, na.rm = T), wets = mean(prop_wets_end, na.rm = T)), 
+       open = mean(prop_open_end, na.rm = T), wets = mean(prop_wets_end, na.rm = T),
+       openbarren = mean(prop_openbarren_end, na.rm = T), otherveg = mean(prop_otherveg_end, na.rm = T)), 
     by = .(int.year, jurisdiction)]
 
 dat.2015[,.(log_sl = mean(log(sl_+1), na.rm = T), distlf_end =mean(log(distlf_end+1), na.rm = T), distlf_other_end = mean(log(distlf_other_end+1), na.rm = T),
@@ -182,57 +194,152 @@ dat.2015[,.(log_sl = mean(log(sl_+1), na.rm = T), distlf_end =mean(log(distlf_en
        tsh = mean(log(ts_harv_end+1), na.rm = T)), 
     by = .(int.year, jurisdiction)]
 
+quantile(dat.2015$sl_)
+quantile(dat.2015$sl_, probs = c(0.01, 0.05, 0.95, 0.99))
+
+quantile(dat.2015$ts_fires_end)
+quantile(dat.2015$ts_harv_end)
+
+dat.2015[, quantile(ts_fires_end), by = .(jurisdiction)]
+
+quantile(dat.2010$sl_)
+quantile(dat.2010$sl_, probs = c(0.01, 0.05, 0.95, 0.99))
+
+# filter out steps outside 99% quantile
+# dat.2015<- dat.2015[sl_ <= 7060]
+dat.2015[case_==TRUE, median(sl_)]
+
 gc()
 
 m2 <- glmmTMB(case_ ~ -1 +
+                I(log(sl_+1)) +
+                prop_needleleaf_end +
+                prop_mixforest_end +
+                #prop_otherveg_end + 
+                prop_veg_end + 
+                prop_wets_end +
+               # prop_openbarren_end +
+                I(log(ts_fires_end+1)) +# I(log(sl_+1)):I(log(ts_fires_end+1)) +
+                I(log(ts_harv_end+1)) +# I(log(sl_+1)):I(log(ts_harv_end+1)) +
+                I(log(distlf_end+1)) + I(log(distlf_other_end+1)) + disturbance_end +
+              #  I(log(sl_+1)):(I(log(distlf_end+1)) + I(log(distlf_other_end+1)) + disturbance_end ) +
+                (1|indiv_step_id) +
+                # (0 + (I(log(sl_+1))*
+                #    (prop_needleleaf_end +
+                #       prop_mixforest_end +
+                #       #prop_otherveg_end + 
+                #       prop_veg_end + 
+                #       prop_wets_end +
+                #       prop_openbarren_end))|id) +
+                # (0 + I(log(sl_+1)) *
+                #    prop_needleleaf_end|id) +
+                (0 + I(log(sl_ +1))|id) +
+                (0 + prop_needleleaf_end|id) +
+                (0 + prop_mixforest_end|id) +
+                #(0 + prop_otherveg_end|id) +
+                (0 + prop_veg_end|id) +
+                (0 + prop_wets_end|id) +
+              #  (0 + prop_openbarren_end|id) +
+                (0 + I(log(ts_fires_end+1))|id) +# (0 + I(log(sl_+1)):I(log(ts_fires_end+1))|id) +
+                (0 + I(log(ts_harv_end+1))|id) +# (0 + I(log(sl_+1)):I(log(ts_harv_end+1))|id) +
+                (0 + I(log(distlf_end+1))|id) + (0 + I(log(distlf_other_end+1))|id) + (0 + disturbance_end|id) +
+              #  (0 + I(log(sl_+1)):(I(log(distlf_end+1)) + I(log(distlf_other_end+1)) + disturbance_end)|id) +
+                (1|jurisdiction),
+              family = poisson(), data = dat.2015,
+              map= list(theta = factor(c(NA,1:11))),
+              start = list(theta =c(log(1000), seq(0,0, length.out = 11)))
+)
+
+summary(m2)
+saveRDS(m2, file.path(derived, 'mod_sel_2015-2020.RDS'))
+
+gc()
+m2.scale <- glmmTMB(case_ ~ -1 +
                 scale(I(log(sl_+1))) +
-                (prop_needleleaf_end) + (prop_mixforest_end) + 
-                (prop_veg_end) + (prop_wets_end) +
-                scale(I(log(ts_fires_end+1))) + #scale(I(log(sl_+1))):scale(I(log(ts_fires_end+1))) +
-                scale(I(log(ts_harv_end+1))) + #scale(I(log(sl_+1))):scale(I(log(ts_harv_end+1))) +
+                scale(prop_needleleaf_end) + 
+                scale(prop_mixforest_end) +
+                #scale(prop_otherveg_end) +
+                scale(prop_veg_end) + 
+                scale(prop_wets_end) +
+                scale(I(log(ts_fires_end+1))) + scale(I(log(sl_+1))):scale(I(log(ts_fires_end+1))) +
+                scale(I(log(ts_harv_end+1))) + scale(I(log(sl_+1))):scale(I(log(ts_harv_end+1))) +
                 scale(I(log(distlf_end+1))) + scale(I(log(distlf_other_end+1))) + disturbance_end +
                # scale(I(log(sl_+1))):(scale(I(log(distlf_end+1))) + scale(I(log(distlf_other_end+1))) + disturbance_end) +
                 (1|indiv_step_id) +
                 (0 + scale(I(log(sl_ +1)))|id) +
-                (0 + (prop_needleleaf_end)|id) + (0 + (prop_mixforest_end)|id) + 
-                (0 + (prop_veg_end)|id) + (0 + (prop_wets_end)|id) +
-                (0 + scale(I(log(ts_fires_end+1)))|id) + #(0 + scale(I(log(sl_+1))):scale(I(log(ts_fires_end+1)))|id) +
-                (0 + scale(I(log(ts_harv_end+1)))|id) + #(0 + scale(I(log(sl_+1))):scale(I(log(ts_harv_end+1)))|id) + 
+                (0 + scale(prop_needleleaf_end)|id) + 
+                (0 + scale(prop_mixforest_end)|id) +
+                #(0 + scale(prop_otherveg_end)|id) +
+                (0 + scale(prop_veg_end)|id) +
+                (0 + scale(prop_wets_end)|id) +
+                (0 + scale(I(log(ts_fires_end+1)))|id) + (0 + scale(I(log(sl_+1))):scale(I(log(ts_fires_end+1)))|id) +
+                (0 + scale(I(log(ts_harv_end+1)))|id) + (0 + scale(I(log(sl_+1))):scale(I(log(ts_harv_end+1)))|id) +
                 (0 + scale(I(log(distlf_end+1)))|id) + (0 + scale(I(log(distlf_other_end+1)))|id) + (0 + disturbance_end|id) +
-                #(0 + scale(I(log(sl_+1))):(scale(I(log(distlf_end+1))) + scale(I(log(distlf_other_end+1))) + disturbance_end)) +
+              #(0 + scale(I(log(sl_+1))):(scale(I(log(distlf_end+1))) + scale(I(log(distlf_other_end+1))) + disturbance_end)) +
                 (1|jurisdiction),
               family = poisson(), data = dat.2015,
-              map= list(theta = factor(c(NA,1:11))), 
-              start = list(theta =c(log(1000), seq(0,0, length.out = 11)))
+              map= list(theta = factor(c(NA,1:13))),
+              start = list(theta =c(log(1000), seq(0,0, length.out = 13)))
 )
 
 
 
-summary(m2)
-saveRDS(m2, file.path(derived, 'mod_sel_2015-2020.RDS'))
+summary(m2.scale)
+saveRDS(m2.scale, file.path(derived, 'mod_sel_TESTscale_2015-2020.RDS'))
+# 
+# m2 <- glmmTMB(case_ ~ -1 +
+#                 scale(I(log(sl_+1))) +
+#                 (prop_needleleaf_end) + (prop_mixforest_end) + 
+#                 (prop_veg_end) + (prop_wets_end) +
+#                 scale(I(log(ts_fires_end+1))) + #scale(I(log(sl_+1))):scale(I(log(ts_fires_end+1))) +
+#                 scale(I(log(ts_harv_end+1))) + #scale(I(log(sl_+1))):scale(I(log(ts_harv_end+1))) +
+#                 scale(I(log(distlf_end+1))) + scale(I(log(distlf_other_end+1))) + disturbance_end +
+#                # scale(I(log(sl_+1))):(scale(I(log(distlf_end+1))) + scale(I(log(distlf_other_end+1))) + disturbance_end) +
+#                 (1|indiv_step_id) +
+#                 (0 + scale(I(log(sl_ +1)))|id) +
+#                 (0 + (prop_needleleaf_end)|id) + (0 + (prop_mixforest_end)|id) + 
+#                 (0 + (prop_veg_end)|id) + (0 + (prop_wets_end)|id) +
+#                 (0 + scale(I(log(ts_fires_end+1)))|id) + #(0 + scale(I(log(sl_+1))):scale(I(log(ts_fires_end+1)))|id) +
+#                 (0 + scale(I(log(ts_harv_end+1)))|id) + #(0 + scale(I(log(sl_+1))):scale(I(log(ts_harv_end+1)))|id) + 
+#                 (0 + scale(I(log(distlf_end+1)))|id) + (0 + scale(I(log(distlf_other_end+1)))|id) + (0 + disturbance_end|id) +
+#                 #(0 + scale(I(log(sl_+1))):(scale(I(log(distlf_end+1))) + scale(I(log(distlf_other_end+1))) + disturbance_end)) +
+#                 (1|jurisdiction),
+#               family = poisson(), data = dat.2015,
+#               map= list(theta = factor(c(NA,1:11))), 
+#               start = list(theta =c(log(1000), seq(0,0, length.out = 11)))
+# )
+# 
+# 
+# 
+# summary(m2)
+# saveRDS(m2, file.path(derived, 'mod_sel_TESTsimp_2015-2020.RDS'))
 
 
 gc()
 
 
 m2.2 <- glmmTMB(case_ ~ -1 +
-                  I(log(sl_+1)) +
-                  prop_needleleaf_end + #prop_mixforest_end + 
-                  prop_veg_end + prop_wets_end +
+                #  I(log(sl_+1)) +
+                  I(cos(ta_)) +
+                  (prop_needleleaf_end + prop_mixforest_end + 
+                  prop_veg_end + prop_wets_end)*I(log(sl_+1)) +
                   I(log(ts_fires_end+1)) + I(log(sl_+1)):I(log(ts_fires_start+1)) +
                   I(log(ts_harv_end+1)) + I(log(sl_+1)):I(log(ts_harv_start+1)) +
                   I(log(distlf_end+1)) + I(log(distlf_other_end+1)) + disturbance_end +
                   (1|indiv_step_id) +
-                  (0 + I(log(sl_ +1))|id) +
-                  (0 + prop_needleleaf_end|id) +# (0 + prop_mixforest_end|id) + 
-                  (0 + prop_veg_end|id) + (0 + prop_wets_end|id) +
+                 # (0 + I(log(sl_ +1))|id) +
+                  (0 + I(cos(ta_))|id) +
+                  (0 + (prop_needleleaf_end + prop_mixforest_end + 
+                          prop_veg_end + prop_wets_end)*I(log(sl_+1))|id) +
+                  # (0 + prop_needleleaf_end|id) + (0 + prop_mixforest_end|id) + 
+                  # (0 + prop_veg_end|id) + (0 + prop_wets_end|id) +
                   (0 + I(log(ts_fires_end+1))|id) + (0 + I(log(sl_+1)):I(log(ts_fires_start+1))|id) +
                   (0 + I(log(ts_harv_end+1))|id) + (0 + I(log(sl_+1)):I(log(ts_harv_start+1))|id) + 
                   (0 + I(log(distlf_end+1))|id) + (0 + I(log(distlf_other_end+1))|id) + (0 + disturbance_end|id) +
                   (1|jurisdiction),
                 family = poisson(), data = dat.2015,
-                map= list(theta = factor(c(NA,1:12))),
-                start = list(theta =c(log(1000), seq(0,0, length.out = 12)))
+                map= list(theta = factor(c(NA,1:54))),
+                start = list(theta =c(log(1000), seq(0,0, length.out = 54)))
 )
 
 
