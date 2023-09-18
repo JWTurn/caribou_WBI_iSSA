@@ -27,6 +27,21 @@ sk_kde <- hr_kde(sk_track, levels = 0.5)
 sk_iso <- vect(hr_isopleths(sk_kde)$geometry)
 writeVector(sk_iso, file.path('data','map-output', 'sk_iso50.shp'))
 
+# akde test
+# make a list of amt tracks by individual
+sk_trk <- lapply(unique(sk$id), function(ii){
+  make_track(sk[id == ii], x, y, datetime, crs = st_crs(3978), all_cols = T)
+})
+# make the raster base amt needs at the size of the whole study area
+trast <- make_trast(sk_track, res = 50)
+# list of akde by individual
+sk_akde <- lapply(unique(sk$id), function(ii){
+  hr_akde(sk_track, levels = 0.5, trast = trast)
+})
+
+
+
+
 yt_track <- yt %>% make_track(x,y, datetime, crs = st_crs(3978), id = id) %>%
   track_resample(rate = hours(24), tolerance = hours(4))
 yt_kde <- hr_kde(yt_track, levels = 0.5)
