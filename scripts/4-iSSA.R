@@ -321,6 +321,7 @@ gc()
 m2.2 <- glmmTMB(case_ ~ -1 +
                   I(log(sl_+1)) +
                   I(cos(ta_)) +
+                  I(log(sl_+1)):I(cos(ta_)) +
                   (prop_needleleaf_start + prop_mixforest_start + 
                   prop_veg_start + prop_wets_start):I(log(sl_+1)) +
                   # prop_needleleaf_end +
@@ -340,6 +341,7 @@ m2.2 <- glmmTMB(case_ ~ -1 +
                   (1|indiv_step_id) +
                   (0 + I(log(sl_ +1))|id) +
                   (0 + I(cos(ta_))|id) +
+                  (0 + I(log(sl_+1)):I(cos(ta_))|id) +
                   (0 + (prop_needleleaf_start + prop_mixforest_start + 
                           prop_veg_start + prop_wets_start):I(log(sl_+1))|id) +
                   # (0 + prop_needleleaf_end|id) + (0 + prop_mixforest_end|id) +
@@ -356,8 +358,8 @@ m2.2 <- glmmTMB(case_ ~ -1 +
                   (0 + I(log(sl_+1)):disturbance_start|id) +
                   (1|jurisdiction),
                 family = poisson(), data = dat.2015,
-                map= list(theta = factor(c(NA,1:18))),
-                start = list(theta =c(log(1000), seq(0,0, length.out = 18)))
+                map= list(theta = factor(c(NA,1:19))),
+                start = list(theta =c(log(1000), seq(0,0, length.out = 19)))
 )
 
 
