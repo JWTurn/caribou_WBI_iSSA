@@ -360,7 +360,7 @@ m2.2 <- glmmTMB(case_ ~ -1 +
                   prop_veg_start:I(log(sl_+1)) + 
                   prop_wets_start:I(log(sl_+1)) +
                   prop_needleleaf_end +
-                  prop_mixforest_end +
+                  #prop_mixforest_end +
                  # prop_veg_end +
                   prop_wets_end +
                   I(log(ts_fires_end+1)) + scale(I(ts_fires_end^2)) +
@@ -382,7 +382,7 @@ m2.2 <- glmmTMB(case_ ~ -1 +
                   (0 + prop_veg_start:I(log(sl_+1))|jurisdiction/id) + 
                   (0 + prop_wets_start:I(log(sl_+1))|jurisdiction/id) +
                   (0 + prop_needleleaf_end|jurisdiction/id) +
-                  (0 + prop_mixforest_end|jurisdiction/id) +
+                  #(0 + prop_mixforest_end|jurisdiction/id) +
                  # (0 + prop_veg_end|jurisdiction/id) +
                   (0 + prop_wets_end|jurisdiction/id) +
                   (0 + (I(log(ts_fires_end+1)) + scale(I(ts_fires_end^2)))|jurisdiction/id) +
@@ -397,8 +397,8 @@ m2.2 <- glmmTMB(case_ ~ -1 +
                  # (0 + I(log(sl_+1)):disturbance_start|jurisdiction/id) +
                   (1|jurisdiction),
                 family = poisson(), data = dat.2015,
-                map= list(theta = factor(c(NA,1:33))),
-                start = list(theta =c(log(1000), seq(0,0, length.out = 33)))
+                map= list(theta = factor(c(NA,1:31))),
+                start = list(theta =c(log(1000), seq(0,0, length.out = 31)))
 )
 
 
