@@ -359,13 +359,13 @@ m2.2 <- glmmTMB(case_ ~ -1 +
                   prop_mixforest_start:I(log(sl_+1)) + 
                   prop_veg_start:I(log(sl_+1)) + 
                   prop_wets_start:I(log(sl_+1)) +
-                  # prop_needleleaf_end +
-                  # prop_mixforest_end +
-                  # prop_veg_end +
-                  # prop_wets_end +
-                  I(log(ts_fires_end+1)) +
+                  prop_needleleaf_end +
+                  prop_mixforest_end +
+                  prop_veg_end +
+                  prop_wets_end +
+                  I(log(ts_fires_end+1)) + scale(I(ts_fires_end^2)) +
                   #I(log(sl_+1)):I(log(ts_fires_start+1)) +
-                  I(log(ts_harv_end+1)) + 
+                  I(log(ts_harv_end+1)) + scale(I(ts_harv_end^2)) + 
                   #I(log(sl_+1)):I(log(ts_harv_start+1)) +
                   I(log(distlf_end+1)) + 
                   #I(log(sl_+1)):I(log(distlf_start+1)) +
@@ -381,13 +381,13 @@ m2.2 <- glmmTMB(case_ ~ -1 +
                   (0 + prop_mixforest_start:I(log(sl_+1))|jurisdiction/id) + 
                   (0 + prop_veg_start:I(log(sl_+1))|jurisdiction/id) + 
                   (0 + prop_wets_start:I(log(sl_+1))|jurisdiction/id) +
-                  # (0 + prop_needleleaf_end|jurisdiction/id) + 
-                  # (0 + prop_mixforest_end|jurisdiction/id) +
-                  # (0 + prop_veg_end|jurisdiction/id) + 
-                  # (0 + prop_wets_end|jurisdiction/id) +
-                  (0 + I(log(ts_fires_end+1))|jurisdiction/id) +
+                  (0 + prop_needleleaf_end|jurisdiction/id) +
+                  (0 + prop_mixforest_end|jurisdiction/id) +
+                  (0 + prop_veg_end|jurisdiction/id) +
+                  (0 + prop_wets_end|jurisdiction/id) +
+                  (0 + (I(log(ts_fires_end+1)) + scale(I(ts_fires_end^2)))|jurisdiction/id) +
                   #(0 + I(log(sl_+1)):I(log(ts_fires_start+1))|jurisdiction/id) +
-                  (0 + I(log(ts_harv_end+1))|jurisdiction/id) + 
+                  (0 + (I(log(ts_harv_end+1)) + scale(I(ts_harv_end^2)))|jurisdiction/id) + 
                   #(0 + I(log(sl_+1)):I(log(ts_harv_start+1))|jurisdiction/id) + 
                   (0 + I(log(distlf_end+1))|jurisdiction/id) + 
                   #(0 + I(log(sl_+1)):I(log(distlf_start+1))|jurisdiction/id) +
@@ -397,8 +397,8 @@ m2.2 <- glmmTMB(case_ ~ -1 +
                  # (0 + I(log(sl_+1)):disturbance_start|jurisdiction/id) +
                   (1|jurisdiction),
                 family = poisson(), data = dat.2015,
-                map= list(theta = factor(c(NA,1:23))),
-                start = list(theta =c(log(1000), seq(0,0, length.out = 23)))
+                map= list(theta = factor(c(NA,1:39))),
+                start = list(theta =c(log(1000), seq(0,0, length.out = 39)))
 )
 
 
