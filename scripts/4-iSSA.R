@@ -353,7 +353,7 @@ gc()
 
 m2.2 <- glmmTMB(case_ ~ -1 +
                   I(log(sl_+1)) +
-                  I(cos(ta_)) +
+                 # I(cos(ta_)) +
                   I(log(sl_+1)):I(cos(ta_)) +
                   prop_needleleaf_start:I(log(sl_+1)) + 
                   prop_mixforest_start:I(log(sl_+1)) + 
@@ -374,31 +374,31 @@ m2.2 <- glmmTMB(case_ ~ -1 +
                   disturbance_end +
                 #  I(log(sl_+1)):disturbance_start +
                   (1|indiv_step_id) +
-                  (0 + I(log(sl_ +1))|id) +
-                  (0 + I(cos(ta_))|id) +
-                  (0 + I(log(sl_+1)):I(cos(ta_))|id) +
-                  (0 + prop_needleleaf_start:I(log(sl_+1))|id) + 
-                  (0 + prop_mixforest_start:I(log(sl_+1))|id) + 
-                  (0 + prop_veg_start:I(log(sl_+1))|id) + 
-                  (0 + prop_wets_start:I(log(sl_+1))|id) +
-                  (0 + prop_needleleaf_end|id) + 
-                  (0 + prop_mixforest_end|id) +
-                  (0 + prop_veg_end|id) + 
-                  (0 + prop_wets_end|id) +
-                  (0 + I(log(ts_fires_end+1))|id) +
-                  #(0 + I(log(sl_+1)):I(log(ts_fires_start+1))|id) +
-                  (0 + I(log(ts_harv_end+1))|id) + 
-                  #(0 + I(log(sl_+1)):I(log(ts_harv_start+1))|id) + 
-                  (0 + I(log(distlf_end+1))|id) + 
-                  #(0 + I(log(sl_+1)):I(log(distlf_start+1))|id) +
-                  (0 + I(log(distlf_other_end+1))|id) + 
-                 # (0 + I(log(sl_+1)):I(log(distlf_other_start+1))|id) +
-                  (0 + disturbance_end|id) +
-                 # (0 + I(log(sl_+1)):disturbance_start|id) +
+                  (0 + I(log(sl_ +1))|jurisdiction/id) +
+                 # (0 + I(cos(ta_))|jurisdiction/id) +
+                  (0 + I(log(sl_+1)):I(cos(ta_))|jurisdiction/id) +
+                  (0 + prop_needleleaf_start:I(log(sl_+1))|jurisdiction/id) + 
+                  (0 + prop_mixforest_start:I(log(sl_+1))|jurisdiction/id) + 
+                  (0 + prop_veg_start:I(log(sl_+1))|jurisdiction/id) + 
+                  (0 + prop_wets_start:I(log(sl_+1))|jurisdiction/id) +
+                  (0 + prop_needleleaf_end|jurisdiction/id) + 
+                  (0 + prop_mixforest_end|jurisdiction/id) +
+                  (0 + prop_veg_end|jurisdiction/id) + 
+                  (0 + prop_wets_end|jurisdiction/id) +
+                  (0 + I(log(ts_fires_end+1))|jurisdiction/id) +
+                  #(0 + I(log(sl_+1)):I(log(ts_fires_start+1))|jurisdiction/id) +
+                  (0 + I(log(ts_harv_end+1))|jurisdiction/id) + 
+                  #(0 + I(log(sl_+1)):I(log(ts_harv_start+1))|jurisdiction/id) + 
+                  (0 + I(log(distlf_end+1))|jurisdiction/id) + 
+                  #(0 + I(log(sl_+1)):I(log(distlf_start+1))|jurisdiction/id) +
+                  (0 + I(log(distlf_other_end+1))|jurisdiction/id) + 
+                 # (0 + I(log(sl_+1)):I(log(distlf_other_start+1))|jurisdiction/id) +
+                  (0 + disturbance_end|jurisdiction/id) +
+                 # (0 + I(log(sl_+1)):disturbance_start|jurisdiction/id) +
                   (1|jurisdiction),
                 family = poisson(), data = dat.2015,
-                map= list(theta = factor(c(NA,1:17))),
-                start = list(theta =c(log(1000), seq(0,0, length.out = 17)))
+                map= list(theta = factor(c(NA,1:31))),
+                start = list(theta =c(log(1000), seq(0,0, length.out = 31)))
 )
 
 
