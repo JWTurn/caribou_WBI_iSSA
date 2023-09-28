@@ -383,8 +383,10 @@ mb.201719 <- dat[jurisdiction == 'mb' & year >=2017 & year<2019]
 mb.201719[,id:=as.factor(id)]
 mb.201719[,indiv_step_id := as.factor(indiv_step_id)]
 
+mb.15mil <- dat[jurisdiction == 'mb'][1:1500000]
 
-m.mb.201719 <- glmmTMB(case_ ~ -1 +
+require(peakRAM)
+p1 <- peakRAM(m.mb.15mil <- glmmTMB(case_ ~ -1 +
                   I(log(sl_+1)) +
                   I(cos(ta_)) +
                   I(log(sl_+1)):I(cos(ta_)) +
@@ -430,15 +432,15 @@ m.mb.201719 <- glmmTMB(case_ ~ -1 +
                   (0 + I(log(sl_+1)):disturbance_start|id) #+
                   #(1|year)
                   ,
-                family = poisson(), data = mb.201719,
+                family = poisson(), data = mb.15mil,
                 map= list(theta = factor(c(NA,1:21))),
                 start = list(theta =c(log(1000), seq(0,0, length.out = 21)))
 )
+)
 
 
-
-summary(m.mb.201720)
-saveRDS(m.mb.201720, file.path(derived, 'mod_selmove_mb_201720.RDS'))
+summary(m.mb.15mil)
+saveRDS(m.mb.15mil, file.path(derived, 'mod_selmove_mb_15mil.RDS'))
 
 
 
