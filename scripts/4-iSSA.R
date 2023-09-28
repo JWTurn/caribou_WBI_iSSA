@@ -395,7 +395,7 @@ m2.2 <- glmmTMB(case_ ~ -1 +
                  # (0 + I(log(sl_+1)):I(log(distlf_other_start+1))|jurisdiction/id) +
                   (0 + disturbance_end|jurisdiction/id) +
                  # (0 + I(log(sl_+1)):disturbance_start|jurisdiction/id) +
-                  (1|jurisdiction),
+                  (1|jurisdiction) + (1|year),
                 family = poisson(), data = dat.2015,
                 map= list(theta = factor(c(NA,1:27))),
                 start = list(theta =c(log(1000), seq(0,0, length.out = 27)))
