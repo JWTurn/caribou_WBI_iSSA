@@ -1,13 +1,11 @@
 ## iSSA individual jurisdictions ----
 
-require(targets)
-
 #require(Require)
 require(data.table)
 require(glmmTMB)
 require(broom.mixed)
 require(performance)
-require(ggplot2)
+#require(ggplot2)
 
 ### Input data ----
 raw <- file.path('data', 'raw-data')
@@ -16,7 +14,7 @@ derived <- file.path('data', 'derived-data')
 # prepped <- readRDS(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.RDS'))
 # meta <- unique(prepped[,.(id, jurisdiction, pop=tolower(gsub(' ', '.',pop)), subpop)])
 
-dat.derive <- tar_read(stepID)
+dat.derive <- targets::tar_read(stepID)
 # dat <- merge(dat, meta, by = 'id', all.x = T)
 
 
@@ -80,6 +78,24 @@ quantile(dat$ts_fires_end)
 
 dat[,range(year), by = .(jurisdiction)]
 
+
+### cleaning to just what we need -- trying to save memory space
+dat.clean <- dat[,.(x1_ = as.integer(x1_), y1_ = as.integer(y1_), x2_ = as.integer(x2_), y2_ = as.integer(y2_),
+                    sl_ = as.integer(sl_), ta_, id, jurisdiction, t1_, t2_, case_, step_id_ = as.integer(step_id_),
+                    year = as.integer(year), int.year = as.integer(int.year), 
+                    prop_wets_start, prop_veg_start, prop_needleleaf_start, prop_mixforest_start, 
+                    prop_wets_end, prop_veg_end, prop_needleleaf_end, prop_mixforest_end, 
+                    ts_harv_start = as.integer(ts_harv_start), ts_harv_end = as.integer(ts_harv_end),
+                    ts_fires_start = as.integer(ts_fires_start), ts_fires_end = as.integer(ts_fires_end),
+                    distlf_start = as.integer(distlf_start), distlf_end = as.integer(distlf_end),
+                    distlf_other_start = as.integer(distlf_other_start), distlf_other_end = as.integer(distlf_other_end),
+                    disturbance_start = as.integer(disturbance_start), disturbance_end = as.integer(disturbance_end),
+                    indiv_step_id)]
+saveRDS(dat.clean, file.path(derived, 'dat_iSSA.RDS'))
+
+## START ----
+dat <- readRDS(file.path(derived, 'dat_iSSA.RDS'))
+
 #setindex(dat, NULL)
 nwt <- dat[jurisdiction %in% c('nwt', 'yt')]
 nwt[,id:=as.factor(id)]
@@ -88,6 +104,7 @@ nwt[,indiv_step_id := as.factor(indiv_step_id)]
 mb.2010 <- dat[jurisdiction == 'mb' & int.year ==2010]
 mb.2010[,id:=as.factor(id)]
 mb.2010[,indiv_step_id := as.factor(indiv_step_id)]
+mb.2010[, year := as.factor(year)]
 
 mb.2015 <- dat[jurisdiction == 'mb' & int.year ==2015]
 mb.2015[,id:=as.factor(id)]
@@ -383,10 +400,19 @@ mb.201719 <- dat[jurisdiction == 'mb' & year >=2017 & year<2019]
 mb.201719[,id:=as.factor(id)]
 mb.201719[,indiv_step_id := as.factor(indiv_step_id)]
 
-mb.15mil <- dat[jurisdiction == 'mb'][1:1500000]
+mb.201720 <- dat[jurisdiction == 'mb' & year >=2017 & year<=2020]
+mb.201720[,id:=as.factor(id)]
+mb.201720[,indiv_step_id := as.factor(indiv_step_id)]
+
+
+mb.2mil <- dat[jurisdiction == 'mb'][1:2000000]
+mb.2mil[,id:=as.factor(id)]
+mb.2mil[,indiv_step_id := as.factor(indiv_step_id)]
+mb.2mil[, year:= as.factor(year)]
 
 require(peakRAM)
-p1 <- peakRAM(m.mb.15mil <- glmmTMB(case_ ~ -1 +
+gc()
+p1 <- peakRAM(m.mb.2mil <- glmmTMB(case_ ~ -1 +
                   I(log(sl_+1)) +
                   I(cos(ta_)) +
                   I(log(sl_+1)):I(cos(ta_)) +
@@ -430,19 +456,130 @@ p1 <- peakRAM(m.mb.15mil <- glmmTMB(case_ ~ -1 +
                   (0 + I(log(sl_+1)):I(log(distlf_other_start+1))|id) +
                   (0 + disturbance_end|id) +
                   (0 + I(log(sl_+1)):disturbance_start|id) #+
-                  #(1|year)
+                 # (1|year)
                   ,
-                family = poisson(), data = mb.15mil,
+                family = poisson(), data = mb.2mil,
                 map= list(theta = factor(c(NA,1:21))),
                 start = list(theta =c(log(1000), seq(0,0, length.out = 21)))
 )
 )
 
 
-summary(m.mb.15mil)
-saveRDS(m.mb.15mil, file.path(derived, 'mod_selmove_mb_15mil.RDS'))
+summary(m.mb.2010)
+saveRDS(m.mb.2010, file.path(derived, 'mod_selmove_mb_2010.RDS'))
+
+require(disk.frame)
+mb.2010.disk <- as.disk.frame(mb.2010, outdir = "tmp_mb", 
+                               overwrite = TRUE)
+
+p3 <- peakRAM(m.mb.2010<- glmmTMB(case_ ~ -1 +
+                                      I(log(sl_+1)) +
+                                      I(cos(ta_)) +
+                                      I(log(sl_+1)):I(cos(ta_)) +
+                                      prop_needleleaf_start:I(log(sl_+1)) + 
+                                      prop_mixforest_start:I(log(sl_+1)) + 
+                                      prop_veg_start:I(log(sl_+1)) + 
+                                      prop_wets_start:I(log(sl_+1)) +
+                                      prop_needleleaf_end +
+                                      prop_mixforest_end +
+                                      prop_veg_end +
+                                      prop_wets_end +
+                                      I(log(ts_fires_end+1)) + 
+                                      I(log(sl_+1)):I(log(ts_fires_start+1)) +
+                                      I(log(ts_harv_end+1)) + 
+                                      I(log(sl_+1)):I(log(ts_harv_start+1)) +
+                                      I(log(distlf_end+1)) + 
+                                      I(log(sl_+1)):I(log(distlf_start+1)) +
+                                      I(log(distlf_other_end+1)) + 
+                                      I(log(sl_+1)):I(log(distlf_other_start+1)) +
+                                      disturbance_end +
+                                      I(log(sl_+1)):disturbance_start +
+                                      (1|indiv_step_id) +
+                                      (0 + I(log(sl_ +1))|id) +
+                                      (0 + I(cos(ta_))|id) +
+                                      (0 + I(log(sl_+1)):I(cos(ta_))|id) +
+                                      (0 + prop_needleleaf_start:I(log(sl_+1))|id) + 
+                                      (0 + prop_mixforest_start:I(log(sl_+1))|id) + 
+                                      (0 + prop_veg_start:I(log(sl_+1))|id) + 
+                                      (0 + prop_wets_start:I(log(sl_+1))|id) +
+                                      (0 + prop_needleleaf_end|id) +
+                                      (0 + prop_mixforest_end|id) +
+                                      (0 + prop_veg_end|id) +
+                                      (0 + prop_wets_end|id) +
+                                      (0 + (I(log(ts_fires_end+1)))|id) +
+                                      (0 + I(log(sl_+1)):I(log(ts_fires_start+1))|id) +
+                                      (0 + (I(log(ts_harv_end+1)))|id) + 
+                                      (0 + I(log(sl_+1)):I(log(ts_harv_start+1))|id) + 
+                                      (0 + I(log(distlf_end+1))|id) + 
+                                      (0 + I(log(sl_+1)):I(log(distlf_start+1))|id) +
+                                      (0 + I(log(distlf_other_end+1))|id) + 
+                                      (0 + I(log(sl_+1)):I(log(distlf_other_start+1))|id) +
+                                      (0 + disturbance_end|id) +
+                                      (0 + I(log(sl_+1)):disturbance_start|id) #+
+                                    #(1|year)
+                                    ,
+                                    family = poisson(), data = mb.2010.disk,
+                                    map= list(theta = factor(c(NA,1:21))),
+                                    start = list(theta =c(log(1000), seq(0,0, length.out = 21)))
+)
+)
 
 
+require(disk.frame)
+mb.15mil.disk <- as.disk.frame(mb.15mil, outdir = "tmp_mb", 
+                          overwrite = TRUE)
+
+p2 <- peakRAM(m.mb.15mil.disk <- glmmTMB(case_ ~ -1 +
+                                      I(log(sl_+1)) +
+                                      I(cos(ta_)) +
+                                      I(log(sl_+1)):I(cos(ta_)) +
+                                      prop_needleleaf_start:I(log(sl_+1)) + 
+                                      prop_mixforest_start:I(log(sl_+1)) + 
+                                      prop_veg_start:I(log(sl_+1)) + 
+                                      prop_wets_start:I(log(sl_+1)) +
+                                      prop_needleleaf_end +
+                                      prop_mixforest_end +
+                                      prop_veg_end +
+                                      prop_wets_end +
+                                      I(log(ts_fires_end+1)) + 
+                                      I(log(sl_+1)):I(log(ts_fires_start+1)) +
+                                      I(log(ts_harv_end+1)) + 
+                                      I(log(sl_+1)):I(log(ts_harv_start+1)) +
+                                      I(log(distlf_end+1)) + 
+                                      I(log(sl_+1)):I(log(distlf_start+1)) +
+                                      I(log(distlf_other_end+1)) + 
+                                      I(log(sl_+1)):I(log(distlf_other_start+1)) +
+                                      disturbance_end +
+                                      I(log(sl_+1)):disturbance_start +
+                                      (1|indiv_step_id) +
+                                      (0 + I(log(sl_ +1))|id) +
+                                      (0 + I(cos(ta_))|id) +
+                                      (0 + I(log(sl_+1)):I(cos(ta_))|id) +
+                                      (0 + prop_needleleaf_start:I(log(sl_+1))|id) + 
+                                      (0 + prop_mixforest_start:I(log(sl_+1))|id) + 
+                                      (0 + prop_veg_start:I(log(sl_+1))|id) + 
+                                      (0 + prop_wets_start:I(log(sl_+1))|id) +
+                                      (0 + prop_needleleaf_end|id) +
+                                      (0 + prop_mixforest_end|id) +
+                                      (0 + prop_veg_end|id) +
+                                      (0 + prop_wets_end|id) +
+                                      (0 + (I(log(ts_fires_end+1)))|id) +
+                                      (0 + I(log(sl_+1)):I(log(ts_fires_start+1))|id) +
+                                      (0 + (I(log(ts_harv_end+1)))|id) + 
+                                      (0 + I(log(sl_+1)):I(log(ts_harv_start+1))|id) + 
+                                      (0 + I(log(distlf_end+1))|id) + 
+                                      (0 + I(log(sl_+1)):I(log(distlf_start+1))|id) +
+                                      (0 + I(log(distlf_other_end+1))|id) + 
+                                      (0 + I(log(sl_+1)):I(log(distlf_other_start+1))|id) +
+                                      (0 + disturbance_end|id) +
+                                      (0 + I(log(sl_+1)):disturbance_start|id) #+
+                                    #(1|year)
+                                    ,
+                                    family = poisson(), data = mb.15mil.disk,
+                                    map= list(theta = factor(c(NA,1:21))),
+                                    start = list(theta =c(log(1000), seq(0,0, length.out = 21)))
+)
+)
 
 
 
