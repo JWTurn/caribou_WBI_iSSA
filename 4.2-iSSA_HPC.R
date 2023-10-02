@@ -5,7 +5,7 @@ require(glmmTMB)
 require(broom.mixed)
 
 #### set up ---
-#parallelly::availableCores(constraints = "connections")
+parallelly::availableCores(constraints = "connections")
 options(mc.cores = 16)
 setDTthreads(100)
 
@@ -16,7 +16,7 @@ derived <- file.path('data', 'derived-data')
 dat <- readRDS(file.path(derived, 'dat_iSSA.RDS'))
 
 
-#range(dat$year)
+range(dat$year)
 #setindex(dat, NULL)
 # yr <- dat[case_==TRUE, .(year)]
 # hist(yr$year)
@@ -84,5 +84,5 @@ m2 <- glmmTMB(case_ ~ -1 +
                    start = list(theta =c(log(1000), seq(0,0, length.out = 23)))
 )
 
-#summary(m2)
+summary(m2)
 saveRDS(m2, file.path(derived, 'mod_sel_2010-2015.RDS'))
