@@ -6,7 +6,7 @@ require(broom.mixed)
 
 #### set up ---
 #parallelly::availableCores(constraints = "connections")
-options(mc.cores = 16)
+options(mc.cores = 24)
 setDTthreads(100)
 
 ### Input data ----
@@ -15,26 +15,23 @@ derived <- file.path('data', 'derived-data')
 
 dat <- readRDS(file.path(derived, 'dat_iSSA.RDS'))
 
-
 #range(dat$year)
 #setindex(dat, NULL)
 # yr <- dat[case_==TRUE, .(year)]
 # hist(yr$year)
-dat.2010 <- dat[int.year==2010]
-#dat.2015 <- dat[int.year==2015]
-#dat.2020 <- dat[int.year==2020]
+int.yr <- 2015
+juris <- 'mb'
 
-dat.2010[,id:=as.factor(id)]
-dat.2010[,indiv_step_id := as.factor(indiv_step_id)]
-dat.2010[,jurisdiction := as.factor(jurisdiction)]
-dat.2010[,year:=as.factor(year)]
+dat.sub<- dat[int.year==int.yr & jurisdiction == juris]
+#dat.sub<- dat[int.year==int.yr]
 
-# dat.2015[,id:=as.factor(id)]
-# dat.2015[,indiv_step_id := as.factor(indiv_step_id)]
-# dat.2015[,jurisdiction := as.factor(jurisdiction)]
-# dat.2015[,year:=as.factor(year)]
+dat.sub[,indiv_step_id := as.factor(indiv_step_id)]
+#dat.sub[,jurisdiction := as.factor(jurisdiction)]
+dat.sub[,year:=as.factor(year)]
 
-m2 <- glmmTMB(case_ ~ -1 +
+print('prepped')
+
+m <- glmmTMB(case_ ~ -1 +
                      I(log(sl_+1)) +
                      I(cos(ta_)) +
                      I(log(sl_+1)):I(cos(ta_)) +
@@ -55,7 +52,7 @@ m2 <- glmmTMB(case_ ~ -1 +
                      I(log(distlf_other_end+1)) + 
                      I(log(sl_+1)):I(log(distlf_other_start+1)) +
                      disturbance_end +
-                     I(log(sl_+1)):disturbance_start +
+                    # I(log(sl_+1)):disturbance_start +
                      (1|indiv_step_id) +
                      (0 + I(log(sl_ +1))|id) +
                      (0 + I(cos(ta_))|id) +
@@ -76,13 +73,21 @@ m2 <- glmmTMB(case_ ~ -1 +
                      (0 + I(log(sl_+1)):I(log(distlf_start+1))|id) +
                      (0 + I(log(distlf_other_end+1))|id) + 
                      (0 + I(log(sl_+1)):I(log(distlf_other_start+1))|id) +
-                     (0 + disturbance_end|id) +
-                     (0 + I(log(sl_+1)):disturbance_start|id) +
-                     (1|jurisdiction) + (1|year),
-                   family = poisson(), data = dat.2010,
-                   map= list(theta = factor(c(NA,1:23))),
-                   start = list(theta =c(log(1000), seq(0,0, length.out = 23)))
-)
+                     (0 + disturbance_end|id) #+
+                    # (0 + I(log(sl_+1)):disturbance_start|id) +
+                    # (1|jurisdiction) # + 
+                    #(1|year)
+             ,
+                   family = poisson(), data = dat.sub,
+                   map= list(theta = factor(c(NA,1:20))),
+                   start = list(theta =c(log(1000), seq(0,0, length.out = 20))),
+               verbose = TRUE
+    )
 
-#summary(m2)
-saveRDS(m2, file.path(derived, 'mod_sel_2010-2015.RDS'))
+summary(m)
+
+saveRDS(m, file.path(derived, paste0('mod_sel_', juris, '_', int.yr, '-', int.yr+5,'.RDS')))
+
+
+
+
