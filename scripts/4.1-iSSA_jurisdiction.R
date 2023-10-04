@@ -95,7 +95,10 @@ saveRDS(dat.clean, file.path(derived, 'dat_iSSA.RDS'))
 
 ## START ----
 dat <- readRDS(file.path(derived, 'dat_iSSA.RDS'))
+dat[,range(year), by = .(jurisdiction)]
 
+dat.sub <- dat[year>=2014 & year<=2019]
+dat.sub[,.N, by=.(jurisdiction)]
 #setindex(dat, NULL)
 nwt <- dat[jurisdiction %in% c('nwt', 'yt')]
 nwt[,id:=as.factor(id)]
@@ -107,8 +110,11 @@ mb.2010[,indiv_step_id := as.factor(indiv_step_id)]
 mb.2010[, year := as.factor(year)]
 
 mb.2015 <- dat[jurisdiction == 'mb' & int.year ==2015]
-mb.2015[,id:=as.factor(id)]
-mb.2015[,indiv_step_id := as.factor(indiv_step_id)]
+length(unique(mb.2015$id))*.45
+mb.sub.id <- sample(unique(mb.2015$id), 150)
+mb.2015.sub <- mb.2015[id %in% mb.sub.id]
+mb.2015.sub[,id:=as.factor(id)]
+mb.2015.sub[,indiv_step_id := as.factor(indiv_step_id)]
 
 sk <- dat[jurisdiction == 'sk']
 sk[,id:=as.factor(id)]
@@ -412,7 +418,7 @@ mb.2mil[, year:= as.factor(year)]
 
 require(peakRAM)
 gc()
-p1 <- peakRAM(m.mb.2mil <- glmmTMB(case_ ~ -1 +
+p1 <- peakRAM(m.mb.2015.sub <- glmmTMB(case_ ~ -1 +
                   I(log(sl_+1)) +
                   I(cos(ta_)) +
                   I(log(sl_+1)):I(cos(ta_)) +
@@ -433,7 +439,7 @@ p1 <- peakRAM(m.mb.2mil <- glmmTMB(case_ ~ -1 +
                   I(log(distlf_other_end+1)) + 
                   I(log(sl_+1)):I(log(distlf_other_start+1)) +
                   disturbance_end +
-                  I(log(sl_+1)):disturbance_start +
+                 # I(log(sl_+1)):disturbance_start +
                   (1|indiv_step_id) +
                   (0 + I(log(sl_ +1))|id) +
                   (0 + I(cos(ta_))|id) +
@@ -454,13 +460,13 @@ p1 <- peakRAM(m.mb.2mil <- glmmTMB(case_ ~ -1 +
                   (0 + I(log(sl_+1)):I(log(distlf_start+1))|id) +
                   (0 + I(log(distlf_other_end+1))|id) + 
                   (0 + I(log(sl_+1)):I(log(distlf_other_start+1))|id) +
-                  (0 + disturbance_end|id) +
-                  (0 + I(log(sl_+1)):disturbance_start|id) #+
-                 # (1|year)
+                  (0 + disturbance_end|id)# +
+                  #(0 + I(log(sl_+1)):disturbance_start|id) #+
+                  #(1|year)
                   ,
-                family = poisson(), data = mb.2mil,
-                map= list(theta = factor(c(NA,1:21))),
-                start = list(theta =c(log(1000), seq(0,0, length.out = 21)))
+                family = poisson(), data = mb.2015.sub,
+                map= list(theta = factor(c(NA,1:20))),
+                start = list(theta =c(log(1000), seq(0,0, length.out = 20)))
 )
 )
 
