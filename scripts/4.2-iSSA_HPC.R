@@ -188,7 +188,7 @@ m <- glmmTMB(case_ ~ -1 +
                    family = poisson(), data = dat.sub,
                    map= list(theta = factor(c(NA,1:15))),
                    start = list(theta =c(log(1000), seq(0,0, length.out = 15))),
-               verbose = TRUE
+               verbose = TRUE, control = glmmTMBControl(rank_check = "adjust")
     )
 #20
 summary(m)
