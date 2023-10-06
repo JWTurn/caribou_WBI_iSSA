@@ -21,7 +21,7 @@ dat <- readRDS(file.path(derived, 'dat_iSSA.RDS'))
 #setindex(dat, NULL)
 # yr <- dat[case_==TRUE, .(year)]
 # hist(yr$year)
-int.yr <- 2015
+int.yr <- 2010
 juris <- 'mb'
 
 #dat.yr<- dat[int.year==int.yr & jurisdiction == juris]
@@ -140,7 +140,7 @@ print('prepped')
 
 m <- glmmTMB(case_ ~ -1 +
                      I(log(sl_+1)) +
-                     I(cos(ta_)) +
+                    # I(cos(ta_)) +
                      I(log(sl_+1)):I(cos(ta_)) +
                      prop_needleleaf_start:I(log(sl_+1)) +
                      prop_mixforest_start:I(log(sl_+1)) +
@@ -162,7 +162,7 @@ m <- glmmTMB(case_ ~ -1 +
                     # I(log(sl_+1)):disturbance_start +
                      (1|indiv_step_id) +
                      (0 + I(log(sl_ +1))|id) +
-                     (0 + I(cos(ta_))|id) +
+                     #(0 + I(cos(ta_))|id) +
                      (0 + I(log(sl_+1)):I(cos(ta_))|id) +
                      (0 + prop_needleleaf_start:I(log(sl_+1))|id) +
                      (0 + prop_mixforest_start:I(log(sl_+1))|id) +
@@ -186,14 +186,15 @@ m <- glmmTMB(case_ ~ -1 +
                     #(1|year)
              ,
                    family = poisson(), data = dat.sub,
-                   map= list(theta = factor(c(NA,1:16))),
-                   start = list(theta =c(log(1000), seq(0,0, length.out = 16))),
-               verbose = TRUE, control = glmmTMBControl(rank_check = "adjust")
+                   map= list(theta = factor(c(NA,1:15))),
+                   start = list(theta =c(log(1000), seq(0,0, length.out = 15))),
+               verbose = TRUE#, control = glmmTMBControl(rank_check = "adjust")
     )
 #20
 summary(m)
 
-saveRDS(m, file.path(derived, paste0('mod_selmove_', juris, '_', int.yr, '-', int.yr+5,'_HPC.RDS')))
+saveRDS(m, file.path(derived, paste0('mod_selmove_', #juris, '_', 
+                                     int.yr, '-', int.yr+5,'_HPC.RDS')))
 
 
 
