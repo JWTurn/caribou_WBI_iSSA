@@ -155,9 +155,9 @@ m <- glmmTMB(case_ ~ -1 +
                      I(log(ts_harv_end+1)) +
                      #I(log(sl_+1)):I(log(ts_harv_start+1)) +
                      I(log(distlf_end+1)) +
-                     #I(log(sl_+1)):I(log(distlf_start+1)) +
+                     I(log(sl_+1)):I(log(distlf_start+1)) +
                      I(log(distlf_other_end+1)) +
-                     #I(log(sl_+1)):I(log(distlf_other_start+1)) +
+                     I(log(sl_+1)):I(log(distlf_other_start+1)) +
                      disturbance_end +
                     # I(log(sl_+1)):disturbance_start +
                      (1|indiv_step_id) +
@@ -177,18 +177,18 @@ m <- glmmTMB(case_ ~ -1 +
                      (0 + (I(log(ts_harv_end+1)))|id) +
                      #(0 + I(log(sl_+1)):I(log(ts_harv_start+1))|id) +
                      (0 + I(log(distlf_end+1))|id) +
-                     #(0 + I(log(sl_+1)):I(log(distlf_start+1))|id) +
+                     (0 + I(log(sl_+1)):I(log(distlf_start+1))|id) +
                      (0 + I(log(distlf_other_end+1))|id) +
-                     #(0 + I(log(sl_+1)):I(log(distlf_other_start+1))|id) +
+                     (0 + I(log(sl_+1)):I(log(distlf_other_start+1))|id) +
                      (0 + disturbance_end|id) #+
                     # (0 + I(log(sl_+1)):disturbance_start|id) +
                     # (1|jurisdiction) # +
                     #(1|year)
              ,
                    family = poisson(), data = dat.sub,
-                   map= list(theta = factor(c(NA,1:15))),
-                   start = list(theta =c(log(1000), seq(0,0, length.out = 15))),
-               verbose = TRUE#, control = glmmTMBControl(rank_check = "adjust")
+                   map= list(theta = factor(c(NA,1:17))),
+                   start = list(theta =c(log(1000), seq(0,0, length.out = 17))),
+               verbose = TRUE, control = glmmTMBControl(rank_check = "adjust")
     )
 #20
 summary(m)
