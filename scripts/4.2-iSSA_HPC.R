@@ -21,7 +21,7 @@ dat <- readRDS(file.path(derived, 'dat_iSSA.RDS'))
 #setindex(dat, NULL)
 # yr <- dat[case_==TRUE, .(year)]
 # hist(yr$year)
-int.yr <- 2010
+int.yr <- 2015
 juris <- 'mb'
 
 #dat.yr<- dat[int.year==int.yr & jurisdiction == juris]
