@@ -33,6 +33,7 @@ dat.sub<- dat.yr[!(id %in% indivs)]
 dat.sub[,indiv_step_id := as.factor(indiv_step_id)]
 dat.sub[,jurisdiction := as.factor(jurisdiction)]
 dat.sub[,year:=as.factor(year)]
+dat.sub[,pop := as.factor(pop)]
 
 print('prepped')
 
@@ -151,9 +152,9 @@ m <- glmmTMB(case_ ~ -1 +
                      prop_veg_end +
                      prop_wets_end +
                      I(log(ts_fires_end+1)) +
-                     #I(log(sl_+1)):I(log(ts_fires_start+1)) +
+                     I(log(sl_+1)):I(log(ts_fires_start+1)) +
                      I(log(ts_harv_end+1)) +
-                     #I(log(sl_+1)):I(log(ts_harv_start+1)) +
+                     I(log(sl_+1)):I(log(ts_harv_start+1)) +
                      I(log(distlf_end+1)) +
                      I(log(sl_+1)):I(log(distlf_start+1)) +
                      I(log(distlf_other_end+1)) +
@@ -177,12 +178,12 @@ m <- glmmTMB(case_ ~ -1 +
                      (0 + (I(log(ts_harv_end+1)))|id) +
                      #(0 + I(log(sl_+1)):I(log(ts_harv_start+1))|id) +
                      (0 + I(log(distlf_end+1))|id) +
-                     #(0 + I(log(sl_+1)):I(log(distlf_start+1))|id) +
+                     (0 + I(log(sl_+1)):I(log(distlf_start+1))|id) +
                      (0 + I(log(distlf_other_end+1))|id) +
-                     #(0 + I(log(sl_+1)):I(log(distlf_other_start+1))|id) +
+                     (0 + I(log(sl_+1)):I(log(distlf_other_start+1))|id) +
                      (0 + disturbance_end|id) +
                     # (0 + I(log(sl_+1)):disturbance_start|id) +
-                     (1|jurisdiction) # +
+                     (1|pop) # +
                     #(1|year)
              ,
                    family = poisson(), data = dat.sub,
