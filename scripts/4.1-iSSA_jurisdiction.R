@@ -11,12 +11,18 @@ require(performance)
 raw <- file.path('data', 'raw-data')
 derived <- file.path('data', 'derived-data')
 
+set.seed(53)
+#########################################################################################
+
 # prepped <- readRDS(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.RDS'))
 # meta <- unique(prepped[,.(id, jurisdiction, pop=tolower(gsub(' ', '.',pop)), subpop)])
 
 dat.derive <- targets::tar_read(stepID)
 # dat <- merge(dat, meta, by = 'id', all.x = T)
 
+dat.derive[case_==TRUE,.(quantile(sl_)), by = .(jurisdiction)]
+
+test <- dat.derive[sl_>12000, .N, by = .(indiv_step_id)]
 
 # remove tracks that couldn't estimate movement parameters at this fix rate
 dat.steps <- dat.derive[!is.na(x2_) & !is.na(y2_),.(n = .N), by = .(indiv_step_id)]
@@ -81,7 +87,7 @@ dat[,range(year), by = .(jurisdiction)]
 
 ### cleaning to just what we need -- trying to save memory space
 dat.clean <- dat[,.(x1_ = as.integer(x1_), y1_ = as.integer(y1_), x2_ = as.integer(x2_), y2_ = as.integer(y2_),
-                    sl_ = as.integer(sl_), ta_, id, jurisdiction, t1_, t2_, case_, step_id_ = as.integer(step_id_),
+                    sl_ = as.integer(sl_), ta_, id, jurisdiction, pop, t1_, t2_, case_, step_id_ = as.integer(step_id_),
                     year = as.integer(year), int.year = as.integer(int.year), 
                     prop_wets_start, prop_veg_start, prop_needleleaf_start, prop_mixforest_start, 
                     prop_wets_end, prop_veg_end, prop_needleleaf_end, prop_mixforest_end, 
@@ -95,31 +101,38 @@ saveRDS(dat.clean, file.path(derived, 'dat_iSSA.RDS'))
 
 ## START ----
 dat <- readRDS(file.path(derived, 'dat_iSSA.RDS'))
+
 dat[,range(year), by = .(jurisdiction)]
 
 dat.sub <- dat[year>=2014 & year<=2019]
 dat.sub[,.N, by=.(jurisdiction)]
 #setindex(dat, NULL)
+
+### nwt ----
 nwt <- dat[jurisdiction %in% c('nwt', 'yt')]
 nwt[,id:=as.factor(id)]
 nwt[,indiv_step_id := as.factor(indiv_step_id)]
 
+### mb ----
 mb.2010 <- dat[jurisdiction == 'mb' & int.year ==2010]
 mb.2010[,id:=as.factor(id)]
 mb.2010[,indiv_step_id := as.factor(indiv_step_id)]
 mb.2010[, year := as.factor(year)]
 
 mb.2015 <- dat[jurisdiction == 'mb' & int.year ==2015]
-length(unique(mb.2015$id))*.45
-mb.sub.id <- sample(unique(mb.2015$id), 150)
+length(unique(mb.2015$id))*.5
+# worked when sampled 150 indivs
+mb.sub.id <- sample(unique(mb.2015$id), floor(length(unique(mb.2015$id))*.50))
 mb.2015.sub <- mb.2015[id %in% mb.sub.id]
 mb.2015.sub[,id:=as.factor(id)]
 mb.2015.sub[,indiv_step_id := as.factor(indiv_step_id)]
 
+### sk ----
 sk <- dat[jurisdiction == 'sk']
 sk[,id:=as.factor(id)]
 sk[,indiv_step_id := as.factor(indiv_step_id)]
 
+### bc ----
 bc <- dat[jurisdiction == 'bc']
 bc[,id:=as.factor(id)]
 bc[,indiv_step_id := as.factor(indiv_step_id)]
@@ -214,7 +227,7 @@ m.nwt <- glmmTMB(case_ ~ -1 +
                   I(log(distlf_other_end+1)) + 
                   I(log(sl_+1)):I(log(distlf_other_start+1)) +
                   disturbance_end +
-                  I(log(sl_+1)):disturbance_start +
+                #  I(log(sl_+1)):disturbance_start +
                   (1|indiv_step_id) +
                   (0 + I(log(sl_ +1))|id) +
                   (0 + I(cos(ta_))|id) +
@@ -236,11 +249,11 @@ m.nwt <- glmmTMB(case_ ~ -1 +
                   (0 + I(log(distlf_other_end+1))|id) + 
                   (0 + I(log(sl_+1)):I(log(distlf_other_start+1))|id) +
                   (0 + disturbance_end|id) +
-                  (0 + I(log(sl_+1)):disturbance_start|id) +
+                  #(0 + I(log(sl_+1)):disturbance_start|id) +
                   (1|year),
                 family = poisson(), data = nwt,
-                map= list(theta = factor(c(NA,1:22))),
-                start = list(theta =c(log(1000), seq(0,0, length.out = 22)))
+                map= list(theta = factor(c(NA,1:21))),
+                start = list(theta =c(log(1000), seq(0,0, length.out = 21)))
 )
 
 
@@ -272,7 +285,7 @@ m.bc <- glmmTMB(case_ ~ -1 +
                    I(log(distlf_other_end+1)) + 
                    I(log(sl_+1)):I(log(distlf_other_start+1)) +
                    disturbance_end +
-                   I(log(sl_+1)):disturbance_start +
+                  # I(log(sl_+1)):disturbance_start +
                    (1|indiv_step_id) +
                    (0 + I(log(sl_ +1))|id) +
                    (0 + I(cos(ta_))|id) +
@@ -294,11 +307,11 @@ m.bc <- glmmTMB(case_ ~ -1 +
                    (0 + I(log(distlf_other_end+1))|id) + 
                    (0 + I(log(sl_+1)):I(log(distlf_other_start+1))|id) +
                    (0 + disturbance_end|id) +
-                   (0 + I(log(sl_+1)):disturbance_start|id) +
+                   #(0 + I(log(sl_+1)):disturbance_start|id) +
                    (1|year),
                  family = poisson(), data = bc,
-                 map= list(theta = factor(c(NA,1:22))),
-                 start = list(theta =c(log(1000), seq(0,0, length.out = 22)))
+                 map= list(theta = factor(c(NA,1:21))),
+                 start = list(theta =c(log(1000), seq(0,0, length.out = 21)))
 )
 
 
@@ -330,7 +343,7 @@ m.sk <- glmmTMB(case_ ~ -1 +
                    I(log(distlf_other_end+1)) + 
                    I(log(sl_+1)):I(log(distlf_other_start+1)) +
                    disturbance_end +
-                   I(log(sl_+1)):disturbance_start +
+                  # I(log(sl_+1)):disturbance_start +
                    (1|indiv_step_id) +
                    (0 + I(log(sl_ +1))|id) +
                    (0 + I(cos(ta_))|id) +
@@ -352,11 +365,11 @@ m.sk <- glmmTMB(case_ ~ -1 +
                    (0 + I(log(distlf_other_end+1))|id) + 
                    (0 + I(log(sl_+1)):I(log(distlf_other_start+1))|id) +
                    (0 + disturbance_end|id) +
-                   (0 + I(log(sl_+1)):disturbance_start|id) +
+                   #(0 + I(log(sl_+1)):disturbance_start|id) +
                    (1|year),
                  family = poisson(), data = sk,
-                 map= list(theta = factor(c(NA,1:22))),
-                 start = list(theta =c(log(1000), seq(0,0, length.out = 22)))
+                 map= list(theta = factor(c(NA,1:21))),
+                 start = list(theta =c(log(1000), seq(0,0, length.out = 21)))
 )
 
 
@@ -376,45 +389,7 @@ mb[,.(sl = mean(sl_, na.rm =T), distlf_end =mean(distlf_end, na.rm = T), distlf_
        tsh = mean(ts_harv_end, na.rm = T))]
 
 
-mb.sub <- mb[sl_<=10000]
-mb.sub[, year:= as.factor(year)]
-mb.sub[,.(needle =mean(prop_needleleaf_end, na.rm = T), mixforest =mean(prop_mixforest_end, na.rm = T), veg = mean(prop_veg_end, na.rm = T),
-      open = mean(prop_open_end, na.rm = T), wets = mean(prop_wets_end, na.rm = T),
-      openbarren = mean(prop_openbarren_end, na.rm = T), otherveg = mean(prop_otherveg_end, na.rm = T))]
 
-mb.sub[,.(sl = mean(sl_, na.rm =T), distlf_end =mean(distlf_end, na.rm = T), distlf_other_end = mean(distlf_other_end, na.rm = T),
-      disturbance = mean(disturbance_end, na.rm = T), tsf = mean(ts_fires_end, na.rm = T),
-      tsh = mean(ts_harv_end, na.rm = T))]
-
-mb.sub[,.(sl = mean(sl_), distlf_end =mean(distlf_end), distlf_other_end = mean(distlf_other_end),
-          disturbance = mean(disturbance_end), tsf = mean(ts_fires_end),
-          tsh = mean(ts_harv_end))]
-
-mb.sub[, prop_needlewet_end := prop_needleleaf_end + prop_wettreed_end]
-mb.sub[, prop_needlewet_start := prop_needleleaf_start + prop_wettreed_start]
-
-mb.2010 <- dat[jurisdiction == 'mb' & int.year ==2010]
-mb.2010[,id:=as.factor(id)]
-mb.2010[,indiv_step_id := as.factor(indiv_step_id)]
-mb.2010[, year:= as.factor(year)]
-
-mb.2015 <- dat[jurisdiction == 'mb' & int.year ==2015]
-mb.2015[,id:=as.factor(id)]
-mb.2015[,indiv_step_id := as.factor(indiv_step_id)]
-
-mb.201719 <- dat[jurisdiction == 'mb' & year >=2017 & year<2019]
-mb.201719[,id:=as.factor(id)]
-mb.201719[,indiv_step_id := as.factor(indiv_step_id)]
-
-mb.201720 <- dat[jurisdiction == 'mb' & year >=2017 & year<=2020]
-mb.201720[,id:=as.factor(id)]
-mb.201720[,indiv_step_id := as.factor(indiv_step_id)]
-
-
-mb.2mil <- dat[jurisdiction == 'mb'][1:2000000]
-mb.2mil[,id:=as.factor(id)]
-mb.2mil[,indiv_step_id := as.factor(indiv_step_id)]
-mb.2mil[, year:= as.factor(year)]
 
 require(peakRAM)
 gc()
@@ -460,132 +435,20 @@ p1 <- peakRAM(m.mb.2015.sub <- glmmTMB(case_ ~ -1 +
                   (0 + I(log(sl_+1)):I(log(distlf_start+1))|id) +
                   (0 + I(log(distlf_other_end+1))|id) + 
                   (0 + I(log(sl_+1)):I(log(distlf_other_start+1))|id) +
-                  (0 + disturbance_end|id)# +
+                  (0 + disturbance_end|id) +
                   #(0 + I(log(sl_+1)):disturbance_start|id) #+
                   #(1|year)
                   ,
                 family = poisson(), data = mb.2015.sub,
                 map= list(theta = factor(c(NA,1:20))),
-                start = list(theta =c(log(1000), seq(0,0, length.out = 20)))
+                start = list(theta =c(log(1000), seq(0,0, length.out = 20))),
+                verbose = TRUE
 )
 )
 
 
-summary(m.mb.2010)
-saveRDS(m.mb.2010, file.path(derived, 'mod_selmove_mb_2010.RDS'))
-
-require(disk.frame)
-mb.2010.disk <- as.disk.frame(mb.2010, outdir = "tmp_mb", 
-                               overwrite = TRUE)
-
-p3 <- peakRAM(m.mb.2010<- glmmTMB(case_ ~ -1 +
-                                      I(log(sl_+1)) +
-                                      I(cos(ta_)) +
-                                      I(log(sl_+1)):I(cos(ta_)) +
-                                      prop_needleleaf_start:I(log(sl_+1)) + 
-                                      prop_mixforest_start:I(log(sl_+1)) + 
-                                      prop_veg_start:I(log(sl_+1)) + 
-                                      prop_wets_start:I(log(sl_+1)) +
-                                      prop_needleleaf_end +
-                                      prop_mixforest_end +
-                                      prop_veg_end +
-                                      prop_wets_end +
-                                      I(log(ts_fires_end+1)) + 
-                                      I(log(sl_+1)):I(log(ts_fires_start+1)) +
-                                      I(log(ts_harv_end+1)) + 
-                                      I(log(sl_+1)):I(log(ts_harv_start+1)) +
-                                      I(log(distlf_end+1)) + 
-                                      I(log(sl_+1)):I(log(distlf_start+1)) +
-                                      I(log(distlf_other_end+1)) + 
-                                      I(log(sl_+1)):I(log(distlf_other_start+1)) +
-                                      disturbance_end +
-                                      I(log(sl_+1)):disturbance_start +
-                                      (1|indiv_step_id) +
-                                      (0 + I(log(sl_ +1))|id) +
-                                      (0 + I(cos(ta_))|id) +
-                                      (0 + I(log(sl_+1)):I(cos(ta_))|id) +
-                                      (0 + prop_needleleaf_start:I(log(sl_+1))|id) + 
-                                      (0 + prop_mixforest_start:I(log(sl_+1))|id) + 
-                                      (0 + prop_veg_start:I(log(sl_+1))|id) + 
-                                      (0 + prop_wets_start:I(log(sl_+1))|id) +
-                                      (0 + prop_needleleaf_end|id) +
-                                      (0 + prop_mixforest_end|id) +
-                                      (0 + prop_veg_end|id) +
-                                      (0 + prop_wets_end|id) +
-                                      (0 + (I(log(ts_fires_end+1)))|id) +
-                                      (0 + I(log(sl_+1)):I(log(ts_fires_start+1))|id) +
-                                      (0 + (I(log(ts_harv_end+1)))|id) + 
-                                      (0 + I(log(sl_+1)):I(log(ts_harv_start+1))|id) + 
-                                      (0 + I(log(distlf_end+1))|id) + 
-                                      (0 + I(log(sl_+1)):I(log(distlf_start+1))|id) +
-                                      (0 + I(log(distlf_other_end+1))|id) + 
-                                      (0 + I(log(sl_+1)):I(log(distlf_other_start+1))|id) +
-                                      (0 + disturbance_end|id) +
-                                      (0 + I(log(sl_+1)):disturbance_start|id) #+
-                                    #(1|year)
-                                    ,
-                                    family = poisson(), data = mb.2010.disk,
-                                    map= list(theta = factor(c(NA,1:21))),
-                                    start = list(theta =c(log(1000), seq(0,0, length.out = 21)))
-)
-)
-
-
-require(disk.frame)
-mb.15mil.disk <- as.disk.frame(mb.15mil, outdir = "tmp_mb", 
-                          overwrite = TRUE)
-
-p2 <- peakRAM(m.mb.15mil.disk <- glmmTMB(case_ ~ -1 +
-                                      I(log(sl_+1)) +
-                                      I(cos(ta_)) +
-                                      I(log(sl_+1)):I(cos(ta_)) +
-                                      prop_needleleaf_start:I(log(sl_+1)) + 
-                                      prop_mixforest_start:I(log(sl_+1)) + 
-                                      prop_veg_start:I(log(sl_+1)) + 
-                                      prop_wets_start:I(log(sl_+1)) +
-                                      prop_needleleaf_end +
-                                      prop_mixforest_end +
-                                      prop_veg_end +
-                                      prop_wets_end +
-                                      I(log(ts_fires_end+1)) + 
-                                      I(log(sl_+1)):I(log(ts_fires_start+1)) +
-                                      I(log(ts_harv_end+1)) + 
-                                      I(log(sl_+1)):I(log(ts_harv_start+1)) +
-                                      I(log(distlf_end+1)) + 
-                                      I(log(sl_+1)):I(log(distlf_start+1)) +
-                                      I(log(distlf_other_end+1)) + 
-                                      I(log(sl_+1)):I(log(distlf_other_start+1)) +
-                                      disturbance_end +
-                                      I(log(sl_+1)):disturbance_start +
-                                      (1|indiv_step_id) +
-                                      (0 + I(log(sl_ +1))|id) +
-                                      (0 + I(cos(ta_))|id) +
-                                      (0 + I(log(sl_+1)):I(cos(ta_))|id) +
-                                      (0 + prop_needleleaf_start:I(log(sl_+1))|id) + 
-                                      (0 + prop_mixforest_start:I(log(sl_+1))|id) + 
-                                      (0 + prop_veg_start:I(log(sl_+1))|id) + 
-                                      (0 + prop_wets_start:I(log(sl_+1))|id) +
-                                      (0 + prop_needleleaf_end|id) +
-                                      (0 + prop_mixforest_end|id) +
-                                      (0 + prop_veg_end|id) +
-                                      (0 + prop_wets_end|id) +
-                                      (0 + (I(log(ts_fires_end+1)))|id) +
-                                      (0 + I(log(sl_+1)):I(log(ts_fires_start+1))|id) +
-                                      (0 + (I(log(ts_harv_end+1)))|id) + 
-                                      (0 + I(log(sl_+1)):I(log(ts_harv_start+1))|id) + 
-                                      (0 + I(log(distlf_end+1))|id) + 
-                                      (0 + I(log(sl_+1)):I(log(distlf_start+1))|id) +
-                                      (0 + I(log(distlf_other_end+1))|id) + 
-                                      (0 + I(log(sl_+1)):I(log(distlf_other_start+1))|id) +
-                                      (0 + disturbance_end|id) +
-                                      (0 + I(log(sl_+1)):disturbance_start|id) #+
-                                    #(1|year)
-                                    ,
-                                    family = poisson(), data = mb.15mil.disk,
-                                    map= list(theta = factor(c(NA,1:21))),
-                                    start = list(theta =c(log(1000), seq(0,0, length.out = 21)))
-)
-)
+summary(m.mb.2015.sub)
+saveRDS(m.mb.2015.sub, file.path(derived, 'mod_selmove_mb_2015_50.RDS'))
 
 
 
