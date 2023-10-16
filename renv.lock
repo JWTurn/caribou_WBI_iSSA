@@ -279,48 +279,6 @@
       ],
       "Hash": "34fdf91e83054af6caf6e06ebbe9397a"
     },
-    "arrow": {
-      "Package": "arrow",
-      "Version": "13.0.0.1",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "R6",
-        "assertthat",
-        "bit64",
-        "cpp11",
-        "glue",
-        "methods",
-        "purrr",
-        "rlang",
-        "stats",
-        "tidyselect",
-        "utils",
-        "vctrs"
-      ],
-      "Hash": "5f5124b727a451be32d23dcd2c41ebe8"
-    },
-    "askpass": {
-      "Package": "askpass",
-      "Version": "1.2.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "sys"
-      ],
-      "Hash": "cad6cf7f1d5f6e906700b9d3e718c796"
-    },
-    "assertthat": {
-      "Package": "assertthat",
-      "Version": "0.2.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "tools"
-      ],
-      "Hash": "50c838a310445e954bc13f26f26a6ecf"
-    },
     "backports": {
       "Package": "backports",
       "Version": "1.4.1",
@@ -396,88 +354,6 @@
         "methods"
       ],
       "Hash": "b55d57db210e5af3f097ae228aadaf50"
-    },
-    "benchmarkme": {
-      "Package": "benchmarkme",
-      "Version": "1.0.8",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "Matrix",
-        "R",
-        "benchmarkmeData",
-        "compiler",
-        "doParallel",
-        "dplyr",
-        "foreach",
-        "graphics",
-        "httr",
-        "methods",
-        "parallel",
-        "stringr",
-        "tibble",
-        "utils"
-      ],
-      "Hash": "eaa6ca07e7dfe815da4c1f62a425d9d2"
-    },
-    "benchmarkmeData": {
-      "Package": "benchmarkmeData",
-      "Version": "1.0.4",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "dplyr",
-        "graphics",
-        "tibble",
-        "utils"
-      ],
-      "Hash": "03127f8e60281ab3c52f96bb98056dcb"
-    },
-    "bigassertr": {
-      "Package": "bigassertr",
-      "Version": "0.1.6",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Hash": "02a2208d425b3446e7ecf1eaa8dbcd44"
-    },
-    "bigreadr": {
-      "Package": "bigreadr",
-      "Version": "0.2.5",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "Rcpp",
-        "bigassertr",
-        "data.table",
-        "parallelly",
-        "utils"
-      ],
-      "Hash": "7d2cd7de56750f0fa7859c705c734dc0"
-    },
-    "bit": {
-      "Package": "bit",
-      "Version": "4.0.5",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "d242abec29412ce988848d0294b208fd"
-    },
-    "bit64": {
-      "Package": "bit64",
-      "Version": "4.0.5",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "bit",
-        "methods",
-        "stats",
-        "utils"
-      ],
-      "Hash": "9fe98599ca456d6552421db0d6772d8f"
     },
     "boot": {
       "Package": "boot",
@@ -739,16 +615,6 @@
       ],
       "Hash": "89f26e40b90ac1dd569d9c834940e7e1"
     },
-    "curl": {
-      "Package": "curl",
-      "Version": "5.1.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "9123f3ef96a2c1a93927d828b2fe7d4c"
-    },
     "data.table": {
       "Package": "data.table",
       "Version": "1.14.8",
@@ -813,35 +679,6 @@
       ],
       "Hash": "b18a9cf3c003977b0cc49d5e76ebe48d"
     },
-    "disk.frame": {
-      "Package": "disk.frame",
-      "Version": "0.8.3",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "Rcpp",
-        "arrow",
-        "benchmarkme",
-        "bigreadr",
-        "bit64",
-        "crayon",
-        "data.table",
-        "dplyr",
-        "fs",
-        "fst",
-        "future",
-        "future.apply",
-        "globals",
-        "glue",
-        "jsonlite",
-        "pryr",
-        "purrr",
-        "rlang",
-        "stringr"
-      ],
-      "Hash": "6c772ff560b6a3a206484f264299cd91"
-    },
     "distanceto": {
       "Package": "distanceto",
       "Version": "0.0.3",
@@ -853,20 +690,6 @@
         "sf"
       ],
       "Hash": "1be3b9dba87bd9ca711431f20977b748"
-    },
-    "doParallel": {
-      "Package": "doParallel",
-      "Version": "1.0.17",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "foreach",
-        "iterators",
-        "parallel",
-        "utils"
-      ],
-      "Hash": "451e5edf411987991ab6a5410c45011f"
     },
     "dplyr": {
       "Package": "dplyr",
@@ -1053,29 +876,6 @@
       ],
       "Hash": "47b5f30c720c23999b913a1a635cf0bb"
     },
-    "fst": {
-      "Package": "fst",
-      "Version": "0.9.8",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "Rcpp",
-        "fstcore"
-      ],
-      "Hash": "34637e000c63c3de8d8aafceb82fd082"
-    },
-    "fstcore": {
-      "Package": "fstcore",
-      "Version": "0.9.14",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "Rcpp"
-      ],
-      "Hash": "4b8819aaa8d1ce9b0f999d23ad24f96b"
-    },
     "furrr": {
       "Package": "furrr",
       "Version": "0.3.1",
@@ -1106,20 +906,6 @@
         "utils"
       ],
       "Hash": "8e92c7bc53e91b9bb1faf9a6ef0e8514"
-    },
-    "future.apply": {
-      "Package": "future.apply",
-      "Version": "1.11.0",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "future",
-        "globals",
-        "parallel",
-        "utils"
-      ],
-      "Hash": "ba4be138fe47eac3e16a6deaa4da106e"
     },
     "future.callr": {
       "Package": "future.callr",
@@ -1289,21 +1075,6 @@
       ],
       "Hash": "a2326a66919a3311f7fbb1e3bf568283"
     },
-    "httr": {
-      "Package": "httr",
-      "Version": "1.4.7",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "R6",
-        "curl",
-        "jsonlite",
-        "mime",
-        "openssl"
-      ],
-      "Hash": "ac107251d9d9fd72f0ca8049988f1d7f"
-    },
     "igraph": {
       "Package": "igraph",
       "Version": "1.5.1",
@@ -1471,21 +1242,6 @@
         "utils"
       ],
       "Hash": "73ed88b282d27d4cf3d89b744aa21217"
-    },
-    "lobstr": {
-      "Package": "lobstr",
-      "Version": "1.1.2",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "cpp11",
-        "crayon",
-        "methods",
-        "prettyunits",
-        "rlang"
-      ],
-      "Hash": "f2a94f8fc9db382a642e965339635ad6"
     },
     "lubridate": {
       "Package": "lubridate",
@@ -1656,16 +1412,6 @@
       ],
       "Hash": "df58958f293b166e4ab885ebcad90e02"
     },
-    "openssl": {
-      "Package": "openssl",
-      "Version": "2.1.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "askpass"
-      ],
-      "Hash": "2a0dc8c6adfb6f032e4d4af82d258ab5"
-    },
     "parallelly": {
       "Package": "parallelly",
       "Version": "1.36.0",
@@ -1691,16 +1437,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "643e16a7da6aac3e18cadc3e14abb94b"
-    },
-    "peakRAM": {
-      "Package": "peakRAM",
-      "Version": "1.0.2",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "3ce98cb043968d0370d17807f4c25f0a"
     },
     "performance": {
       "Package": "performance",
@@ -1850,21 +1586,6 @@
         "utils"
       ],
       "Hash": "e0ef355c12942cf7a6b91a6cfaea8b3e"
-    },
-    "pryr": {
-      "Package": "pryr",
-      "Version": "0.1.6",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "Rcpp",
-        "codetools",
-        "lobstr",
-        "methods",
-        "stringr"
-      ],
-      "Hash": "cfcbe960eca81ceca61df5fa622693de"
     },
     "ps": {
       "Package": "ps",
@@ -2204,13 +1925,6 @@
         "utils"
       ],
       "Hash": "b8e943d262c3da0b0febd3e04517c197"
-    },
-    "sys": {
-      "Package": "sys",
-      "Version": "3.4.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "3a1be13d68d47a8cd0bfd74739ca1555"
     },
     "tarchetypes": {
       "Package": "tarchetypes",
