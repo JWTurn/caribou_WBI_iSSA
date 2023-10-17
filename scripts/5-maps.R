@@ -22,45 +22,78 @@ studyArea <- vect(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_
 ab.range <- vect(file.path(canada, 'AB_CaribouSubregionalPlanBoundaries', 'CARIBOU_SUB_REGIONAL_PLAN_BOUNDARIES_2022_07_04.shp'))
 
 # load layers
-year = 2010
+year = 2015
 linfeat_other <- rast(file.path('data', 'raw-data', 'ECCC_disturbance', 
                                 paste0('WB_lfother_', year, '_distto.tif')))
 disturb <- rast(file.path('data', 'raw-data', 'ECCC_disturbance', 
                           paste0('WB_disturb_other_', year, '.tif')))
 
 
-needleleaf <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                             paste0('needleleaf_500', '.tif')))
-deciduous <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                            paste0('deciduous_500', '.tif')))
-mixed <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                        paste0('mixed_500', '.tif')))
-shrub <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                        paste0('shrub_500', '.tif')))
-grassland <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                            paste0('grassland_500', '.tif')))
-lichenshrub <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                              paste0('lichenshrub_500', '.tif')))
-lichengrass <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                              paste0('lichengrass_500', '.tif')))
-wetland <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                          paste0('wet_500', '.tif')))
-barrenland <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                             paste0('barrenland_500', '.tif')))
-water <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                        paste0('water_500', '.tif')))
-snow <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
-                       paste0('snow_500', '.tif')))
+yr = 2019
 
-prop_forest <- needleleaf + deciduous + mixed
-prop_forage <- shrub + grassland + lichenshrub+ lichengrass
-prop_open <- barrenland + snow
-prop_wets <- wetland + water
+bryoids <- rast(file.path('data', 'raw-data','prop_land', yr, '500grid', 
+                                  paste0('bryoids_500', '.tif')))
+
+shrub <- rast(file.path('data', 'raw-data','prop_land', yr, '500grid', 
+                                paste0('shrub_500', '.tif')))
+
+wet <- rast(file.path('data', 'raw-data','prop_land', yr, '500grid', 
+                              paste0('wet_500', '.tif')))
+
+wettreed <- rast(file.path('data', 'raw-data','prop_land', yr, '500grid', 
+                                   paste0('wet_treed_500', '.tif')))
+
+herbs <- rast(file.path('data', 'raw-data','prop_land', yr, '500grid', 
+                                paste0('herbs_500', '.tif')))
+
+needleleaf<- rast(file.path('data', 'raw-data','prop_land', yr, '500grid', 
+                                     paste0('needleleaf_500', '.tif')))
+
+deciduous <- rast(file.path('data', 'raw-data','prop_land', yr, '500grid', 
+                                    paste0('deciduous_500', '.tif')))
+
+mixed <- rast(file.path('data', 'raw-data','prop_land', yr, '500grid', 
+                                paste0('mixed_500', '.tif')))
+
+
+prop_needleleaf <- needleleaf
+prop_mixforest <- deciduous + mixed + wettreed
+prop_veg <- shrub + bryoids + herbs
+prop_wets <- wet
+
+# needleleaf <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
+#                              paste0('needleleaf_500', '.tif')))
+# deciduous <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
+#                             paste0('deciduous_500', '.tif')))
+# mixed <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
+#                         paste0('mixed_500', '.tif')))
+# shrub <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
+#                         paste0('shrub_500', '.tif')))
+# grassland <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
+#                             paste0('grassland_500', '.tif')))
+# lichenshrub <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
+#                               paste0('lichenshrub_500', '.tif')))
+# lichengrass <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
+#                               paste0('lichengrass_500', '.tif')))
+# wetland <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
+#                           paste0('wet_500', '.tif')))
+# barrenland <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
+#                              paste0('barrenland_500', '.tif')))
+# water <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
+#                         paste0('water_500', '.tif')))
+# snow <- rast(file.path('data', 'raw-data','prop_land', year, '500grid',
+#                        paste0('snow_500', '.tif')))
+# 
+# prop_forest <- needleleaf + deciduous + mixed
+# prop_forage <- shrub + grassland + lichenshrub+ lichengrass
+# prop_open <- barrenland + snow
+# prop_wets <- wetland + water
 
 
 fires <- rast(file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', paste0('fires_', (year+5), '.tif')))
 
-lf <- rast(file.path('data', 'derived-data', 'distto_roadrail_500.tif'))
+lf.full <- rast(file.path('data', 'derived-data', 'distto_roadrail_500.tif'))
+lf <- crop(lf.full, studyArea)
 harv <- rast(file.path('data', 'raw-data', 'WB_harv_1985-2020.tif'))
 
 lf_other <- resample(linfeat_other, lf, method = 'average')
@@ -70,13 +103,13 @@ disturb.ext <- extend(disturb, ext(lf))
 harv <- resample(harv, lf, method = 'max')
 harv.ext <- extend(harv, ext(lf))
 tsh <- (year + 5) - harv.ext
-tsh[is.na(tsh)] <- 100
+tsh[is.na(tsh)] <- 40
 
 
 fires.crop <- resample(fires, lf, method = 'max')
 #names(land.brick) <- c("lf_dist", "lc")
 tsf <- (year + 5) - fires.crop
-tsf[is.na(tsf)] <- 100
+tsf[is.na(tsf)] <- 40
 
 log_tsf <- log(tsf + 1)
 log_tsh <- log(tsh + 1)
@@ -91,9 +124,9 @@ log_distlfother <- log(lf_other.ext + 1)
 # log_distlfother <- crop(log_distlfother, ext(studyArea))
 # disturb <- crop(disturb, ext(studyArea))
 
-land <- c(prop_forage, prop_forest, prop_wets, log_tsf, log_tsh, log_distlf, 
+land <- c(prop_veg, prop_needleleaf, prop_mixforest, prop_wets, log_tsf, log_tsh, log_distlf, 
           log_distlfother, disturb.ext)
-names(land) <- c('prop_forage', 'prop_forest', 'prop_wets', 'log_tsf', 'log_tsh', 'log_distlf', 
+names(land) <- c('prop_veg', 'prop_needleleaf', 'prop_mixforest', 'prop_wets', 'log_tsf', 'log_tsh', 'log_distlf', 
                  'log_distlfother', 'disturb')
 
 
@@ -110,32 +143,13 @@ studyArea.ab <- union(studyArea, ab.range)
 
 ## Models ----
 
+sel.2015 <- readRDS(file.path(derived, 'mods_hpc', 'mod_selmove_2015-2020_HPC_noTA.RDS'))
 
-sel.2010 <- readRDS(file.path(derived, 'mod_sel_jurisRE_2010-2015.RDS'))
-sel.2015 <- readRDS(file.path(derived, 'mod_sel_jurisRE_2015-2020.RDS'))
-
-sel.2010.juris <- readRDS(file.path(derived,'mod_OLD', 'mod_ssa_juris_fixed_2010-2015.RDS'))
-sel.2015.juris <- readRDS(file.path(derived,'mod_OLD', 'mod_ssa_juris_fixed_2015-2020.RDS'))
-
-sel.2010.juris.simp <- readRDS(file.path(derived, 'mod_ssa_juris_simp_2010-2015.RDS'))
-sel.2015.juris.simp <- readRDS(file.path(derived, 'mod_ssa_juris_simp_2015-2020.RDS'))
 
 ### PDE ----
-#summary(sel.2010.juris)
-View(summary(sel.2010)$coef$cond)
 View(summary(sel.2015)$coef$cond)
 
-View(summary(sel.2010.juris)$coef$cond)
-View(summary(sel.2015.juris)$coef$cond)
-
-mod2010re.tab <- make_betas_tab(sel.2010)
 mod2015re.tab <- make_betas_tab(sel.2015)
-
-mod2010.tab <- make_betas_tab(sel.2010.juris)
-mod2015.tab <- make_betas_tab(sel.2015.juris)
-
-mod2010simp.tab <- make_betas_tab(sel.2010.juris.simp)
-mod2015simp.tab <- make_betas_tab(sel.2015.juris.simp)
 
 
 gc()
@@ -146,72 +160,8 @@ wbi.prov <- subset(canPoly, canPoly$PREABBR %in% c('Alta.', 'B.C.', 'Man.', 'N.W
 
 
 
-#### full model PDE 2010 ----
-
-lf.cov.re.2010<- (2*as.double(mod2010re.tab[term %like% 'distlf_end', 
-                                            .(estimate)])*land$log_distlf)
-lfother.cov.re.2010<- (2*as.double(mod2010re.tab[term %like% 'distlf_other_end', 
-                                                 .(estimate)])*land$log_distlfother)
-tsf.cov.re.2010<- (2*as.double(mod2010re.tab[term %like% 'ts_fire', 
-                                             .(estimate)])*land$log_tsf)
-tsh.cov.re.2010<- (2*as.double(mod2010re.tab[term %like% 'ts_harv', 
-                                             .(estimate)])*land$log_tsh)
-forest.cov.re.2010 <- (2*as.double(mod2010re.tab[term %like% 'forest', 
-                                                 .(estimate)])*land$prop_forest)
-forage.cov.re.2010 <- (2*as.double(mod2010re.tab[term %like% 'forage', 
-                                                 .(estimate)])*land$prop_forage)
-# open.cov.re.2010 <- (2*as.double(mod2010re.tab[term %like% 'open', 
-#                                                 .(estimate)])*land$prop_open)
-wets.cov.re.2010 <- (2*as.double(mod2010re.tab[term %like% 'wets', 
-                                               .(estimate)])*land$prop_wets)
-disturb.cov.re.2010 <- (2*as.double(mod2010re.tab[term %like% 'disturb', 
-                                                  .(estimate)])*land$disturb)
-
-
-numerator.re.2010 <- exp(lf.cov.re.2010 + lfother.cov.re.2010 + 
-                           tsf.cov.re.2010 + tsh.cov.re.2010 + 
-                           forest.cov.re.2010 + forage.cov.re.2010 + 
-                           # open.cov.re.2010 + 
-                           wets.cov.re.2010 +
-                           disturb.cov.re.2010)
-
-#plot(numerator,  breaks=seq(min(numerator, na.rm = T), max(numerator, na.rm = T), length.out = 10))
-
-# the normalizing constant.
-C.re.2010 <- global(numerator.re.2010, sum, na.rm = T)
-pde.re.2010 <- numerator.re.2010/C.re.2010[[1]]
-
-
-pde.re.2010.sa <- crop(pde.re.2010, studyArea, mask = T)
-
-breaks.re.2010 <- global(pde.re.2010.sa, quantile, na.rm = T, probs = seq(0,1,.1))
-v.breaks.re.2010 <- unname(breaks.re.2010)
-t.breaks.re.2010 <- as.vector(t(v.breaks.re.2010))
-pde.re.discrete.2010 <- classify(pde.re.2010.sa, t.breaks.re.2010, include.lowest=TRUE, brackets=TRUE)
-plot(pde.re.discrete.2010, breaks=0:10)
-
-writeRaster(pde.re.discrete.2010, 
-            file.path(derived, 'pde2010_re.tif'), overwrite = T)
-
-
-## with ab guestimate
-pde.re.2010.sa.ab <- crop(pde.re.2010, studyArea.ab, mask = T)
-
-breaks.re.2010.sa.ab <- global(pde.re.2010.sa.ab, quantile, na.rm = T, probs = seq(0,1,.1))
-v.breaks.re.2010.sa.ab <- unname(breaks.re.2010.sa.ab)
-t.breaks.re.2010.sa.ab <- as.vector(t(v.breaks.re.2010.sa.ab))
-pde.re.discrete.2010.sa.ab <- classify(pde.re.2010.sa.ab, t.breaks.re.2010.sa.ab, include.lowest=TRUE, brackets=TRUE)
-plot(pde.re.discrete.2010.sa.ab, breaks=0:10)
-
-writeRaster(pde.re.discrete.2010.sa.ab, 
-            file.path(derived, 'pde2010_re_ab.tif'))
-
-
-
-
-
 #### full model PDE 2015 ----
-
+gc()
 lf.cov.re.2015<- (2*as.double(mod2015re.tab[term %like% 'distlf_end', 
                                             .(estimate)])*land$log_distlf)
 lfother.cov.re.2015<- (2*as.double(mod2015re.tab[term %like% 'distlf_other_end', 
@@ -220,13 +170,13 @@ tsf.cov.re.2015<- (2*as.double(mod2015re.tab[term %like% 'ts_fire',
                                              .(estimate)])*land$log_tsf)
 tsh.cov.re.2015<- (2*as.double(mod2015re.tab[term %like% 'ts_harv', 
                                              .(estimate)])*land$log_tsh)
-forest.cov.re.2015 <- (2*as.double(mod2015re.tab[term %like% 'forest', 
-                                                 .(estimate)])*land$prop_forest)
-forage.cov.re.2015 <- (2*as.double(mod2015re.tab[term %like% 'forage', 
-                                                 .(estimate)])*land$prop_forage)
-# open.cov.re.2015 <- (2*as.double(mod2015re.tab[term %like% 'open', 
-#                                                 .(estimate)])*land$prop_open)
-wets.cov.re.2015 <- (2*as.double(mod2015re.tab[term %like% 'wets', 
+needleleaf.cov.re.2015 <- (2*as.double(mod2015re.tab[term %like% 'needleleaf_end', 
+                                                 .(estimate)])*land$prop_needleleaf)
+veg.cov.re.2015 <- (2*as.double(mod2015re.tab[term %like% 'veg_end', 
+                                                 .(estimate)])*land$prop_veg)
+mixforest.cov.re.2015 <- (2*as.double(mod2015re.tab[term %like% 'mixforest_end',
+                                                .(estimate)])*land$prop_mixforest)
+wets.cov.re.2015 <- (2*as.double(mod2015re.tab[term %like% 'wets_end', 
                                                .(estimate)])*land$prop_wets)
 disturb.cov.re.2015 <- (2*as.double(mod2015re.tab[term %like% 'disturb', 
                                                   .(estimate)])*land$disturb)
@@ -234,8 +184,8 @@ disturb.cov.re.2015 <- (2*as.double(mod2015re.tab[term %like% 'disturb',
 
 numerator.re.2015 <- exp(lf.cov.re.2015 + lfother.cov.re.2015 + 
                            tsf.cov.re.2015 + tsh.cov.re.2015 + 
-                           forest.cov.re.2015 + forage.cov.re.2015 + 
-                           # open.cov.re.2015 + 
+                           needleleaf.cov.re.2015 + veg.cov.re.2015 + 
+                           mixforest.cov.re.2015 + 
                            wets.cov.re.2015 +
                            disturb.cov.re.2015)
 
@@ -247,6 +197,7 @@ pde.re.2015 <- numerator.re.2015/C.re.2015[[1]]
 
 
 pde.re.2015.sa <- crop(pde.re.2015, studyArea, mask = T)
+plot(pde.re.2015.sa)
 
 breaks.re.2015 <- global(pde.re.2015.sa, quantile, na.rm = T, probs = seq(0,1,.1))
 v.breaks.re.2015 <- unname(breaks.re.2015)
@@ -255,7 +206,7 @@ pde.re.discrete.2015 <- classify(pde.re.2015.sa, t.breaks.re.2015, include.lowes
 plot(pde.re.discrete.2015, breaks=0:10)
 
 writeRaster(pde.re.discrete.2015, 
-            file.path(derived, 'pde2015_re.tif'))
+            file.path(derived, 'pde2015_re.tif'), overwrite = T)
 
 
 ## with ab guestimate
@@ -271,91 +222,28 @@ writeRaster(pde.re.discrete.2015.sa.ab,
             file.path(derived, 'pde2015_re_ab.tif'))
 
 
-#### full model PDE 2015 jurisdiction random effect ----
-lf.cov.simp.2015<- (2*as.double(mod2015simp.tab[term %like% 'lf', 
-                                                .(estimate)])*land$log_distlf)
-tsf.cov.simp.2015<- (2*as.double(mod2015simp.tab[term %like% 'tsf', 
-                                                 .(estimate)])*land$log_tsf)
-forest.cov.simp.2015 <- (2*as.double(mod2015simp.tab[term %like% 'forest', 
-                                                     .(estimate)])*land$prop_forest)
-forage.cov.simp.2015 <- (2*as.double(mod2015simp.tab[term %like% 'forage', 
-                                                     .(estimate)])*land$prop_forage)
-# open.cov.simp.2015 <- (2*as.double(mod2015simp.tab[term %like% 'open', 
-#                                                 .(estimate)])*land$prop_open)
-wets.cov.simp.2015 <- (2*as.double(mod2015simp.tab[term %like% 'wets', 
-                                                   .(estimate)])*land$prop_wets)
 
 
-numerator.simp.2015 <- exp(lf.cov.simp.2015 + tsf.cov.simp.2015 + forest.cov.simp.2015 +
-                             forage.cov.simp.2015 + 
-                             # open.cov.simp.2015 + 
-                             wets.cov.simp.2015)
 
-#plot(numerator,  breaks=seq(min(numerator, na.rm = T), max(numerator, na.rm = T), length.out = 10))
-
-# the normalizing constant.
-C.simp.2015 <- global(numerator.simp.2015, sum, na.rm = T)
-pde.simp.2015 <- numerator.simp.2015/C.simp.2015[[1]]
-
-
-pde.simp.2015.sa <- crop(pde.simp.2015, studyArea, mask = T)
-
-breaks.simp.2015 <- global(pde.simp.2015.sa, quantile, na.rm = T, probs = seq(0,1,.1))
-v.breaks.simp.2015 <- unname(breaks.simp.2015)
-t.breaks.simp.2015 <- as.vector(t(v.breaks.simp.2015))
-pde.simp.discrete.2015 <- classify(pde.simp.2015.sa, t.breaks.simp.2015, include.lowest=TRUE, brackets=TRUE)
-plot(pde.simp.discrete.2015, breaks=0:10)
-
-## with ab guestimate
-pde.simp.2015.sa.ab <- crop(pde.simp.2015, studyArea.ab, mask = T)
-
-breaks.simp.2015.sa.ab <- global(pde.simp.2015.sa.ab, quantile, na.rm = T, probs = seq(0,1,.1))
-v.breaks.simp.2015.sa.ab <- unname(breaks.simp.2015.sa.ab)
-t.breaks.simp.2015.sa.ab <- as.vector(t(v.breaks.simp.2015.sa.ab))
-pde.simp.discrete.2015.sa.ab <- classify(pde.simp.2015.sa.ab, t.breaks.simp.2015.sa.ab, include.lowest=TRUE, brackets=TRUE)
-plot(pde.simp.discrete.2015.sa.ab, breaks=0:10)
-
-pde.simp.discrete.2015.sa.ab.num <- as.numeric(pde.simp.discrete.2015.sa.ab)
-plot(pde.simp.discrete.2015.sa.ab.num)
 
 # plots ----
-pde.re.discrete.2010 <- rast(file.path(derived, 'pde2010_re.tif'))
-pde.re.discrete.2010.sa.ab <- rast(file.path(derived, 'pde2010_re_ab.tif'))
 pde.re.discrete.2015 <- rast(file.path(derived, 'pde2015_re.tif'))
 pde.re.discrete.2015.sa.ab <- rast(file.path(derived, 'pde2015_re_ab.tif'))
 
-nwt <- subset(canPoly, canPoly$PREABBR %in% c('N.W.T.'))
-nwt.2010 <- crop(pde.re.discrete.2010, nwt, mask = T)
-nwt.2015 <- crop(pde.re.discrete.2015, nwt, mask = T)
-
-p.re.2010.wbi<- ggplot(wbi.prov) +
+# nwt <- subset(canPoly, canPoly$PREABBR %in% c('N.W.T.'))
+# nwt.2010 <- crop(pde.re.discrete.2010, nwt, mask = T)
+# nwt.2015 <- crop(pde.re.discrete.2015, nwt, mask = T)
+p.re.2015 <- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
-  geom_spatraster(data = as.numeric(pde.re.discrete.2010), show.legend = T) +
-  scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
-  ggtitle('2010-2015 model') +
+  geom_spatraster(data = pde.re.2015.sa, show.legend = T) +
+  scale_fill_gradientn(colours = mako(10),na.value = NA) +
+  ggtitle('2015-2020 model') +
   theme_bw() +
   theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
   theme_void() +
   labs(fill = 'Intensity of selection') +
   coord_sf(crs = 3978)
-p.re.2010.wbi
-
-p.re.2010.wbi.ab <- ggplot(wbi.prov) +
-  geom_spatvector(fill = NA) +
-  geom_spatraster(data = as.numeric(pde.re.discrete.2010.sa.ab), show.legend = T) +
-  scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
-  ggtitle('2010-2015 model extrapolating AB') +
-  theme_bw() +
-  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
-  theme_void() +
-  labs(fill = 'Intensity of selection') +
-  coord_sf(crs = 3978)
-p.re.2010.wbi.ab
-
-p.re.2010.wbi + p.re.2010.wbi.ab
-
-
-
+p.re.2015
 
 p.re.2015.wbi<- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
@@ -381,11 +269,9 @@ p.re.2015.wbi.ab <- ggplot(wbi.prov) +
   coord_sf(crs = 3978)
 p.re.2015.wbi.ab
 
-p.re.2015.wbi + p.re.2015.wbi.ab
+p.re.2010.wbi + p.re.2010.wbi.ab
 
-p.re.2010.wbi.ab + p.re.2015.wbi.ab
 
-plot(pde.re.discrete.2015.sa.ab - pde.re.discrete.2010.sa.ab)
 ###### nwt ----
 nwt.sf <- st_as_sf(nwt)
 nwt.2010.rast <- raster::raster(nwt.2010)
