@@ -11,7 +11,7 @@ canada <- file.path("C:", "users", "julie", 'Dropbox', 'ActiveDocs', 'Git-local'
 #C:\Users\julie\Dropbox\ActiveDocs
 crs <- st_crs(3978)$wkt
 
-year = 2019
+year = 2015
 studyArea <- file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBuff.shp')
 can.yr <- c(file.path(canada, 'Landcover_1984-2019', paste0('CA_forest_VLCE2_', year), 
                       paste0('CA_forest_VLCE2_', year, '.tif')))
