@@ -67,8 +67,8 @@ m <- glmmTMB(case_ ~ -1 +
                      (0 + disturbance_end|id) 
              ,
                    family = poisson(), data = dat.sub,
-                   map= list(theta = factor(c(NA,1:16))),
-                   start = list(theta =c(log(1000), seq(0,0, length.out = 16))),
+                   map= list(theta = factor(c(NA,1:15))),
+                   start = list(theta =c(log(1000), seq(0,0, length.out = 15))),
                verbose = TRUE, control = glmmTMBControl(rank_check = "adjust")
     )
 
