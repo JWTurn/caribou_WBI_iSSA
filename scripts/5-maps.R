@@ -365,7 +365,7 @@ p.nwt <- ggplot(nwt) +
   coord_sf(crs = 3978)
 p.nwt
 
-### BC plot ----
+### Juris plot ----
 p.juris <- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
   geom_spatraster(data = as.numeric(pde.bc.sa), show.legend = T) +
