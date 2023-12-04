@@ -7,7 +7,7 @@ require(glmmTMB)
 require(amt)
 # library(terra)
 # library(sf)
-# library(dplyr)
+library(dplyr)
 library(ggplot2)
 
 # my functions
@@ -129,7 +129,7 @@ gc()
 uhc<- prep_uhc(object = m, test_dat = test_dat,
                              n_samp = 1000, verbose = TRUE)
 
-
+saveRDS(uhc, file.path(derived, "uhc_FE.RDS"))
 
 # ... 5. plot ----
 
@@ -142,7 +142,9 @@ plot(uhc)
 
 # Coerce to data.frame
 uhc.df <- as.data.frame(uhc)
+saveRDS(uhc.df, file.path(derived, "uhc_FE_df.RDS"))
 
+uhc.df <- readRDS(file.path(derived, "uhc_FE_df.RDS"))
 # This gives you the benefit of making custom plots, for example, with
 # ggplot2
 uhc.df %>% 
