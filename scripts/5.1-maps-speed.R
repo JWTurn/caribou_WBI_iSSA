@@ -4,7 +4,7 @@
 
 #### Packages ####
 libs <- c('Require', 'reproducible', 'data.table', 'terra','sf', 
-          'glmmTMB', 'ggplot2', 'rasterVis', 'viridis', 'tidyterra', 'patchwork')
+          'glmmTMB', 'ggplot2', 'viridis', 'tidyterra', 'patchwork')
 lapply(libs, Require::Require, character.only = TRUE)
 
 # my functions
@@ -54,35 +54,6 @@ bc <- subset(canPoly, canPoly$PREABBR %in% c('B.C.'))
 nwt <- subset(canPoly, canPoly$PREABBR %in% c('N.W.T.', 'Y.T.'))
 sk <- subset(canPoly, canPoly$PREABBR %in% c('Sask.'))
 mb <- subset(canPoly, canPoly$PREABBR %in% c('Man.'))
-
-
-## prelim move plots
-dat.real <- dat.sub[case_==TRUE]
-
-ggplot(dat.real, aes(x = jurisdiction, y=sl_/13)) + 
-  geom_boxplot()
-
-ggplot()+
-  # basemap
-  geom_sf(data = wbi.prov)+
-  
-  # lines and points
-  geom_path(data = dat.real, 
-            aes(x=x2_,y=y2_,group=id,color=sl_), 
-            alpha = 0.3)+
-  geom_point(data = dat.real, 
-             aes(x=x2_,y=y2_,group=id,fill=sl_),
-             alpha = 0.7, shape=21, size = 2)+
-  
-  # formatting
-  scale_fill_viridis_c(option = "inferno")+
-  scale_color_viridis_c(option = "inferno")+
-  scale_size_continuous(range = c(0.1,10))+
-  labs(x=NULL, y=NULL, 
-       fill = 'Speed (m/13hour)', 
-       color = 'Speed (m/13hour)')+
-  theme_dark()+
-  theme(panel.grid = element_blank())
 
 
 
