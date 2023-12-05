@@ -78,7 +78,7 @@ dat[,range(year), by = .(jurisdiction)]
 
 ### cleaning to just what we need -- trying to save memory space
 dat.clean <- dat[,.(x1_ = as.integer(x1_), y1_ = as.integer(y1_), x2_ = as.integer(x2_), y2_ = as.integer(y2_),
-                    sl_ = as.integer(sl_), ta_, id, jurisdiction, pop, t1_, t2_, case_, step_id_ = as.integer(step_id_),
+                    sl_ = as.integer(sl_), ta_, id, jurisdiction, pop, t1_, t2_, dt_, case_, step_id_ = as.integer(step_id_),
                     year = as.integer(year), int.year = as.integer(int.year), 
                     prop_wets_start, prop_veg_start, prop_needleleaf_start, prop_mixforest_start, 
                     prop_wets_end, prop_veg_end, prop_needleleaf_end, prop_mixforest_end, 
