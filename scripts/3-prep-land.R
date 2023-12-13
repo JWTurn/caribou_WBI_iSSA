@@ -15,26 +15,6 @@ crs <- st_crs(3978)$wkt
 
 
 dat<- readRDS(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.RDS'))
-# dat.clean <- dat[complete.cases(x,y, datetime) & between(x, -1665110, 458200) &between(y, -98940, 2626920),
-#            .(x,y, datetime, id)]
-# saveRDS(dat.clean, file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.RDS'))
-# coords<- dat.clean%>%st_as_sf(coords = c('x','y'))%>%
-#   st_set_crs(crs)
-
-#coords <- vect(coords)
-#st_write(coords, file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.shp'), append = F)
-
-coords <- st_read(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.shp'))
-
-### 10 km buffer around points to get an idea of extent of study area
-# studyArea <- st_buffer(coords, dist = 10000)
-# sa.union <- st_union(studyArea)
-# sa.union
-# plot(sa.union)
-#sa.vect <- vect(sa.union)
-#st_write(sa.union, file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBuff.shp'), append = F)
-
-#land <- rast(file.path('data', 'raw-data', 'WB_LC.tif'))
 
 studyArea <- vect(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBuff.shp'))
 
