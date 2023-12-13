@@ -100,7 +100,7 @@ m <- glmmTMB(case_ ~ -1 +
 )
 
 summary(m)
-
+m$frame <- m$frame[0, ]
 saveRDS(m, file.path(derived, paste0('mod_train_selmove_', 
                                      int.yr, '-', int.yr+5,
                                      '_HPC.RDS')))
@@ -125,6 +125,7 @@ coefs <- insight::find_predictors(m)[[1]]
 gc()
 #dat.test.nona <- na.omit(dat.test)
 test_dat <- na.omit(dat.test[, disturbance_end := as.factor(disturbance_end)])
+test_dat <- na.omit(dat.test)[1:100]
 gc()
 uhc<- prep_uhc(object = m, test_dat = test_dat,
                              n_samp = 1000, verbose = TRUE)
