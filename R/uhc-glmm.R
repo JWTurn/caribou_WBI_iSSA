@@ -572,7 +572,7 @@ issf_drop_stratum <- function(object, l) {
 #'
 issf_drop_randoms <- function(object, l) {
   # Get formula terms from object - no random effects
-  tt <- names(summary(m)$coef$cond[, 1])
+  tt <- names(summary(object)$coef$cond[, 1])
   
   # response variable
   resp <- l$resp
