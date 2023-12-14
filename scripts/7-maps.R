@@ -3,7 +3,7 @@
 # started 14 April 2022
 
 #### Packages ####
-libs <- c('Require', 'reproducible', 'data.table', 'terra','sf', 'prioritizr', 
+libs <- c('Require', 'reproducible', 'data.table', 'terra','sf',
           'glmmTMB', 'ggplot2', 'rasterVis', 'viridis', 'tidyterra', 'patchwork')
 lapply(libs, Require::Require, character.only = TRUE)
 
