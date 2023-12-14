@@ -56,59 +56,97 @@ dat.test[,year:=as.factor(year)]
 dat.test[,pop := as.factor(pop)]
 dat.test[,id := as.factor(id)]
 
+## Jurisdictions -----
+### BC ----
+bc.train<- dat.sub[jurisdiction!='bc']
+bc.train[,indiv_step_id := as.factor(indiv_step_id)]
+bc.train[,jurisdiction := as.factor(jurisdiction)]
+bc.train[,year:=as.factor(year)]
+bc.train[,pop := as.factor(pop)]
+bc.train[,id := as.factor(id)]
+
+
+bc.test <- dat.sub[jurisdiction=='bc']
+bc.test[,indiv_step_id := as.factor(indiv_step_id)]
+bc.test[,jurisdiction := as.factor(jurisdiction)]
+bc.test[,year:=as.factor(year)]
+bc.test[,pop := as.factor(pop)]
+bc.test[,id := as.factor(id)]
 
 
 # fit model ----
 gc()
-m <- glmmTMB(case_ ~ -1 +
-               I(log(sl_+1)) +
-               I(log(sl_+1)):I(cos(ta_)) +
-               prop_needleleaf_start:I(log(sl_+1)) +
-               prop_mixforest_start:I(log(sl_+1)) +
-               prop_veg_start:I(log(sl_+1)) +
-               prop_wets_start:I(log(sl_+1)) +
-               prop_needleleaf_end +
-               prop_mixforest_end +
-               prop_veg_end +
-               prop_wets_end +
-               I(log(ts_fires_end+1)) +
-               I(log(ts_harv_end+1)) +
-               I(log(distlf_end+1)) +
-               I(log(distlf_other_end+1)) +
-               disturbance_end +
-               (1|indiv_step_id) +
-               (0 + I(log(sl_ +1))|id) +
-               (0 + I(log(sl_+1)):I(cos(ta_))|id) +
-               (0 + prop_needleleaf_start:I(log(sl_+1))|id) +
-               (0 + prop_mixforest_start:I(log(sl_+1))|id) +
-               (0 + prop_veg_start:I(log(sl_+1))|id) +
-               (0 + prop_wets_start:I(log(sl_+1))|id) +
-               (0 + prop_needleleaf_end|id) +
-               (0 + prop_mixforest_end|id) +
-               (0 + prop_veg_end|id) +
-               (0 + prop_wets_end|id) +
-               (0 + (I(log(ts_fires_end+1)))|id) +
-               (0 + (I(log(ts_harv_end+1)))|id) +
-               (0 + I(log(distlf_end+1))|id) +
-               (0 + I(log(distlf_other_end+1))|id) +
-               (0 + disturbance_end|id) 
-             ,
+form <- as.formula(case_ ~ -1 +
+                     I(log(sl_+1)) +
+                     I(log(sl_+1)):I(cos(ta_)) +
+                     prop_needleleaf_start:I(log(sl_+1)) +
+                     prop_mixforest_start:I(log(sl_+1)) +
+                     prop_veg_start:I(log(sl_+1)) +
+                     prop_wets_start:I(log(sl_+1)) +
+                     prop_needleleaf_end +
+                     prop_mixforest_end +
+                     prop_veg_end +
+                     prop_wets_end +
+                     I(log(ts_fires_end+1)) +
+                     I(log(ts_harv_end+1)) +
+                     I(log(distlf_end+1)) +
+                     I(log(distlf_other_end+1)) +
+                     disturbance_end +
+                     (1|indiv_step_id) +
+                     (0 + I(log(sl_ +1))|id) +
+                     (0 + I(log(sl_+1)):I(cos(ta_))|id) +
+                     (0 + prop_needleleaf_start:I(log(sl_+1))|id) +
+                     (0 + prop_mixforest_start:I(log(sl_+1))|id) +
+                     (0 + prop_veg_start:I(log(sl_+1))|id) +
+                     (0 + prop_wets_start:I(log(sl_+1))|id) +
+                     (0 + prop_needleleaf_end|id) +
+                     (0 + prop_mixforest_end|id) +
+                     (0 + prop_veg_end|id) +
+                     (0 + prop_wets_end|id) +
+                     (0 + (I(log(ts_fires_end+1)))|id) +
+                     (0 + (I(log(ts_harv_end+1)))|id) +
+                     (0 + I(log(distlf_end+1))|id) +
+                     (0 + I(log(distlf_other_end+1))|id) +
+                     (0 + disturbance_end|id), env = .GlobalEnv)
+gc()
+
+m.indivs <- glmmTMB(form,
              family = poisson(), data = dat.train,
              map= list(theta = factor(c(NA,1:15))),
              start = list(theta =c(log(1000), seq(0,0, length.out = 15))),
              verbose = TRUE, control = glmmTMBControl(rank_check = "adjust")
 )
 
-summary(m)
-m$frame <- m$frame[0, ]
-saveRDS(m, file.path(derived, paste0('mod_train_selmove_', 
+summary(m.indivs)
+m.indivs$frame <- m.indivs$frame[0, ]
+saveRDS(m.indivs, file.path(derived, paste0('mod_train_selmove_', 
                                      int.yr, '-', int.yr+5,
                                      '_HPC.RDS')))
+
+## bc -----
+m.bc <- glmmTMB(form,
+             family = poisson(), data = bc.train,
+             map= list(theta = factor(c(NA,1:15))),
+             start = list(theta =c(log(1000), seq(0,0, length.out = 15))),
+             verbose = TRUE, control = glmmTMBControl(rank_check = "adjust")
+)
+
+summary(m.bc)
+m.bc$frame <- m.bc$frame[0, ]
+saveRDS(m.bc, file.path(derived, paste0('mod_bc_train_selmove_', 
+                                            int.yr, '-', int.yr+5,
+                                            '_HPC.RDS')))
 
 # ... 4. prepare UHC plots ----
 m <- readRDS(file.path(derived, paste0('mod_train_selmove_', 
                                        int.yr, '-', int.yr+5,
                                        '_HPC.RDS')))
+# Look for other places that are large
+lobstr::obj_size(m)
+object.size(m)
+sapply(ls(m), function(x) lobstr::obj_size(m[[x]]))
+sapply(ls(m$obj), function(x) lobstr::obj_size(m$obj[[x]]))
+sapply(ls(m$obj), function(x) object.size(m$obj[[x]]))
 
 coefs <- insight::find_predictors(m)[[1]]
 # targets::tar_load(distparams)
@@ -123,6 +161,8 @@ coefs <- insight::find_predictors(m)[[1]]
 #                          sl = make_gamma_distr(shape = shape, scale = scale),
 #                          ta = make_vonmises_distr(kappa = kappa))
 gc()
+
+## indivs ----
 #dat.test.nona <- na.omit(dat.test)
 test_dat <- na.omit(dat.test[, disturbance_end := as.factor(disturbance_end)])
 test_dat <- na.omit(dat.test)[1:100]
@@ -131,6 +171,19 @@ uhc<- prep_uhc(object = m, test_dat = test_dat,
                              n_samp = 1000, verbose = TRUE)
 
 saveRDS(uhc, file.path(derived, "uhc_FE.RDS"))
+
+## bc ----
+m.bc <- readRDS(file.path(derived, paste0('mod_bc_train_selmove_', 
+                                          int.yr, '-', int.yr+5,
+                                          '_HPC.RDS')))
+
+test_bc <- na.omit(bc.test)
+
+gc()
+uhc.bc <- prep_uhc(object = m.bc, test_dat = test_bc,
+               n_samp = 100, verbose = TRUE)
+
+saveRDS(uhc.bc, file.path(derived, "uhc_global_bc.RDS"))
 
 # ... 5. plot ----
 
