@@ -88,6 +88,7 @@ global2015.avail[,`:=`(lower = mean-se*1.96, upper = mean+se*1.96, jurisdiction 
 
 sum.avail <- rbind(juris.avail, global2010.avail, global2015.avail)
 
+hab.avail <- rbind(juris.hab[,mod:=jurisdiction], global2010.hab[,mod:='2010'], global2015.hab[,mod:='2015'])
 
 ## Models ----
 sel.2010 <- readRDS(file.path(derived, 'mods_hpc', 'mod_selmove_2010-2015_HPC_noTA.RDS'))
@@ -142,6 +143,16 @@ ggplot(sum.avail[jurisdiction!= 'yt' & ((variable %like% 'prop') | variable %lik
   scale_color_colorblind() +
   scale_fill_colorblind()
 
+ggplot(hab.avail[jurisdiction!= 'yt' & ((variable %like% 'prop') | variable %like%  'disturbance')], aes(jurisdiction, mean, color = jurisdiction)) +
+  geom_boxplot() + 
+  geom_jitter(alpha = 0.5) +
+  facet_wrap(~variable) + 
+  xlab('model') +
+  ylab('Proportion available') +
+  theme_bw() + 
+  scale_color_colorblind() +
+  scale_fill_colorblind()
+
 ggplot(sum.avail[jurisdiction!= 'yt' &(variable %like% 'distlf')], aes(jurisdiction, mean, color = jurisdiction)) +
   geom_point() + 
   geom_errorbar(aes(ymin = lower, ymax = upper), width = 0) +
@@ -161,6 +172,38 @@ ggplot(sum.avail[jurisdiction!= 'yt' &(variable %in% c('ts_harv_end', 'ts_fires_
   theme_bw() + 
   scale_color_colorblind() +
   scale_fill_colorblind()
+
+#boxplots 
+ggplot(hab.avail[jurisdiction!= 'yt' & ((variable %like% 'prop') | variable %like%  'disturbance')], aes(mod, value, color = mod)) +
+  geom_boxplot() + 
+  #geom_jitter(alpha = 0.5) +
+  facet_wrap(~variable) + 
+  xlab('model') +
+  ylab('Proportion available') +
+  theme_bw() + 
+  scale_color_colorblind() +
+  scale_fill_colorblind()
+
+ggplot(hab.avail[jurisdiction!= 'yt' &(variable %like% 'distlf')], aes(mod, value, color = mod)) +
+  geom_boxplot() + 
+  #geom_jitter(alpha = 0.5) +
+  facet_wrap(~variable) + 
+  xlab('model') +
+  ylab('Distance to feature available (m)') +
+  theme_bw() + 
+  scale_color_colorblind() +
+  scale_fill_colorblind()
+
+ggplot(hab.avail[jurisdiction!= 'yt' &(variable %in% c('ts_harv_end', 'ts_fires_end'))], aes(mod, value, color = mod)) +
+  geom_boxplot() + 
+  #geom_jitter(alpha = 0.5) +
+  facet_wrap(~variable) + 
+  xlab('model') +
+  ylab('Distance to feature available (m)') +
+  theme_bw() + 
+  scale_color_colorblind() +
+  scale_fill_colorblind()
+
 
 ggplot(sum.avail[jurisdiction!= 'yt' &!(variable %in% c('sl_', 'ta_'))], aes(jurisdiction, mean, color = jurisdiction)) +
   geom_point() + 
