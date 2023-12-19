@@ -73,9 +73,26 @@ bc.test[,year:=as.factor(year)]
 bc.test[,pop := as.factor(pop)]
 bc.test[,id := as.factor(id)]
 
+### MB ----
+mb.train<- dat.sub[jurisdiction!='mb']
+mb.train[,indiv_step_id := as.factor(indiv_step_id)]
+mb.train[,jurisdiction := as.factor(jurisdiction)]
+mb.train[,year:=as.factor(year)]
+mb.train[,pop := as.factor(pop)]
+mb.train[,id := as.factor(id)]
+
+
+mb.test <- dat.sub[jurisdiction=='mb']
+mb.test[,indiv_step_id := as.factor(indiv_step_id)]
+mb.test[,jurisdiction := as.factor(jurisdiction)]
+mb.test[,year:=as.factor(year)]
+mb.test[,pop := as.factor(pop)]
+mb.test[,id := as.factor(id)]
+
 
 # fit model ----
 gc()
+en <- new.env(parent = asNamespace('glmmTMB'))
 form <- as.formula(case_ ~ -1 +
                      I(log(sl_+1)) +
                      I(log(sl_+1)):I(cos(ta_)) +
@@ -107,8 +124,34 @@ form <- as.formula(case_ ~ -1 +
                      (0 + (I(log(ts_harv_end+1)))|id) +
                      (0 + I(log(distlf_end+1))|id) +
                      (0 + I(log(distlf_other_end+1))|id) +
-                     (0 + disturbance_end|id), env = .GlobalEnv)
+                     (0 + disturbance_end|id), env = en)
+mapls <- list(theta = factor(c(NA,1:15)))
+startls <- list(theta =c(log(1000), seq(0,0, length.out = 15)))
+verbose = TRUE
+control <- glmmTMBControl(rank_check = "adjust")
+family = poisson()
+
+ls <- list(mb.train, form, mapls, startls, verbose, control, family)
+
+list2env(list(mb.train = mb.train, form = form, mapls= mapls, 
+              startls = startls, verbose = verbose, control = control, 
+              family = family), envir=en)
 gc()
+
+###
+m <- local(envir = en,
+           glmmTMB(form,
+                   data = mb.train, 
+                   family = family,
+                   map = mapls,
+                   start = startls,
+                   verbose = verbose, 
+                   control = control))
+
+saveRDS(m, file.path(derived, paste0('mod_mb_train_selmove_', 
+                                        int.yr, '-', int.yr+5,
+                                        '_HPC.RDS')))
+#######
 
 m.indivs <- glmmTMB(form,
              family = poisson(), data = dat.train,
@@ -185,18 +228,45 @@ uhc.bc <- prep_uhc(object = m.bc, test_dat = test_bc,
 
 saveRDS(uhc.bc, file.path(derived, "uhc_global_bc.RDS"))
 
+
+## mb ----
+m.mb <- readRDS(file.path(derived, paste0('mod_mb_train_selmove_', 
+                                          int.yr, '-', int.yr+5,
+                                          '_HPC.RDS')))
+# Look for other places that are large
+lobstr::obj_size(m.mb)
+object.size(m.mb)
+sapply(ls(m.mb), function(x) lobstr::obj_size(m.mb[[x]]))
+
+sapply(ls(m.mb$obj), function(x) lobstr::obj_size(m.mb$obj[[x]]))
+
+sapply(ls(m.mb$obj), function(x) object.size(m.mb$obj[[x]]))
+
+test_mb <- na.omit(mb.test)
+
+# pred <- predict(m.mb, newdata = test_mb,
+#                 #se.fit = TRUE, 
+#                 re.form = NULL, allow.new.levels = T)
+
+
+gc()
+uhc.mb <- prep_uhc(object = m.mb, test_dat = test_mb,
+                   n_samp = 100, verbose = TRUE)
+
+saveRDS(uhc.mb, file.path(derived, "uhc_global_mb.RDS"))
+
 # ... 5. plot ----
 
-plot(uhc)
+plot(uhc.bc)
 
-
+coefs <- insight::find_predictors(m.bc)[[1]]
 
 # Working with 'uhc_data' objects ----
 
 
 # Coerce to data.frame
-uhc.df <- as.data.frame(uhc)
-saveRDS(uhc.df, file.path(derived, "uhc_FE_df.RDS"))
+uhc.df <- as.data.frame(uhc.bc)
+saveRDS(uhc.df, file.path(derived, "uhc_global_bc_df.RDS"))
 
 uhc.df <- readRDS(file.path(derived, "uhc_FE_df.RDS"))
 # This gives you the benefit of making custom plots, for example, with
