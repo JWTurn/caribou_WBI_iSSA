@@ -56,6 +56,17 @@ dat.test[,year:=as.factor(year)]
 dat.test[,pop := as.factor(pop)]
 dat.test[,id := as.factor(id)]
 
+## 2010 ----
+dat.2010 <- dat[int.year==2010]
+indivs.2010 <- sample(unique(dat.2010[jurisdiction == juris]$id), 
+                 ceiling(length(unique(dat.2010[jurisdiction == juris]$id))*0.80))
+test.2010 <- dat.2010[!(id %in% indivs.2010)]
+test.2010[,indiv_step_id := as.factor(indiv_step_id)]
+test.2010[,jurisdiction := as.factor(jurisdiction)]
+test.2010[,year:=as.factor(year)]
+test.2010[,pop := as.factor(pop)]
+test.2010[,id := as.factor(id)]
+
 ## Jurisdictions -----
 ### BC ----
 bc.train<- dat.sub[jurisdiction!='bc']
@@ -88,6 +99,42 @@ mb.test[,jurisdiction := as.factor(jurisdiction)]
 mb.test[,year:=as.factor(year)]
 mb.test[,pop := as.factor(pop)]
 mb.test[,id := as.factor(id)]
+
+
+### SK ----
+sk.train<- dat.sub[jurisdiction!='sk']
+sk.train[,indiv_step_id := as.factor(indiv_step_id)]
+sk.train[,jurisdiction := as.factor(jurisdiction)]
+sk.train[,year:=as.factor(year)]
+sk.train[,pop := as.factor(pop)]
+sk.train[,id := as.factor(id)]
+
+
+sk.test <- dat.sub[jurisdiction=='sk']
+sk.test[,indiv_step_id := as.factor(indiv_step_id)]
+sk.test[,jurisdiction := as.factor(jurisdiction)]
+sk.test[,year:=as.factor(year)]
+sk.test[,pop := as.factor(pop)]
+sk.test[,id := as.factor(id)]
+
+
+
+### NWT ----
+nwt.train<- dat.sub[jurisdiction!='nwt']
+nwt.train[,indiv_step_id := as.factor(indiv_step_id)]
+nwt.train[,jurisdiction := as.factor(jurisdiction)]
+nwt.train[,year:=as.factor(year)]
+nwt.train[,pop := as.factor(pop)]
+nwt.train[,id := as.factor(id)]
+
+
+nwt.test <- dat.sub[jurisdiction=='nwt']
+nwt.test[,indiv_step_id := as.factor(indiv_step_id)]
+nwt.test[,jurisdiction := as.factor(jurisdiction)]
+nwt.test[,year:=as.factor(year)]
+nwt.test[,pop := as.factor(pop)]
+nwt.test[,id := as.factor(id)]
+
 
 
 # fit model ----
@@ -131,9 +178,9 @@ verbose = TRUE
 control <- glmmTMBControl(rank_check = "adjust")
 family = poisson()
 
-ls <- list(mb.train, form, mapls, startls, verbose, control, family)
+ls <- list(nwt.train, form, mapls, startls, verbose, control, family)
 
-list2env(list(mb.train = mb.train, form = form, mapls= mapls, 
+list2env(list(dat.train = nwt.train, form = form, mapls= mapls, 
               startls = startls, verbose = verbose, control = control, 
               family = family), envir=en)
 gc()
@@ -141,14 +188,14 @@ gc()
 ###
 m <- local(envir = en,
            glmmTMB(form,
-                   data = mb.train, 
+                   data = dat.train, 
                    family = family,
                    map = mapls,
                    start = startls,
                    verbose = verbose, 
                    control = control))
 
-saveRDS(m, file.path(derived, paste0('mod_mb_train_selmove_', 
+saveRDS(m, file.path(derived, paste0('mod_nwt_train_selmove_', 
                                         int.yr, '-', int.yr+5,
                                         '_HPC.RDS')))
 #######
@@ -181,9 +228,11 @@ saveRDS(m.bc, file.path(derived, paste0('mod_bc_train_selmove_',
                                             '_HPC.RDS')))
 
 # ... 4. prepare UHC plots ----
-m <- readRDS(file.path(derived, paste0('mod_train_selmove_', 
+m <- readRDS(file.path(derived, paste0('mod_selmove_', 
                                        int.yr, '-', int.yr+5,
                                        '_HPC.RDS')))
+
+
 # Look for other places that are large
 lobstr::obj_size(m)
 object.size(m)
@@ -208,12 +257,21 @@ gc()
 ## indivs ----
 #dat.test.nona <- na.omit(dat.test)
 test_dat <- na.omit(dat.test[, disturbance_end := as.factor(disturbance_end)])
-test_dat <- na.omit(dat.test)[1:100]
+test_dat <- na.omit(dat.test)
 gc()
 uhc<- prep_uhc(object = m, test_dat = test_dat,
-                             n_samp = 1000, verbose = TRUE)
+                             n_samp = 100, verbose = TRUE)
 
 saveRDS(uhc, file.path(derived, "uhc_FE.RDS"))
+
+## 2010 ----
+m <- readRDS(file.path(derived, 'mods_hpc', 'mod_selmove_2015-2020_HPC_noTA.RDS'))
+test_dat <- na.omit(test.2010)
+gc()
+uhc<- prep_uhc(object = m, test_dat = test_dat,
+               n_samp = 100, verbose = TRUE)
+
+saveRDS(uhc, file.path(derived, "uhc_global_2010.RDS"))
 
 ## bc ----
 m.bc <- readRDS(file.path(derived, paste0('mod_bc_train_selmove_', 
@@ -255,22 +313,101 @@ uhc.mb <- prep_uhc(object = m.mb, test_dat = test_mb,
 
 saveRDS(uhc.mb, file.path(derived, "uhc_global_mb.RDS"))
 
+
+## sk ----
+m.sk <- readRDS(file.path(derived, paste0('mod_sk_train_selmove_', 
+                                          int.yr, '-', int.yr+5,
+                                          '_HPC.RDS')))
+# Look for other places that are large
+lobstr::obj_size(m.sk)
+object.size(m.sk)
+sapply(ls(m.sk), function(x) lobstr::obj_size(m.sk[[x]]))
+
+sapply(ls(m.sk$obj), function(x) lobstr::obj_size(m.sk$obj[[x]]))
+
+sapply(ls(m.sk$obj), function(x) object.size(m.sk$obj[[x]]))
+
+test_sk <- na.omit(sk.test)
+
+# pred <- predict(m.sk, newdata = test_sk,
+#                 #se.fit = TRUE, 
+#                 re.form = NULL, allow.new.levels = T)
+
+
+gc()
+uhc.sk <- prep_uhc(object = m.sk, test_dat = test_sk,
+                   n_samp = 100, verbose = TRUE)
+
+saveRDS(uhc.sk, file.path(derived, "uhc_global_sk.RDS"))
+
+
+
+
+## nwt ----
+m.nwt <- readRDS(file.path(derived, paste0('mod_nwt_train_selmove_', 
+                                          int.yr, '-', int.yr+5,
+                                          '_HPC.RDS')))
+# Look for other places that are large
+lobstr::obj_size(m.nwt)
+object.size(m.nwt)
+sapply(ls(m.nwt), function(x) lobstr::obj_size(m.nwt[[x]]))
+
+sapply(ls(m.nwt$obj), function(x) lobstr::obj_size(m.nwt$obj[[x]]))
+
+sapply(ls(m.nwt$obj), function(x) object.size(m.nwt$obj[[x]]))
+
+test_nwt <- na.omit(nwt.test)
+
+# pred <- predict(m.nwt, newdata = test_nwt,
+#                 #se.fit = TRUE, 
+#                 re.form = NULL, allow.new.levels = T)
+
+
+gc()
+uhc.nwt <- prep_uhc(object = m.nwt, test_dat = test_nwt,
+                   n_samp = 100, verbose = TRUE)
+
+saveRDS(uhc.nwt, file.path(derived, "uhc_global_nwt.RDS"))
+
+
+
 # ... 5. plot ----
 
 plot(uhc.bc)
 
-coefs <- insight::find_predictors(m.bc)[[1]]
+coefs <- insight::find_predictors(m.nwt)[[1]]
 
 # Working with 'uhc_data' objects ----
 
 
 # Coerce to data.frame
-uhc.df <- as.data.frame(uhc.bc)
-saveRDS(uhc.df, file.path(derived, "uhc_global_bc_df.RDS"))
+uhc.df <- as.data.frame(uhc.nwt)
+saveRDS(uhc.df, file.path(derived, "uhc_global_nwt_df.RDS"))
 
 uhc.df <- readRDS(file.path(derived, "uhc_FE_df.RDS"))
 # This gives you the benefit of making custom plots, for example, with
 # ggplot2
+coefs.end <- coefs[coefs %like% "_end"]
+uhc.df %>% 
+  filter(var %in% coefs.end) %>% 
+  mutate(dist_sort = factor(dist, levels = c("S", "U", "A"))) %>%
+  ggplot(aes(x = x, y = y, color = dist_sort, linetype = dist_sort)) +
+  geom_line() +
+  theme_bw() +
+  scale_color_manual(name = "Distribution",
+                     breaks = c("S", "U", "A"),
+                     labels = c("Sampled", "Used", "Avail"),
+                     values = c("gray70", "black", "red")) +
+  scale_linetype_manual(name = "Distribution",
+                        breaks = c("S", "U", "A"),
+                        labels = c("Sampled", "Used", "Avail"),
+                        values = c("solid", "solid", "dashed")
+  ) +
+  # xlab("Time since Fire") +
+  ylab("Density") +
+  facet_wrap(~var, scales = 'free')
+
+
 uhc.df %>% 
   filter(var == "prop_needleleaf_end") %>% 
   mutate(dist_sort = factor(dist, levels = c("S", "U", "A"))) %>%
@@ -305,22 +442,3 @@ uhc.df %>%
   xlab("Time since Fire") +
   ylab("Density")
 
-coefs.end <- coefs[coefs %like% "_end"]
-uhc.df %>% 
-  filter(var %in% coefs.end) %>% 
-  mutate(dist_sort = factor(dist, levels = c("S", "U", "A"))) %>%
-  ggplot(aes(x = x, y = y, color = dist_sort, linetype = dist_sort)) +
-  geom_line() +
-  theme_bw() +
-  scale_color_manual(name = "Distribution",
-                     breaks = c("S", "U", "A"),
-                     labels = c("Sampled", "Used", "Avail"),
-                     values = c("gray70", "black", "red")) +
-  scale_linetype_manual(name = "Distribution",
-                        breaks = c("S", "U", "A"),
-                        labels = c("Sampled", "Used", "Avail"),
-                        values = c("solid", "solid", "dashed")
-  ) +
-  # xlab("Time since Fire") +
-  ylab("Density") +
-  facet_wrap(~var, scales = 'free')
