@@ -18,9 +18,27 @@ canada <- file.path('~/Dropbox', 'ActiveDocs', 'Git-local', 'Can_GIS_layers')
 
 ## Extract values ----
 canPoly <- vect(file.path(canada, 'CanadaPoly', 'lpr_000b16a_e.shp'))
-studyArea <- vect(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBuff.shp'))
+# # make study area of available points
+# datSteps <- readRDS(file.path(derived, 'dat_iSSA.RDS'))
+# coords<- datSteps%>%st_as_sf(coords = c('x2_','y2_'))%>%
+#   st_set_crs(st_crs(3978))
+# ## 10 km buffer around points to get an idea of extent of study area ----
+# gc()
+# studyArea <- st_buffer(coords, dist = 10000)
+# gc()
+# sa.union <- st_union(studyArea)
+# ## save buffered study area ----
+# st_write(sa.union, file.path('data', 'derived-data', 'prepped-data', 'WBIiSSAdat_10kmBuff.shp'), append = F)
+ext <- vect(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBuff.shp'))
+issaArea <- vect(file.path('data', 'derived-data', 'prepped-data', 'WBIiSSAdat_10kmBuff.shp'))
 ab.range <- vect(file.path(canada, 'AB_CaribouSubregionalPlanBoundaries', 'CARIBOU_SUB_REGIONAL_PLAN_BOUNDARIES_2022_07_04.shp'))
+dus <- vect(file.path(raw, 'Johnsonetal2020_studyareas', 'Enhanced_MetaHerds_20191029.shp'))
+dus.proj <- project(dus, studyArea)
+wbi.dus <- subset(dus.proj, dus.proj$PROV_TERR %in% c('BC', 'MB', 'NWT', 'SK') 
+                  & !(dus.proj$HERD %in% c('Smoothstone')))
 
+wbi.sa <- union(wbi.dus, issaArea)
+studyArea <- aggregate(wbi.sa)
 # load layers
 
 yr = 2019
@@ -67,7 +85,7 @@ disturb <- rast(file.path('data', 'raw-data', 'ECCC_disturbance',
 fires <- rast(file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', paste0('fires_', (year+5), '.tif')))
 
 lf.full <- rast(file.path('data', 'derived-data', 'distto_roadrail_500.tif'))
-lf <- crop(lf.full, studyArea)
+lf <- crop(lf.full, ext)
 harv <- rast(file.path('data', 'raw-data', 'WB_harv_1985-2020.tif'))
 
 lf_other <- resample(linfeat_other, lf, method = 'average')
@@ -126,6 +144,7 @@ mod2010re.tab <- make_betas_tab(sel.2010)
 View(summary(sel.2015)$coef$cond)
 mod2015re.tab <- make_betas_tab(sel.2015)
 
+gc()
 bc.tab <- make_betas_tab(sel.bc)
 mb.tab <- make_betas_tab(sel.mb)
 sk.tab <- make_betas_tab(sel.sk)
@@ -222,7 +241,7 @@ plot(pde.2010.sa.ab, breaks=0:10)
 
 pde.2015 <- make_pde(mod2015re.tab, land)
 
-pde.2015.sa <- make_pde_map(pde.2015, studyArea)
+pde.2015.sa <- make_pde_map(pde.2015, studyArea, saveName = 'pde2015_re.tif')
 plot(pde.2015.sa, breaks=0:10)
 
 
@@ -263,6 +282,7 @@ pde.re.discrete.2015.sa.ab <- rast(file.path(derived, 'pde2015_re_ab.tif'))
 p.re.2010.wbi<- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
   geom_spatraster(data = as.numeric(pde.re.discrete.2010), show.legend = T) +
+  geom_spatvector(data = wbi.dus, linewidth = 1, color = 'maroon', fill = NA, show.legend = F) +
   scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
   ggtitle('2010-2015 model') +
   theme_bw() +
@@ -275,6 +295,7 @@ p.re.2010.wbi
 p.re.2010.wbi.ab <- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
   geom_spatraster(data = as.numeric(pde.re.discrete.2010.sa.ab), show.legend = T) +
+  geom_spatvector(data = wbi.dus, linewidth = 1, color = 'maroon', fill = NA, show.legend = F) +
   scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
   ggtitle('2010-2015 model extrapolating AB') +
   theme_bw() +
@@ -290,6 +311,7 @@ p.re.2010.wbi + p.re.2010.wbi.ab
 p.re.2015.wbi<- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
   geom_spatraster(data = as.numeric(pde.re.discrete.2015), show.legend = T) +
+  geom_spatvector(data = wbi.dus, linewidth = 1, color = 'maroon', fill = NA, show.legend = F) +
   scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
   ggtitle('2015-2020 model') +
   theme_bw() +
@@ -372,7 +394,8 @@ p.juris <- ggplot(wbi.prov) +
   geom_spatraster(data = as.numeric(pde.nwt.sa), show.legend = F) +
   geom_spatraster(data = as.numeric(pde.mb.sa), show.legend = F) +
   geom_spatraster(data = as.numeric(pde.sk.sa), show.legend = F) +
-  scale_fill_gradientn(colours = magma(10),na.value = NA, limits = c(0,10)) +
+  geom_spatvector(data = wbi.dus, linewidth = 1, color = 'maroon', fill = NA, show.legend = F) +
+  scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
   ggtitle('Jurisdictional models') +
   theme_bw() +
   theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
