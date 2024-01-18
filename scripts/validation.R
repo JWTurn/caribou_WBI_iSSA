@@ -228,7 +228,7 @@ saveRDS(m.bc, file.path(derived, paste0('mod_bc_train_selmove_',
                                             '_HPC.RDS')))
 
 # ... 4. prepare UHC plots ----
-m <- readRDS(file.path(derived, paste0('mod_selmove_', 
+m <- readRDS(file.path(derived, paste0('mod_train_selmove_', 
                                        int.yr, '-', int.yr+5,
                                        '_HPC.RDS')))
 
@@ -255,8 +255,7 @@ coefs <- insight::find_predictors(m)[[1]]
 gc()
 
 ## indivs ----
-#dat.test.nona <- na.omit(dat.test)
-test_dat <- na.omit(dat.test[, disturbance_end := as.factor(disturbance_end)])
+
 test_dat <- na.omit(dat.test)
 gc()
 uhc<- prep_uhc(object = m, test_dat = test_dat,
@@ -373,16 +372,16 @@ saveRDS(uhc.nwt, file.path(derived, "uhc_global_nwt.RDS"))
 
 # ... 5. plot ----
 
-plot(uhc.bc)
+plot(uhc)
 
-coefs <- insight::find_predictors(m.nwt)[[1]]
+coefs <- insight::find_predictors(m)[[1]]
 
 # Working with 'uhc_data' objects ----
 
 
 # Coerce to data.frame
-uhc.df <- as.data.frame(uhc.nwt)
-saveRDS(uhc.df, file.path(derived, "uhc_global_nwt_df.RDS"))
+uhc.df <- as.data.frame(uhc)
+saveRDS(uhc.df, file.path(derived, "uhc_global_2010_df.RDS"))
 
 uhc.df <- readRDS(file.path(derived, "uhc_FE_df.RDS"))
 # This gives you the benefit of making custom plots, for example, with
