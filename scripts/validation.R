@@ -381,7 +381,7 @@ coefs <- insight::find_predictors(m)[[1]]
 
 # Coerce to data.frame
 uhc.df <- as.data.frame(uhc)
-saveRDS(uhc.df, file.path(derived, "uhc_global_2010_df.RDS"))
+saveRDS(uhc.df, file.path(derived, "uhc_FE_df.RDS"))
 
 uhc.df <- readRDS(file.path(derived, "uhc_FE_df.RDS"))
 # This gives you the benefit of making custom plots, for example, with
