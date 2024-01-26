@@ -22,6 +22,7 @@ dat <- readRDS(file.path(derived, 'dat_iSSA.RDS'))
 int.yr <- 2015
 set.seed(53)
 
+# Global models -----
 # prepping MB to be a random subset of data because too much to converge
 juris <- 'mb'
 
@@ -135,6 +136,36 @@ nwt.test[,year:=as.factor(year)]
 nwt.test[,pop := as.factor(pop)]
 nwt.test[,id := as.factor(id)]
 
+
+# jurisdictional models
+dat.sub <- dat[year>=2014 & year<=2019]
+
+### nwt ----
+nwt <- dat[jurisdiction %in% c('nwt', 'yt')]
+nwt[,id:=as.factor(id)]
+nwt[,indiv_step_id := as.factor(indiv_step_id)]
+nwt[,jurisdiction := as.factor(jurisdiction)]
+nwt[,year:=as.factor(year)]
+nwt[,pop := as.factor(pop)]
+
+### mb ----
+mb.2015 <- dat[jurisdiction == 'mb' & int.year ==2015]
+length(unique(mb.2015$id))*.5
+# worked when sampled 150 indivs
+mb.sub.id <- sample(unique(mb.2015$id), floor(length(unique(mb.2015$id))*.50))
+mb.2015.sub <- mb.2015[id %in% mb.sub.id]
+mb.2015.sub[,id:=as.factor(id)]
+mb.2015.sub[,indiv_step_id := as.factor(indiv_step_id)]
+
+### sk ----
+sk <- dat[jurisdiction == 'sk']
+sk[,id:=as.factor(id)]
+sk[,indiv_step_id := as.factor(indiv_step_id)]
+
+### bc ----
+bc <- dat[jurisdiction == 'bc']
+bc[,id:=as.factor(id)]
+bc[,indiv_step_id := as.factor(indiv_step_id)]
 
 
 # fit model ----
@@ -368,7 +399,16 @@ uhc.nwt <- prep_uhc(object = m.nwt, test_dat = test_nwt,
 
 saveRDS(uhc.nwt, file.path(derived, "uhc_global_nwt.RDS"))
 
+# jurisdiction ----
+## BC model NWT data
+m <- readRDS(file.path(derived, 'mod_selmove_bc.RDS'))
 
+test <- na.omit(nwt)
+gc()
+uhc <- prep_uhc(object = m, test_dat = test,
+                    n_samp = 100, verbose = TRUE)
+
+saveRDS(uhc, file.path(derived, "uhc_juris_modbc_nwt.RDS"))
 
 # ... 5. plot ----
 
@@ -381,7 +421,7 @@ coefs <- insight::find_predictors(m)[[1]]
 
 # Coerce to data.frame
 uhc.df <- as.data.frame(uhc)
-saveRDS(uhc.df, file.path(derived, "uhc_FE_df.RDS"))
+saveRDS(uhc.df, file.path(derived, "uhc_juris_modbc_nwt_df.RDS"))
 
 uhc.df <- readRDS(file.path(derived, "uhc_FE_df.RDS"))
 # This gives you the benefit of making custom plots, for example, with
