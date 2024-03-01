@@ -170,7 +170,7 @@ mb <- subset(canPoly, canPoly$PREABBR %in% c('Man.'))
 #### full model PDE functions ----
 gc()
 
-make_pde <- function(mod.tab, land){
+make_pde <- function(mod.tab, land, saveName = NULL){
   lf.cov<- (2*as.double(mod.tab[term %like% 'distlf_end', 
                                               .(estimate)])*land$log_distlf)
   lfother.cov<- (2*as.double(mod.tab[term %like% 'distlf_other_end', 
@@ -201,6 +201,11 @@ make_pde <- function(mod.tab, land){
   # the normalizing constant.
   C <- global(numerator, sum, na.rm = T)
   pde <- numerator/C[[1]]
+  
+  if(!is.null(saveName)){
+    writeRaster(pde, 
+                file.path(derived, saveName), overwrite = T)
+  }
   
   return(pde)
 }
