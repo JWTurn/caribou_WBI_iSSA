@@ -369,6 +369,8 @@ ggplot(global.proppts, aes(use.bin, prop.pts, color = fold)) +
   geom_point() +
   geom_line() + 
   theme_bw() +
+  xlab('Use bin') + ylab('Area adjusted proportion of used points') +
+  scale_x_continuous(breaks = seq(0,9, by = 1)) +
   scale_color_viridis_d()
 
 cor.test(global.proppts$use.bin, global.proppts$prop.pts, 
@@ -790,7 +792,7 @@ cor.test(propptsbin.bc.modsk.tot$use.bin, propptsbin.bc.modsk.tot$prop.pts,
          method = 'spearman', na.rm = T)
 
 
-## Consolidate Juris ----
+## Juris consolidated ----
 juris.proppts <- rbind(propptsbin.mb.modbc.tot[,`:=`(dat = 'mb', model = 'bc')], 
                        propptsbin.mb.modnwt.tot[,`:=`(dat = 'mb', model = 'nwt')],
                        propptsbin.mb.modsk.tot[,`:=`(dat = 'mb', model = 'sk')],
@@ -806,12 +808,15 @@ juris.proppts <- rbind(propptsbin.mb.modbc.tot[,`:=`(dat = 'mb', model = 'bc')],
 
 saveRDS(juris.proppts, file.path(derived, 'validations', 'juris_ud_overlap.RDS'))
 
-ggplot(juris.proppts, aes(use.bin, prop.pts, color = dat)) +
+juris.proppts[,mod.labs:= paste0(toupper(model), ' model')]
+ggplot(juris.proppts, aes(use.bin, prop.pts, color = toupper(dat))) +
   geom_point() +
   geom_line() + 
   theme_bw() +
-  scale_color_viridis_d() +
-  facet_wrap(~model)
+  xlab('Use bin') + ylab('Area adjusted proportion of used points') +
+  scale_x_continuous(breaks = seq(0,9, by = 1)) +
+  scale_color_viridis_d(name='fold') +
+  facet_wrap(~mod.labs) 
 
 cor.test(juris.proppts$use.bin, juris.proppts$prop.pts, 
          method = 'spearman', na.rm = T)
