@@ -443,6 +443,17 @@ uhc <- prep_uhc(object = m, test_dat = test,
 saveRDS(uhc, file.path(derived, "uhc_juris_modsk_bc.RDS"))
 
 
+## NWT model BC data
+m <- readRDS(file.path(derived, 'mod_selmove_nwt.RDS'))
+
+test <- na.omit(mb.2015.sub)
+gc()
+uhc <- prep_uhc(object = m, test_dat = test,
+                n_samp = 100, verbose = TRUE)
+
+saveRDS(uhc, file.path(derived, "uhc_juris_modnwt_mb.RDS"))
+
+
 # ... 5. plot ----
 
 plot(uhc)
@@ -454,7 +465,7 @@ coefs <- insight::find_predictors(m)[[1]]
 
 # Coerce to data.frame
 uhc.df <- as.data.frame(uhc)
-saveRDS(uhc.df, file.path(derived, "uhc_juris_modsk_mb_df.RDS"))
+saveRDS(uhc.df, file.path(derived, "uhc_juris_modsk_bc_df.RDS"))
 
 uhc.df <- readRDS(file.path(derived, "uhc_FE_df.RDS"))
 # This gives you the benefit of making custom plots, for example, with
