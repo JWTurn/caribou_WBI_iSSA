@@ -4,7 +4,8 @@
 
 #### Packages ####
 libs <- c('Require', 'reproducible', 'data.table', 'terra','sf',
-          'glmmTMB', 'ggplot2', 'rasterVis', 'viridis', 'tidyterra', 'patchwork')
+          'glmmTMB', 'ggplot2', 'rasterVis', 'viridis', 'RColorBrewer',
+          'tidyterra', 'patchwork')
 lapply(libs, Require::Require, character.only = TRUE)
 
 # my functions
@@ -33,38 +34,39 @@ ext <- vect(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBu
 issaArea <- vect(file.path('data', 'derived-data', 'prepped-data', 'WBIiSSAdat_10kmBuff.shp'))
 ab.range <- vect(file.path(canada, 'AB_CaribouSubregionalPlanBoundaries', 'CARIBOU_SUB_REGIONAL_PLAN_BOUNDARIES_2022_07_04.shp'))
 dus <- vect(file.path(raw, 'Johnsonetal2020_studyareas', 'Enhanced_MetaHerds_20191029.shp'))
-dus.proj <- project(dus, studyArea)
+dus.proj <- project(dus, issaArea)
 wbi.dus <- subset(dus.proj, dus.proj$PROV_TERR %in% c('BC', 'MB', 'NWT', 'SK') 
                   & !(dus.proj$HERD %in% c('Smoothstone')))
 
 wbi.sa <- union(wbi.dus, issaArea)
 studyArea <- aggregate(wbi.sa)
 # load layers
+landyr = 2019
+disturbyr = 2015
 
-yr = 2019
 
-bryoids <- rast(file.path('data', 'raw-data','prop_land', yr, '500grid', 
+bryoids <- rast(file.path('data', 'raw-data','prop_land', landyr, '500grid', 
                                   paste0('bryoids_500', '.tif')))
 
-shrub <- rast(file.path('data', 'raw-data','prop_land', yr, '500grid', 
+shrub <- rast(file.path('data', 'raw-data','prop_land', landyr, '500grid', 
                                 paste0('shrub_500', '.tif')))
 
-wet <- rast(file.path('data', 'raw-data','prop_land', yr, '500grid', 
+wet <- rast(file.path('data', 'raw-data','prop_land', landyr, '500grid', 
                               paste0('wet_500', '.tif')))
 
-wettreed <- rast(file.path('data', 'raw-data','prop_land', yr, '500grid', 
+wettreed <- rast(file.path('data', 'raw-data','prop_land', landyr, '500grid', 
                                    paste0('wet_treed_500', '.tif')))
 
-herbs <- rast(file.path('data', 'raw-data','prop_land', yr, '500grid', 
+herbs <- rast(file.path('data', 'raw-data','prop_land', landyr, '500grid', 
                                 paste0('herbs_500', '.tif')))
 
-needleleaf<- rast(file.path('data', 'raw-data','prop_land', yr, '500grid', 
+needleleaf<- rast(file.path('data', 'raw-data','prop_land', landyr, '500grid', 
                                      paste0('needleleaf_500', '.tif')))
 
-deciduous <- rast(file.path('data', 'raw-data','prop_land', yr, '500grid', 
+deciduous <- rast(file.path('data', 'raw-data','prop_land', landyr, '500grid', 
                                     paste0('deciduous_500', '.tif')))
 
-mixed <- rast(file.path('data', 'raw-data','prop_land', yr, '500grid', 
+mixed <- rast(file.path('data', 'raw-data','prop_land', landyr, '500grid', 
                                 paste0('mixed_500', '.tif')))
 
 
@@ -74,15 +76,15 @@ prop_veg <- shrub + bryoids + herbs
 prop_wets <- wet
 
 
-year = 2015
+
 linfeat_other <- rast(file.path('data', 'raw-data', 'ECCC_disturbance', 
-                                paste0('WB_lfother_', year, '_distto.tif')))
+                                paste0('WB_lfother_', disturbyr, '_distto.tif')))
 disturb <- rast(file.path('data', 'raw-data', 'ECCC_disturbance', 
-                          paste0('WB_disturb_other_', year, '.tif')))
+                          paste0('WB_disturb_other_', disturbyr, '.tif')))
 
 
 
-fires <- rast(file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', paste0('fires_', (year+5), '.tif')))
+fires <- rast(file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', paste0('fires_', (disturbyr+5), '.tif')))
 
 lf.full <- rast(file.path('data', 'derived-data', 'distto_roadrail_500.tif'))
 lf <- crop(lf.full, ext)
@@ -94,13 +96,13 @@ disturb <- resample(disturb, lf, method = 'max')
 disturb.ext <- extend(disturb, ext(lf))
 harv <- resample(harv, lf, method = 'max')
 harv.ext <- extend(harv, ext(lf))
-tsh <- (year + 5) - harv.ext
+tsh <- (disturbyr + 5) - harv.ext
 tsh[is.na(tsh)] <- 40
 
 
 fires.crop <- resample(fires, lf, method = 'max')
 #names(land.brick) <- c("lf_dist", "lc")
-tsf <- (year + 5) - fires.crop
+tsf <- (disturbyr + 5) - fires.crop
 tsf[is.na(tsf)] <- 40
 
 log_tsf <- log(tsf + 1)
@@ -283,6 +285,11 @@ pde.re.discrete.2010.sa.ab <- rast(file.path(derived, 'pde2010_re_ab.tif'))
 pde.re.discrete.2015 <- rast(file.path(derived, 'pde2015_re.tif'))
 pde.re.discrete.2015.sa.ab <- rast(file.path(derived, 'pde2015_re_ab.tif'))
 
+pde.bc.sa <- rast(file.path(derived, 'pde_bc.tif'))
+pde.mb.sa <- rast(file.path(derived, 'pde_mb.tif'))
+pde.nwt.sa <- rast(file.path(derived, 'pde_nwt.tif'))
+pde.sk.sa <- rast(file.path(derived, 'pde_sk.tif'))
+
 ### 2010 plots ----
 p.re.2010.wbi<- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
@@ -408,6 +415,23 @@ p.juris <- ggplot(wbi.prov) +
   labs(fill = 'Intensity of selection') +
   coord_sf(crs = 3978)
 p.juris
+
+pde.juris <- mosaic(pde.bc.sa, pde.mb.sa, pde.nwt.sa, pde.sk.sa)
+
+pde.mod.diff <- pde.re.discrete.2015 - pde.juris
+range(values(pde.mod.diff), na.rm = T)
+
+p.mod.diff <- ggplot(wbi.prov) +
+  geom_spatvector(fill = NA) +
+  geom_spatraster(data = as.numeric(pde.mod.diff), show.legend = T) +
+  scale_fill_distiller(type = 'div', palette = 'PRGn', na.value = NA) +
+  ggtitle('Global 2015 - Jurisdiction models') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Difference in selection') +
+  coord_sf(crs = 3978)
+p.mod.diff
 
 #######
 ###### nwt ----
