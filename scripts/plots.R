@@ -113,7 +113,7 @@ sk.tab <- setDT(broom.mixed::tidy(sel.sk, effect = 'fixed'))[,.(term, estimate, 
 nwt.tab <- setDT(broom.mixed::tidy(sel.nwt, effect = 'fixed'))[,.(term, estimate, std.error, mod = 'nwt')]
 
 all.res <- rbind(mod2010re.tab, mod2015re.tab, bc.tab, mb.tab, sk.tab, nwt.tab)
-
+saveRDS(all.res, file.path(derived, 'allMod_results.RDS'))
 gc()
 
 
@@ -132,13 +132,23 @@ ggplot(all.res[!((term %like% 'sl_')| (term %like% 'ta_'))], aes(term, estimate,
 
 
 
-# availability
-ggplot(sum.avail[jurisdiction!= 'yt' & ((variable %like% 'prop') | variable %like%  'disturbance')], aes(jurisdiction, mean, color = jurisdiction)) +
+### availability ----
+sum.avail[variable == 'distlf_end', var.name := 'Paved linear feature']
+sum.avail[variable %like% 'distlf_other', var.name := 'Unpaved linear feature']
+sum.avail[variable %like% 'disturbance', var.name := 'Polygonal disturbance']
+sum.avail[variable %like% 'fires', var.name := 'Fire']
+sum.avail[variable %like% 'harv', var.name := 'Harvest']
+sum.avail[variable %like% 'prop_mixforest', var.name := 'Mixed forest']
+sum.avail[variable %like% 'prop_needleleaf', var.name := 'Needleleaf']
+sum.avail[variable %like% 'prop_veg', var.name := 'Other vegetation']
+sum.avail[variable %like% 'prop_wets', var.name := 'Wetlands']
+
+ggplot(sum.avail[jurisdiction!= 'yt' & ((variable %like% 'prop') | variable %like%  'disturbance')], aes(toupper(jurisdiction), mean, color = toupper(jurisdiction))) +
   geom_point() + 
   geom_errorbar(aes(ymin = lower, ymax = upper), width = 0) +
-  facet_wrap(~variable) + 
-  xlab('model') +
+  facet_wrap(~var.name) + 
   ylab('Mean proportion available') +
+  labs(color = 'Jurisdiction', x = NULL) +
   theme_bw() + 
   scale_color_colorblind() +
   scale_fill_colorblind()
@@ -153,21 +163,21 @@ ggplot(hab.avail[jurisdiction!= 'yt' & ((variable %like% 'prop') | variable %lik
   scale_color_colorblind() +
   scale_fill_colorblind()
 
-ggplot(sum.avail[jurisdiction!= 'yt' &(variable %like% 'distlf')], aes(jurisdiction, mean, color = jurisdiction)) +
+ggplot(sum.avail[jurisdiction!= 'yt' &(variable %like% 'distlf')], aes(toupper(jurisdiction), mean, color = toupper(jurisdiction))) +
   geom_point() + 
   geom_errorbar(aes(ymin = lower, ymax = upper), width = 0) +
-  facet_wrap(~variable) + 
-  xlab('model') +
-  ylab('Mean distance available (m)') +
+  facet_wrap(~var.name) + 
+  labs(color = 'Jurisdiction', x = NULL) +
+  ylab('Mean distance to feature available (m)') +
   theme_bw() + 
   scale_color_colorblind() +
   scale_fill_colorblind()
 
-ggplot(sum.avail[jurisdiction!= 'yt' &(variable %in% c('ts_harv_end', 'ts_fires_end'))], aes(jurisdiction, mean, color = jurisdiction)) +
+ggplot(sum.avail[jurisdiction!= 'yt' &(variable %in% c('ts_harv_end', 'ts_fires_end'))], aes(toupper(jurisdiction), mean, color = toupper(jurisdiction))) +
   geom_point() + 
   geom_errorbar(aes(ymin = lower, ymax = upper), width = 0) +
-  facet_wrap(~variable) + 
-  xlab('model') +
+  facet_wrap(~var.name) + 
+  labs(color = 'Jurisdiction', x = NULL) +
   ylab('Mean time since disturbance available (years)') +
   theme_bw() + 
   scale_color_colorblind() +
@@ -705,18 +715,43 @@ logrss.nwt[,mod:='nwt']
 ## logRSS all ----
 logrss <- rbind(logrss.2010, logrss.2015, logrss.bc, logrss.mb, logrss.nwt, logrss.sk)
 saveRDS(logrss, file.path(derived, 'logRSS.RDS'))
+# correcting the lower values that went infinite for the ln calc
+logrss[is.infinite(lower), lower:= rss - (upper-rss)]
+logrss[is.infinite(rss), `:=`(lower = 0, rss = 0)]
+logrss[var %like% 'distlf' |var == 'harv' | var == 'fires', `:=`(lower = lower -1, rss = rss - 1, upper = upper -1)]
+saveRDS(logrss, file.path(derived, 'logRSS_corrected.RDS'))
 
 gc()
-logrss <- readRDS(file.path(derived, 'logRSS.RDS'))
+logrss <- readRDS(file.path(derived, 'logRSS_corrected.RDS'))
 # PLOTS -----
-ggplot(logrss, aes(x, rss, color = mod, fill = mod)) +
-  geom_line() +
+logrss[mod=='global2010', mod := 2010]
+logrss[mod=='global2015', mod := 2015]
+
+logrss[var == 'distlf', var.name := 'Distance to paved LF (m)']
+logrss[var == 'distlf_other', var.name := 'Distance to unpaved LF (m)']
+logrss[var == 'disturbance', var.name := 'Polygonal disturbance']
+logrss[var == 'fires', var.name := 'Time since fire (years)']
+logrss[var == 'harv', var.name := 'Time since harvest (years)']
+logrss[var == 'prop_mixforest', var.name := 'Proportion of mixed forest']
+logrss[var == 'prop_needleleaf', var.name := 'Proportion of needleleaf']
+logrss[var == 'prop_veg', var.name := 'Proportion of other vegetation']
+logrss[var == 'prop_wets', var.name := 'Proportion of wetlands']
+
+
+
+
+ggplot(logrss, aes(x, rss, color = toupper(mod), fill = toupper(mod))) +
+  geom_line(show.legend = F) +
   geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.5) +
   geom_hline(yintercept = 0, lty = 'dashed') +
-  facet_wrap(~var, scales = 'free_x') + 
+  facet_wrap(~var.name, scales = 'free_x', strip.position = 'bottom') + 
   theme_bw() + 
+  theme(
+    strip.placement = "outside",   # format to look like title
+    strip.background = element_blank()) +
   scale_color_colorblind() +
-  scale_fill_colorblind()
+  scale_fill_colorblind() +
+  labs(fill = 'Model', color = 'Model', x = NULL, y = 'logRSS')
 
 
 

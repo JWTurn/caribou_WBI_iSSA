@@ -22,7 +22,7 @@ dat.sub[,.N, by=.(jurisdiction)]
 #setindex(dat, NULL)
 
 ### nwt ----
-nwt <- dat[jurisdiction %in% c('nwt', 'yt')]
+nwt <- dat.sub[jurisdiction %in% c('nwt', 'yt')]
 nwt[,id:=as.factor(id)]
 nwt[,indiv_step_id := as.factor(indiv_step_id)]
 
@@ -41,14 +41,13 @@ sk[,id:=as.factor(id)]
 sk[,indiv_step_id := as.factor(indiv_step_id)]
 
 ### bc ----
-bc <- dat[jurisdiction == 'bc']
+bc <- dat.sub[jurisdiction == 'bc']
 bc[,id:=as.factor(id)]
 bc[,indiv_step_id := as.factor(indiv_step_id)]
 
 
 
 ### MODELS ----
-
 #### nwt ----
 gc()
 m.nwt <- glmmTMB(case_ ~ -1 +

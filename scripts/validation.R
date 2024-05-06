@@ -137,7 +137,7 @@ nwt.test[,pop := as.factor(pop)]
 nwt.test[,id := as.factor(id)]
 
 
-# jurisdictional models
+## data for jurisdictional models ----
 dat.sub <- dat[year>=2014 & year<=2019]
 
 ### nwt ----
@@ -446,12 +446,12 @@ saveRDS(uhc, file.path(derived, "uhc_juris_modsk_bc.RDS"))
 ## NWT model BC data
 m <- readRDS(file.path(derived, 'mod_selmove_nwt.RDS'))
 
-test <- na.omit(mb.2015.sub)
+test <- na.omit(bc)
 gc()
 uhc <- prep_uhc(object = m, test_dat = test,
                 n_samp = 100, verbose = TRUE)
 
-saveRDS(uhc, file.path(derived, "uhc_juris_modnwt_mb.RDS"))
+saveRDS(uhc, file.path(derived, "uhc_juris_modnwt_bc.RDS"))
 
 
 # ... 5. plot ----
@@ -465,7 +465,7 @@ coefs <- insight::find_predictors(m)[[1]]
 
 # Coerce to data.frame
 uhc.df <- as.data.frame(uhc)
-saveRDS(uhc.df, file.path(derived, "uhc_juris_modsk_bc_df.RDS"))
+saveRDS(uhc.df, file.path(derived, "uhc_juris_modnwt_bc_df.RDS"))
 
 uhc.df <- readRDS(file.path(derived, "uhc_FE_df.RDS"))
 # This gives you the benefit of making custom plots, for example, with
