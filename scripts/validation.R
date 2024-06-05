@@ -68,6 +68,14 @@ test.2010[,year:=as.factor(year)]
 test.2010[,pop := as.factor(pop)]
 test.2010[,id := as.factor(id)]
 
+## 2015 ----
+test.2015 <- dat.sub
+test.2015[,indiv_step_id := as.factor(indiv_step_id)]
+test.2015[,jurisdiction := as.factor(jurisdiction)]
+test.2015[,year:=as.factor(year)]
+test.2015[,pop := as.factor(pop)]
+test.2015[,id := as.factor(id)]
+
 ## Jurisdictions -----
 ### BC ----
 bc.train<- dat.sub[jurisdiction!='bc']
@@ -303,7 +311,7 @@ uhc<- prep_uhc(object = m, test_dat = test_dat,
 
 saveRDS(uhc, file.path(derived, "uhc_FE.RDS"))
 
-## 2010 ----
+## global  2015 predicting 2010 ----
 m <- readRDS(file.path(derived, 'mods_hpc', 'mod_selmove_2015-2020_HPC_noTA.RDS'))
 test_dat <- na.omit(test.2010)
 gc()
@@ -311,6 +319,15 @@ uhc<- prep_uhc(object = m, test_dat = test_dat,
                n_samp = 100, verbose = TRUE)
 
 saveRDS(uhc, file.path(derived, "uhc_global_2010.RDS"))
+
+## global  2010 predicting 2015 ----
+m <- readRDS(file.path(derived, 'mods_hpc', 'mod_selmove_2010-2015_HPC_noTA.RDS'))
+test_dat <- na.omit(test.2015)
+gc()
+uhc<- prep_uhc(object = m, test_dat = test_dat,
+               n_samp = 100, verbose = TRUE)
+
+saveRDS(uhc, file.path(derived, "uhc_global2010_2015.RDS"))
 
 ## bc ----
 m.bc <- readRDS(file.path(derived, paste0('mod_bc_train_selmove_', 

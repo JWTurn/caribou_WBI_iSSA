@@ -187,7 +187,7 @@ gc()
 ## Global model ----
 land2015 <- load_map_layers(landyr = 2019, disturbyr = 2015, ts_else = 40)
 
-### global 2015 ----
+### global2015 predicting 2015 ----
 modtrain2015 <- file.path(derived, 'mods_train', 'mod_train_selmove_2015-2020_HPC.RDS')
 
 gc()
@@ -215,6 +215,40 @@ propptsbin.2015.tot <- pts_in_bins_tot(dat.test, test2015.ud)
 
 plot(propptsbin.2015.tot$use.bin, propptsbin.2015.tot$prop.pts)
 cor(propptsbin.2015.tot$use.bin, propptsbin.2015.tot$prop.pts, method = 'spearman')
+
+
+### global2010 predicting 2015 ----
+land2010 <- load_map_layers(landyr = 2015, disturbyr = 2010, ts_else = 40)
+
+modtrain2010 <- file.path(derived, 'mods_hpc', 'mod_selmove_2010-2015_HPC_noTA.RDS')
+
+gc()
+test2010.ud <- mod2UD(modpath = modtrain2010, envlayers = land2015, 
+                      studyArea = vect(sArea.2015))
+plot(test2010.ud)
+
+
+gc()
+test2010.prop <- make_prop_use(dat.sub, crs, test2010.ud)
+
+
+gc()
+used.bin.2010 <- make_map_bins(test2010.prop)
+
+
+gc()
+propptsbin.2010 <- pts_in_bins(dat.sub, test2010.ud)
+plot(propptsbin.2010$use.bin, propptsbin.2010$prop.pts)
+cor(propptsbin.2010$use.bin, propptsbin.2010$prop.pts, method = 'spearman')
+
+layerCor(c(test2010.ud, used.bin.2010), fun = 'pearson', na.rm = T)
+
+propptsbin.2010.tot <- pts_in_bins_tot(dat.sub, test2010.ud)
+
+plot(propptsbin.2010.tot$use.bin, propptsbin.2010.tot$prop.pts)
+cor.test(propptsbin.2010.tot$use.bin, propptsbin.2010.tot$prop.pts, 
+         method = 'spearman', na.rm = T)
+
 
 ### BC ----
 modtrainbc <- file.path(derived, 'mods_train', 'mod_bc_train_selmove_2015-2020_HPC.RDS')
@@ -326,41 +360,10 @@ cor(propptsbin.sk.tot$use.bin, propptsbin.sk.tot$prop.pts, method = 'spearman')
 
 
 
-### global 2010 ----
-land2010 <- load_map_layers(landyr = 2015, disturbyr = 2010, ts_else = 40)
-
-modtrain2010 <- file.path(derived, 'mods_hpc', 'mod_selmove_2010-2015_HPC_noTA.RDS')
-
-gc()
-test2010.ud <- mod2UD(modpath = modtrain2010, envlayers = land2010, 
-                      studyArea = vect(test.sArea.2010))
-plot(test2010.ud)
-
-
-gc()
-test2010.prop <- make_prop_use(test.2010, crs, test2010.ud)
-
-
-gc()
-used.bin.2010 <- make_map_bins(test2010.prop)
-
-
-gc()
-propptsbin.2010 <- pts_in_bins(test.2010, test2010.ud)
-plot(propptsbin.2010$use.bin, propptsbin.2010$prop.pts)
-cor(propptsbin.2010$use.bin, propptsbin.2010$prop.pts, method = 'spearman')
-
-layerCor(c(test2010.ud, used.bin.2010), fun = 'pearson', na.rm = T)
-
-propptsbin.2010.tot <- pts_in_bins_tot(test.2010, test2010.ud)
-
-plot(propptsbin.2010.tot$use.bin, propptsbin.2010.tot$prop.pts)
-cor.test(propptsbin.2010.tot$use.bin, propptsbin.2010.tot$prop.pts, 
-         method = 'spearman', na.rm = T)
 
 
 ### global consolidated ----
-global.proppts <- rbind(propptsbin.2010.tot[,fold:= 2010], propptsbin.2015.tot[,fold:= 2015], 
+global.proppts <- rbind(propptsbin.2010.tot[,fold:= '2010-2015'], propptsbin.2015.tot[,fold:= '2015_internal'], 
                         propptsbin.bc.tot[,fold:= 'bc'], propptsbin.mb.tot[,fold:= 'mb'],
                         propptsbin.nwt.tot[,fold:= 'nwt'], propptsbin.sk.tot[,fold:= 'sk'])
 saveRDS(global.proppts, file.path(derived, 'validations', 'global_ud_overlap.RDS'))
@@ -808,6 +811,7 @@ juris.proppts <- rbind(propptsbin.mb.modbc.tot[,`:=`(dat = 'mb', model = 'bc')],
 
 saveRDS(juris.proppts, file.path(derived, 'validations', 'juris_ud_overlap.RDS'))
 
+juris.proppts <- readRDS(file.path(derived, 'validations', 'juris_ud_overlap.RDS'))
 juris.proppts[,mod.labs:= paste0(toupper(model), ' model')]
 ggplot(juris.proppts, aes(use.bin, prop.pts, color = toupper(dat))) +
   geom_point() +
