@@ -26,8 +26,11 @@ make_landforest_prop(studyArea = file.path('data', 'derived-data', 'prepped-data
 roads <- st_read(file.path('data', 'raw-data', 'wbi_nrn.shp'))
 rail <- st_read(file.path('data', 'raw-data', 'wbi_rail.shp'))
 
-paved <- dplyr::filter(roads, PAVSTATUS %in% 'Paved')
+paved <- vect(dplyr::filter(roads, PAVSTATUS %in% 'Paved'))
+paved.rail <- rbind(paved, vect(rail))
 #writeVector(vect(paved), file.path('data', 'raw-data', 'wbi_pave_roads.shp'), overwrite = T)
+
+unpaved <- vect(dplyr::filter(roads, PAVSTATUS %in% 'Unpaved'))
 
 ### ECCC disturbance ----
 eccc_lines_2010 <- vect(file.path(canada, 'caribou-disturbance', '2010', 
@@ -51,6 +54,14 @@ eccc_lines_2015 <- project(eccc_lines_2015, studyArea)
 eccc_polys_2015 <- vect(file.path(raw, 'ECCC_disturbance', 'WB_dist_2015_poly.shp'))
 eccc_polys_2015 <- project(eccc_polys_2015, studyArea)
 
+
+eccc_lines_2020 <- vect(file.path(raw, 'ECCC_disturbance', 'WB_dist_2020_line.shp'))
+#eccc_lines_2020 <- project(eccc_lines_2020, studyArea)
+#eccc_lines_2020.crop <- crop(eccc_lines_2020, ext(studyArea))
+
+eccc_polys_2020 <- vect(file.path(raw, 'ECCC_disturbance', 'WB_dist_2020_poly.shp'))
+#eccc_polys_2020 <- project(eccc_polys_2020, studyArea)
+
 summary(as.factor(eccc_lines_2010$Class))
 notroads_2010 <- subset(eccc_lines_2010, !(eccc_lines_2010$Class %in% c('Road', 'Railway')))
 
@@ -58,11 +69,18 @@ notroads_2010 <- subset(eccc_lines_2010, !(eccc_lines_2010$Class %in% c('Road', 
 summary(as.factor(eccc_lines_2015$Class))
 notroads_2015 <- subset(eccc_lines_2015, !(eccc_lines_2015$Class %in% c('Road', 'Railway')))
 
+
+summary(as.factor(eccc_lines_2020$Class))
+notroads_2020 <- subset(eccc_lines_2020, !(eccc_lines_2020$Class %in% c('Road', 'Railway')))
+
 notroads_2010.crop <- crop(notroads_2010, ext(notroads_2015))
 
-notroads.mask <- mask(notroads_2010.crop, notroads_2015, inverse = T)
-notroads_2015_merge <- union(notroads_2015, notroads.mask)
+notroads.mask.2015 <- mask(notroads_2010.crop, notroads_2015, inverse = T)
+notroads_2015_merge <- union(notroads_2015, notroads.mask.2015)
 
+notroads_2020.crop <- crop(notroads_2020, ext(notroads_2015))
+notroads.mask.2020 <- mask(notroads_2010.crop, notroads_2020.crop, inverse = T)
+notroads_2020_merge <- union(notroads_2020.crop, notroads.mask.2020)
 
 
 summary(as.factor(eccc_polys_2010$Class))
@@ -71,17 +89,25 @@ disturb_2010 <- subset(eccc_polys_2010, !(eccc_polys_2010$Class %in% c('Cutblock
 summary(as.factor(eccc_polys_2015$Class))
 disturb_2015 <- subset(eccc_polys_2015, !(eccc_polys_2015$Class %in% c('Cutblock')))
 
+summary(as.factor(eccc_polys_2020$Class))
+disturb_2020 <- subset(eccc_polys_2020, !(eccc_polys_2020$Class %in% c('Cutblock', 'Harvest')))
+
 disturb_2010.crop <- crop(disturb_2010, ext(disturb_2015))
 
-dist.mask <- mask(disturb_2010.crop, disturb_2015, inverse = T)
-disturb_2015_merge <- union(disturb_2015, dist.mask)
+dist.mask.2015 <- mask(disturb_2010.crop, disturb_2015, inverse = T)
+disturb_2015_merge <- union(disturb_2015, dist.mask.2015)
 
+disturb_2020.crop <- crop(disturb_2020, ext(disturb_2015))
+dist.mask.2020 <- mask(disturb_2010.crop, disturb_2020.crop, inverse = T)
+disturb_2020_merge <- union(disturb_2020.crop, dist.mask.2020)
 
 writeVector(notroads_2010.crop, file.path(raw, 'ECCC_disturbance', 'WB_lfother_2010.shp'))
 writeVector(notroads_2015_merge, file.path(raw, 'ECCC_disturbance', 'WB_lfother_2015.shp'), overwrite = T)
+writeVector(notroads_2020_merge, file.path(raw, 'ECCC_disturbance', 'NEW', 'WB_lfother_2020.shp'), overwrite = T)
 
 writeVector(disturb_2010.crop, file.path(raw, 'ECCC_disturbance', 'WB_disturb_other_2010.shp'))
 writeVector(disturb_2015_merge, file.path(raw, 'ECCC_disturbance', 'WB_disturb_other_2015.shp'))
+writeVector(disturb_2020_merge, file.path(raw, 'ECCC_disturbance', 'NEW', 'WB_disturb_other_2020.shp'))
 
 # just picking a land layer to be a template for raterization
 land <- rast(file.path('data', 'raw-data','prop_land', 2010, 'prop_deciduous.tif'))
