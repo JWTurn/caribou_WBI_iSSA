@@ -33,102 +33,27 @@ canPoly <- vect(file.path(canada, 'CanadaPoly', 'lpr_000b16a_e.shp'))
 ext <- vect(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBuff.shp'))
 issaArea <- vect(file.path('data', 'derived-data', 'prepped-data', 'WBIiSSAdat_10kmBuff.shp'))
 ab.range <- vect(file.path(canada, 'AB_CaribouSubregionalPlanBoundaries', 'CARIBOU_SUB_REGIONAL_PLAN_BOUNDARIES_2022_07_04.shp'))
-dus <- vect(file.path(raw, 'Johnsonetal2020_studyareas', 'Enhanced_MetaHerds_20191029.shp'))
-dus.proj <- project(dus, issaArea)
-wbi.dus <- subset(dus.proj, dus.proj$PROV_TERR %in% c('BC', 'MB', 'NWT', 'SK') 
-                  & !(dus.proj$HERD %in% c('Smoothstone')))
+dus <- vect(file.path(raw, 'juris_herds', 'wbi_herds.shp'))
+wbi.dus.data <- subset(dus, !(wbi.dus$herd %in% c('Sahtu', 'Bear River', 'Cameron Hills')))
+plot(wbi.dus.data)
 
-wbi.sa <- union(wbi.dus, issaArea)
+wbi.sa <- union(wbi.dus.data, issaArea)
 studyArea <- aggregate(wbi.sa)
+#studyArea <- issaArea
+
 # load layers
-landyr = 2019
-disturbyr = 2015
+land <- load_map_layers(landyr = 2019, disturbyr = 2015, ts_else = 40)
+gc()
+land2010 <- load_map_layers(landyr = 2015, disturbyr = 2010, ts_else = 40)
+gc()
 
-
-bryoids <- rast(file.path('data', 'raw-data','prop_land', landyr, '500grid', 
-                                  paste0('bryoids_500', '.tif')))
-
-shrub <- rast(file.path('data', 'raw-data','prop_land', landyr, '500grid', 
-                                paste0('shrub_500', '.tif')))
-
-wet <- rast(file.path('data', 'raw-data','prop_land', landyr, '500grid', 
-                              paste0('wet_500', '.tif')))
-
-wettreed <- rast(file.path('data', 'raw-data','prop_land', landyr, '500grid', 
-                                   paste0('wet_treed_500', '.tif')))
-
-herbs <- rast(file.path('data', 'raw-data','prop_land', landyr, '500grid', 
-                                paste0('herbs_500', '.tif')))
-
-needleleaf<- rast(file.path('data', 'raw-data','prop_land', landyr, '500grid', 
-                                     paste0('needleleaf_500', '.tif')))
-
-deciduous <- rast(file.path('data', 'raw-data','prop_land', landyr, '500grid', 
-                                    paste0('deciduous_500', '.tif')))
-
-mixed <- rast(file.path('data', 'raw-data','prop_land', landyr, '500grid', 
-                                paste0('mixed_500', '.tif')))
-
-
-prop_needleleaf <- needleleaf
-prop_mixforest <- deciduous + mixed + wettreed
-prop_veg <- shrub + bryoids + herbs
-prop_wets <- wet
-
-
-
-linfeat_other <- rast(file.path('data', 'raw-data', 'ECCC_disturbance', 
-                                paste0('WB_lfother_', disturbyr, '_distto.tif')))
-disturb <- rast(file.path('data', 'raw-data', 'ECCC_disturbance', 
-                          paste0('WB_disturb_other_', disturbyr, '.tif')))
-
-
-
-fires <- rast(file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', paste0('fires_', (disturbyr+5), '.tif')))
-
-lf.full <- rast(file.path('data', 'derived-data', 'distto_roadrail_500.tif'))
-lf <- crop(lf.full, ext)
-harv <- rast(file.path('data', 'raw-data', 'WB_harv_1985-2020.tif'))
-
-lf_other <- resample(linfeat_other, lf, method = 'average')
-lf_other.ext <- extend(lf_other, ext(lf))
-disturb <- resample(disturb, lf, method = 'max')
-disturb.ext <- extend(disturb, ext(lf))
-harv <- resample(harv, lf, method = 'max')
-harv.ext <- extend(harv, ext(lf))
-tsh <- (disturbyr + 5) - harv.ext
-tsh[is.na(tsh)] <- 40
-
-
-fires.crop <- resample(fires, lf, method = 'max')
-#names(land.brick) <- c("lf_dist", "lc")
-tsf <- (disturbyr + 5) - fires.crop
-tsf[is.na(tsf)] <- 40
-
-log_tsf <- log(tsf + 1)
-log_tsh <- log(tsh + 1)
-log_distlf <- log(lf + 1)
-log_distlfother <- log(lf_other.ext + 1)
-
-
-land <- c(prop_veg, prop_needleleaf, prop_mixforest, prop_wets, log_tsf, log_tsh, log_distlf, 
-          log_distlfother, disturb.ext)
-names(land) <- c('prop_veg', 'prop_needleleaf', 'prop_mixforest', 'prop_wets', 'log_tsf', 'log_tsh', 'log_distlf', 
-                 'log_distlfother', 'disturb')
-
-
-
-# writeRaster(prop_forest.crop, file.path('data', 'derived-data', 'prop_forest_2010_500.tif'))
-# writeRaster(prop_forage.crop, file.path('data', 'derived-data', 'prop_forage_2015_500.tif'))
-# writeRaster(prop_open.crop, file.path('data', 'derived-data', 'prop_open_2015_500.tif'))
-# writeRaster(prop_wets.crop, file.path('data', 'derived-data', 'prop_wets_2015_500.tif'))
-# writeRaster(log_tsf, file.path('data', 'derived-data', 'log_tsf_2020_500.tif'))
 
 ab.range <- project(ab.range, studyArea)
 studyArea.ab <- union(studyArea, ab.range)
 
 
 ## Models ----
+gc()
 sel.2010 <- readRDS(file.path(derived, 'mods_hpc', 'mod_selmove_2010-2015_HPC_noTA.RDS'))
 
 sel.2015 <- readRDS(file.path(derived, 'mods_hpc', 'mod_selmove_2015-2020_HPC_noTA.RDS'))
@@ -140,10 +65,10 @@ sel.nwt <- readRDS(file.path(derived, 'mod_selmove_nwt.RDS'))
 
 
 ### PDE ----
-
+gc()
 mod2010re.tab <- make_betas_tab(sel.2010)
 
-View(summary(sel.2015)$coef$cond)
+#View(summary(sel.2015)$coef$cond)
 mod2015re.tab <- make_betas_tab(sel.2015)
 
 gc()
@@ -152,13 +77,15 @@ mb.tab <- make_betas_tab(sel.mb)
 sk.tab <- make_betas_tab(sel.sk)
 nwt.tab <- make_betas_tab(sel.nwt)
 
-
+### Jurisidictional boundaries -----
 gc()
-### START -----
-canPoly <- project(canPoly, lf)
 
-wbi.prov <- subset(canPoly, canPoly$PREABBR %in% c('Alta.', 'B.C.', 'Man.', 'N.W.T.', 'Sask.', 'Y.T.'))
+canPoly <- project(canPoly, land$prop_veg)
 
+wbi.prov.full <- subset(canPoly, canPoly$PREABBR %in% c('Alta.', 'B.C.', 'Man.', 'N.W.T.', 'Sask.', 'Y.T.'))
+wbi.prov <- crop(wbi.prov.full, ext(ext)) 
+
+wbi.dus <- crop(wbi.dus.data, ext(ext))
 
 bc <- subset(canPoly, canPoly$PREABBR %in% c('B.C.'))
 nwt <- subset(canPoly, canPoly$PREABBR %in% c('N.W.T.', 'Y.T.'))
@@ -234,7 +161,7 @@ make_pde_map <- function(pde, sArea, saveName = NULL){
 
 ### 2010 ----
 
-pde.2010 <- make_pde(mod2010re.tab, land)
+pde.2010 <- make_pde(mod2010re.tab, land2010)
 
 pde.2010.sa <- make_pde_map(pde.2010, studyArea, saveName = 'pde2010_re.tif')
 plot(pde.2010.sa, breaks=0:10)
@@ -294,7 +221,7 @@ pde.sk.sa <- rast(file.path(derived, 'pde_sk.tif'))
 p.re.2010.wbi<- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
   geom_spatraster(data = as.numeric(pde.re.discrete.2010), show.legend = T) +
-  geom_spatvector(data = wbi.dus, linewidth = 1, color = 'maroon', fill = NA, show.legend = F) +
+  geom_spatvector(data = wbi.dus, linewidth = 0.5, color = 'maroon', fill = NA, show.legend = F) +
   scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
   ggtitle('2010-2015 model') +
   theme_bw() +
@@ -304,26 +231,13 @@ p.re.2010.wbi<- ggplot(wbi.prov) +
   coord_sf(crs = 3978)
 p.re.2010.wbi
 
-p.re.2010.wbi.ab <- ggplot(wbi.prov) +
-  geom_spatvector(fill = NA) +
-  geom_spatraster(data = as.numeric(pde.re.discrete.2010.sa.ab), show.legend = T) +
-  geom_spatvector(data = wbi.dus, linewidth = 1, color = 'maroon', fill = NA, show.legend = F) +
-  scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
-  ggtitle('2010-2015 model extrapolating AB') +
-  theme_bw() +
-  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
-  theme_void() +
-  labs(fill = 'Intensity of selection') +
-  coord_sf(crs = 3978)
-p.re.2010.wbi.ab
 
-p.re.2010.wbi + p.re.2010.wbi.ab
 
 ### 2015 plots ----
 p.re.2015.wbi<- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
   geom_spatraster(data = as.numeric(pde.re.discrete.2015), show.legend = T) +
-  geom_spatvector(data = wbi.dus, linewidth = 1, color = 'maroon', fill = NA, show.legend = F) +
+  geom_spatvector(data = wbi.dus, linewidth = 0.5, color = 'maroon', fill = NA, show.legend = F) +
   scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
   ggtitle('2015-2020 model') +
   theme_bw() +
@@ -333,19 +247,44 @@ p.re.2015.wbi<- ggplot(wbi.prov) +
   coord_sf(crs = 3978)
 p.re.2015.wbi
 
-p.re.2015.wbi.ab <- ggplot(wbi.prov) +
+### Juris plot ----
+p.juris <- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
-  geom_spatraster(data = as.numeric(pde.re.discrete.2015.sa.ab), show.legend = T) +
+  geom_spatraster(data = as.numeric(pde.bc.sa), show.legend = T) +
+  geom_spatraster(data = as.numeric(pde.nwt.sa), show.legend = F) +
+  geom_spatraster(data = as.numeric(pde.mb.sa), show.legend = F) +
+  geom_spatraster(data = as.numeric(pde.sk.sa), show.legend = F) +
+  geom_spatvector(data = wbi.dus, linewidth = 0.5, color = 'maroon', fill = NA, show.legend = F) +
   scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
-  ggtitle('2015-2020 model extrapolating AB') +
+  ggtitle('Jurisdictional models') +
   theme_bw() +
   theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
   theme_void() +
   labs(fill = 'Intensity of selection') +
   coord_sf(crs = 3978)
-p.re.2015.wbi.ab
+p.juris
 
-p.re.2015.wbi + p.re.2015.wbi.ab
+
+### Diff plot ----
+pde.juris <- mosaic(pde.bc.sa, pde.mb.sa, pde.nwt.sa, pde.sk.sa)
+
+pde.mod.diff <- pde.re.discrete.2015 - pde.juris
+range(values(pde.mod.diff), na.rm = T)
+
+p.mod.diff <- ggplot(wbi.prov) +
+  geom_spatvector(fill = NA) +
+  geom_spatraster(data = as.numeric(pde.mod.diff), show.legend = T) +
+  geom_spatvector(data = wbi.dus, linewidth = 0.5, color = 'maroon', fill = NA, show.legend = F) +
+  scale_fill_distiller(type = 'div', palette = 'PRGn', na.value = NA) +
+  ggtitle('Global 2015 - Jurisdiction models') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Difference in selection') +
+  coord_sf(crs = 3978)
+p.mod.diff
+
+p.re.2015.wbi + p.juris + p.mod.diff
 
 ### BC plot ----
 p.bc <- ggplot(bc) +
@@ -399,41 +338,37 @@ p.nwt <- ggplot(nwt) +
   coord_sf(crs = 3978)
 p.nwt
 
-### Juris plot ----
-p.juris <- ggplot(wbi.prov) +
+
+#######
+##### extrapolate ab ----
+p.re.2010.wbi.ab <- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
-  geom_spatraster(data = as.numeric(pde.bc.sa), show.legend = T) +
-  geom_spatraster(data = as.numeric(pde.nwt.sa), show.legend = F) +
-  geom_spatraster(data = as.numeric(pde.mb.sa), show.legend = F) +
-  geom_spatraster(data = as.numeric(pde.sk.sa), show.legend = F) +
-  geom_spatvector(data = wbi.dus, linewidth = 1, color = 'maroon', fill = NA, show.legend = F) +
+  geom_spatvector(data = wbi.dus, linewidth = 0.5, color = 'maroon', fill = NA, show.legend = F) +
+  geom_spatraster(data = as.numeric(pde.re.discrete.2010.sa.ab), show.legend = T) +
   scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
-  ggtitle('Jurisdictional models') +
+  ggtitle('2010-2015 model extrapolating AB') +
   theme_bw() +
   theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
   theme_void() +
   labs(fill = 'Intensity of selection') +
   coord_sf(crs = 3978)
-p.juris
+p.re.2010.wbi.ab
 
-pde.juris <- mosaic(pde.bc.sa, pde.mb.sa, pde.nwt.sa, pde.sk.sa)
+p.re.2010.wbi + p.re.2010.wbi.ab
 
-pde.mod.diff <- pde.re.discrete.2015 - pde.juris
-range(values(pde.mod.diff), na.rm = T)
-
-p.mod.diff <- ggplot(wbi.prov) +
+p.re.2015.wbi.ab <- ggplot(wbi.prov) +
   geom_spatvector(fill = NA) +
-  geom_spatraster(data = as.numeric(pde.mod.diff), show.legend = T) +
-  scale_fill_distiller(type = 'div', palette = 'PRGn', na.value = NA) +
-  ggtitle('Global 2015 - Jurisdiction models') +
+  geom_spatraster(data = as.numeric(pde.re.discrete.2015.sa.ab), show.legend = T) +
+  scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
+  ggtitle('2015-2020 model extrapolating AB') +
   theme_bw() +
   theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
   theme_void() +
-  labs(fill = 'Difference in selection') +
+  labs(fill = 'Intensity of selection') +
   coord_sf(crs = 3978)
-p.mod.diff
+p.re.2015.wbi.ab
 
-#######
+p.re.2015.wbi + p.re.2015.wbi.ab
 ###### nwt ----
 nwt.sf <- st_as_sf(nwt)
 nwt.2010.rast <- raster::raster(nwt.2010)
