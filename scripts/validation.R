@@ -322,12 +322,12 @@ saveRDS(uhc, file.path(derived, "uhc_global_2010.RDS"))
 
 ## global  2010 predicting 2015 ----
 m <- readRDS(file.path(derived, 'mods_hpc', 'mod_selmove_2010-2015_HPC_noTA.RDS'))
-test_dat <- na.omit(test.2015)
+test_dat <- na.omit(dat.train)
 gc()
 uhc<- prep_uhc(object = m, test_dat = test_dat,
                n_samp = 100, verbose = TRUE)
 
-saveRDS(uhc, file.path(derived, "uhc_global2010_2015.RDS"))
+saveRDS(uhc, file.path(derived, "uhc_global_2010_2015.RDS"))
 
 ## bc ----
 m.bc <- readRDS(file.path(derived, paste0('mod_bc_train_selmove_', 
@@ -482,7 +482,7 @@ coefs <- insight::find_predictors(m)[[1]]
 
 # Coerce to data.frame
 uhc.df <- as.data.frame(uhc)
-saveRDS(uhc.df, file.path(derived, "uhc_juris_modnwt_bc_df.RDS"))
+saveRDS(uhc.df, file.path(derived, "uhc_global_2010_2015_df.RDS"))
 
 uhc.df <- readRDS(file.path(derived, "uhc_FE_df.RDS"))
 # This gives you the benefit of making custom plots, for example, with

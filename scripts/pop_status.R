@@ -5,7 +5,7 @@
 #### Packages ####
 libs <- c('Require', 'reproducible', 'data.table', 'terra','sf',
           'glmmTMB', 'ggplot2', 'rasterVis', 'viridis', 'RColorBrewer',
-          'tidyterra', 'patchwork')
+          'tidyterra', 'patchwork', 'ggthemes')
 lapply(libs, Require::Require, character.only = TRUE)
 
 # my functions
@@ -18,10 +18,10 @@ derived <- file.path('data', 'derived-data')
 ### data ----
 #### use plots ----
 pde.re.discrete.2010 <- rast(file.path(derived, 'pde2010_re.tif'))
-pde.re.discrete.2010.sa.ab <- rast(file.path(derived, 'pde2010_re_ab.tif'))
+#pde.re.discrete.2010.sa.ab <- rast(file.path(derived, 'pde2010_re_ab.tif'))
 
 pde.re.discrete.2015 <- rast(file.path(derived, 'pde2015_re.tif'))
-pde.re.discrete.2015.sa.ab <- rast(file.path(derived, 'pde2015_re_ab.tif'))
+#pde.re.discrete.2015.sa.ab <- rast(file.path(derived, 'pde2015_re_ab.tif'))
 
 pde.bc.sa <- rast(file.path(derived, 'pde_bc.tif'))
 pde.mb.sa <- rast(file.path(derived, 'pde_mb.tif'))
@@ -32,6 +32,19 @@ pde.sk.sa <- rast(file.path(derived, 'pde_sk.tif'))
 pde.juris <- mosaic(pde.bc.sa, pde.mb.sa, pde.nwt.sa, pde.sk.sa)
 
 pde.mod.diff <- pde.re.discrete.2015 - pde.juris
+# pde.mod.diff.index <- (pde.re.discrete.2015 - pde.juris)/pde.re.discrete.2015
+# p.mod.diff <- ggplot() +
+#   #geom_spatvector(fill = NA) +
+#   geom_spatraster(data = as.numeric(pde.mod.diff.index), show.legend = T) +
+#   geom_spatvector(data = wbi.herds, linewidth = 0.5, color = 'maroon', fill = NA, show.legend = F) +
+#   scale_fill_distiller(type = 'div', palette = 'PRGn', na.value = NA) +
+#   ggtitle('Global 2015 - Jurisdiction models') +
+#   theme_bw() +
+#   theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+#   theme_void() +
+#   labs(fill = 'Difference in selection') +
+#   coord_sf(crs = 3978)
+# p.mod.diff
 
 #### ECCC status data ----
 wbi.herds <- vect(file.path(raw, 'juris_herds', 'wbi_herds.shp'))
@@ -54,15 +67,20 @@ status2[,size:= factor(size, levels = c('<100', '100-300', '>300'))]
 status2[,poptrend:= factor(trend, levels = c(-1, 1, 0), 
                            labels = c('decreasing', 'increasing', 'stable'))]
 status2[, diff.index := ifelse(diff>=0, 'positive', 'negative')]
+status2[, popstatus := as.factor(ifelse(trend == -1, 'decreasing', 'stable/increasing'))]
 
 
 #### pop trend ----
 
 ##### box plots ----
-ggplot(na.omit(status2), aes(poptrend, diff)) +
-  geom_boxplot(outliers = F) +
+ggplot(na.omit(status2), aes(popstatus, diff)) +
+  geom_boxplot(aes(fill = popstatus), alpha = 0.45, outliers = F, show.legend = F) +
   geom_jitter(aes(color = juris)) +
   geom_hline(yintercept = 0, linetype = 'dashed')+
+  scale_fill_colorblind() +
+  scale_color_viridis_d(option = 'rocket', name = 'Jurisdiction') +
+  theme_bw() + 
+  labs(x = 'Population trend', y = 'Selection difference index') +
   coord_flip()
 
 
@@ -96,9 +114,36 @@ ggplot(na.omit(status2), aes(size, intensity.juris)) +
 
 #### stats ----
 
-trend.diff <- glm(poptrend ~ diff, data = status2, family = 'binomial')
+trend.diff <- glm(popstatus ~ diff, data = status2, family = 'binomial')
 summary(trend.diff)
 
+## predict probabilities of poptrend for different diffs 
+p.diffs <- data.table(diff = seq(-3, 3, length.out = 50))
+pp.diffs<- cbind(p.diffs, as.data.table(predict(trend.diff, newdata = p.diffs, type = "response", se = TRUE)))
+
+# add prob of decreasing for visual
+inc <- pp.diffs
+inc$probability <-  inc$fit 
+inc$trend <- 'stable/increasing'
+dec <- pp.diffs
+dec$probability <-  1 - dec$fit 
+dec$trend <- 'decreasing'
+lpp.diffs <- rbind(inc, dec)
+
+## plot predicted prop ----
+ggplot(lpp.diffs, aes(x = diff, y = probability, color = trend, fill = trend)) + 
+  geom_line() +
+  geom_ribbon(aes(ymin = probability - 1.96*se.fit, ymax = probability + 1.96*se.fit), alpha = 0.5) +
+  coord_cartesian(ylim = c(0, 1)) +
+  theme_bw() + 
+  theme(
+    strip.placement = "outside",   # format to look like title
+    strip.background = element_blank()) +
+  scale_color_colorblind() +
+  scale_fill_colorblind() +
+  labs(y = 'Probability', x = 'Selection difference index')
+
+#####
 trend.diff.multi <- nnet::multinom(poptrend ~ diff, data = status2, Hess = T)
 summary(trend.diff.multi)
 z <- summary(trend.diff.multi)$coefficients/summary(trend.diff.multi)$standard.errors

@@ -26,6 +26,7 @@ crs <- st_crs(3978)$wkt
 #                       c('BC', 'MB', 'NT', 'SK') 
 #                     & !(herds$SiteID %in% c('SK2'))
 #                     | (herds$SiteID == c('AB1')))
+# 
 
 eccc <- vect(file.path(raw, 'ECCC_boreal_herds.shp'))
 if (isFALSE(crs(eccc) == crs)){

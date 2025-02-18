@@ -66,7 +66,7 @@ juris.hab <- melt(dat[!(id %in% indivs),.(id, jurisdiction, sl_, ta_, prop_wets_
                                           ts_harv_end, ts_fires_end, distlf_end, distlf_other_end, 
                                           disturbance_end)], id.vars = c('id', 'jurisdiction'), 
                   variable.name = 'variable', value.name = 'value')
-juris.avail <- juris.hab[,.(mean = mean(value, na.rm = T), se = se(value, na.rm = T)), by = .(jurisdiction, variable)]
+juris.avail <- juris.hab[,.(mean = mean(value, na.rm = T), sd = sd(value, na.rm= T), se = se(value, na.rm = T)), by = .(jurisdiction, variable)]
 juris.avail[,`:=`(lower = mean-se*1.96, upper = mean+se*1.96)]
 
 global2010.hab <- melt(dat.sub.2010[!(id %in% indivs),.(id, jurisdiction, sl_, ta_, prop_wets_end,
@@ -74,7 +74,7 @@ global2010.hab <- melt(dat.sub.2010[!(id %in% indivs),.(id, jurisdiction, sl_, t
                                           ts_harv_end, ts_fires_end, distlf_end, distlf_other_end, 
                                           disturbance_end)], id.vars = c('id', 'jurisdiction'), 
                   variable.name = 'variable', value.name = 'value')
-global2010.avail <- global2010.hab[,.(mean = mean(value, na.rm = T), se = se(value, na.rm = T)), by = .(variable)]
+global2010.avail <- global2010.hab[,.(mean = mean(value, na.rm = T), sd = sd(value, na.rm = T), se = se(value, na.rm = T)), by = .(variable)]
 global2010.avail[,`:=`(lower = mean-se*1.96, upper = mean+se*1.96, jurisdiction = '2010')]
 
 
@@ -83,7 +83,7 @@ global2015.hab <- melt(dat.sub.2015[!(id %in% indivs),.(id, jurisdiction, sl_, t
                                           ts_harv_end, ts_fires_end, distlf_end, distlf_other_end, 
                                           disturbance_end)], id.vars = c('id', 'jurisdiction'), 
                   variable.name = 'variable', value.name = 'value')
-global2015.avail <- global2015.hab[,.(mean = mean(value, na.rm = T), se = se(value, na.rm = T)), by = .(variable)]
+global2015.avail <- global2015.hab[,.(mean = mean(value, na.rm = T), sd = sd(value, na.rm = T), se = se(value, na.rm = T)), by = .(variable)]
 global2015.avail[,`:=`(lower = mean-se*1.96, upper = mean+se*1.96, jurisdiction = '2015')]
 
 sum.avail <- rbind(juris.avail, global2010.avail, global2015.avail)
@@ -145,7 +145,7 @@ sum.avail[variable %like% 'prop_wets', var.name := 'Wetlands']
 
 ggplot(sum.avail[jurisdiction!= 'yt' & ((variable %like% 'prop') | variable %like%  'disturbance')], aes(toupper(jurisdiction), mean, color = toupper(jurisdiction))) +
   geom_point() + 
-  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0) +
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0) +
   facet_wrap(~var.name) + 
   ylab('Mean proportion available') +
   labs(color = 'Jurisdiction', x = NULL) +
@@ -165,17 +165,18 @@ ggplot(hab.avail[jurisdiction!= 'yt' & ((variable %like% 'prop') | variable %lik
 
 ggplot(sum.avail[jurisdiction!= 'yt' &(variable %like% 'distlf')], aes(toupper(jurisdiction), mean, color = toupper(jurisdiction))) +
   geom_point() + 
-  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0) +
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0) +
   facet_wrap(~var.name) + 
   labs(color = 'Jurisdiction', x = NULL) +
   ylab('Mean distance to feature available (m)') +
+  #coord_cartesian(ylim = c(0, 83000)) +
   theme_bw() + 
   scale_color_colorblind() +
   scale_fill_colorblind()
 
 ggplot(sum.avail[jurisdiction!= 'yt' &(variable %in% c('ts_harv_end', 'ts_fires_end'))], aes(toupper(jurisdiction), mean, color = toupper(jurisdiction))) +
   geom_point() + 
-  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0) +
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0) +
   facet_wrap(~var.name) + 
   labs(color = 'Jurisdiction', x = NULL) +
   ylab('Mean time since disturbance available (years)') +
