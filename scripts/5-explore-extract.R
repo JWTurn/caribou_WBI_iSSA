@@ -8,6 +8,7 @@ derived <- file.path('data', 'derived-data')
 
 dat.derive <- targets::tar_read(stepID)
 
+dat.derive[,uniqueN(id), by = .(jurisdiction)]
 dat.derive[case_==TRUE,.(quantile(sl_)), by = .(jurisdiction)]
 
 dat.derive[, dt_num := as.numeric(dt_)]
