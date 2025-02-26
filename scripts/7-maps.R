@@ -34,12 +34,29 @@ ext <- vect(file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBu
 issaArea <- vect(file.path('data', 'derived-data', 'prepped-data', 'WBIiSSAdat_10kmBuff.shp'))
 ab.range <- vect(file.path(canada, 'AB_CaribouSubregionalPlanBoundaries', 'CARIBOU_SUB_REGIONAL_PLAN_BOUNDARIES_2022_07_04.shp'))
 dus <- vect(file.path(raw, 'juris_herds', 'wbi_herds.shp'))
-wbi.dus.data <- subset(dus, !(wbi.dus$herd %in% c('Sahtu', 'Bear River', 'Cameron Hills')))
+wbi.dus.data <- subset(dus, !(dus$herd %in% c('Sahtu', 'Bear River', 'Cameron Hills')))
 plot(wbi.dus.data)
 
 wbi.sa <- union(wbi.dus.data, issaArea)
 studyArea <- aggregate(wbi.sa)
+#writeVector(studyArea, file.path(derived, 'studyArea_4maps.shp'))
 #studyArea <- issaArea
+
+### Jurisidictional boundaries -----
+gc()
+
+canPoly <- project(canPoly, land$prop_veg)
+
+wbi.prov.full <- subset(canPoly, canPoly$PREABBR %in% c('Alta.', 'B.C.', 'Man.', 'N.W.T.', 'Sask.', 'Y.T.'))
+wbi.prov <- crop(wbi.prov.full, ext(ext)) 
+
+wbi.dus <- crop(wbi.dus.data, ext(ext))
+
+bc <- subset(canPoly, canPoly$PREABBR %in% c('B.C.'))
+nwt <- subset(canPoly, canPoly$PREABBR %in% c('N.W.T.', 'Y.T.'))
+sk <- subset(canPoly, canPoly$PREABBR %in% c('Sask.'))
+mb <- subset(canPoly, canPoly$PREABBR %in% c('Man.'))
+
 
 # load layers
 land <- load_map_layers(landyr = 2019, disturbyr = 2015, ts_else = 40)
@@ -76,21 +93,6 @@ bc.tab <- make_betas_tab(sel.bc)
 mb.tab <- make_betas_tab(sel.mb)
 sk.tab <- make_betas_tab(sel.sk)
 nwt.tab <- make_betas_tab(sel.nwt)
-
-### Jurisidictional boundaries -----
-gc()
-
-canPoly <- project(canPoly, land$prop_veg)
-
-wbi.prov.full <- subset(canPoly, canPoly$PREABBR %in% c('Alta.', 'B.C.', 'Man.', 'N.W.T.', 'Sask.', 'Y.T.'))
-wbi.prov <- crop(wbi.prov.full, ext(ext)) 
-
-wbi.dus <- crop(wbi.dus.data, ext(ext))
-
-bc <- subset(canPoly, canPoly$PREABBR %in% c('B.C.'))
-nwt <- subset(canPoly, canPoly$PREABBR %in% c('N.W.T.', 'Y.T.'))
-sk <- subset(canPoly, canPoly$PREABBR %in% c('Sask.'))
-mb <- subset(canPoly, canPoly$PREABBR %in% c('Man.'))
 
 
 
@@ -285,7 +287,7 @@ p.mod.diff <- ggplot(wbi.prov) +
 p.mod.diff
 
 p.re.2015.wbi + p.juris + p.mod.diff
-
+#################
 ### BC plot ----
 p.bc <- ggplot(bc) +
   geom_spatvector(fill = NA) +
