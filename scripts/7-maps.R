@@ -15,6 +15,7 @@ lapply(dir('R', '*.R', full.names = TRUE), source)
 raw <-  file.path('data', 'raw-data')
 derived <- file.path('data', 'derived-data')
 canada <- file.path('~/Dropbox', 'ActiveDocs', 'Git-local', 'Can_GIS_layers')
+#canada <- file.path('C:','Users', 'julie', 'Dropbox', 'ActiveDocs', 'Git-local', 'Can_GIS_layers')
 
 
 ## Extract values ----
@@ -38,14 +39,28 @@ wbi.dus.data <- subset(dus, !(dus$herd %in% c('Sahtu', 'Bear River', 'Cameron Hi
 plot(wbi.dus.data)
 
 wbi.sa <- union(wbi.dus.data, issaArea)
-studyArea <- aggregate(wbi.sa)
+studyArea <- aggregate(wbi.sa, disolve = T)
+
+## prep study areas for sims
+studyArea.buff <- buffer(studyArea, 50000)
 #writeVector(studyArea, file.path(derived, 'studyArea_4maps.shp'))
 #studyArea <- issaArea
+
+studyArea.sf <- st_as_sf(studyArea.buff)
+studyArea.ch <- st_convex_hull(studyArea.sf)
+st_write(studyArea.ch, file.path(derived, 'studyArea_4sims.shp'))
+studyArea.split <- st_cast(studyArea.sf, 'POLYGON')
+mbsk <- studyArea.split$geometry[1]
+st_write(mbsk, file.path(derived, 'studyArea_mbsk_4sims.shp'))
+bcnwt <- studyArea.split$geometry[2]
+st_write(bcnwt, file.path(derived, 'studyArea_bcnwt_4sims.shp'))
+nnwt <- studyArea.split$geometry[3]
+st_write(nnwt, file.path(derived, 'studyArea_nnwt_4sims.shp'))
 
 ### Jurisidictional boundaries -----
 gc()
 
-canPoly <- project(canPoly, land$prop_veg)
+canPoly <- project(canPoly, studyArea)
 
 wbi.prov.full <- subset(canPoly, canPoly$PREABBR %in% c('Alta.', 'B.C.', 'Man.', 'N.W.T.', 'Sask.', 'Y.T.'))
 wbi.prov <- crop(wbi.prov.full, ext(ext)) 
@@ -300,6 +315,19 @@ p.bc <- ggplot(bc) +
   labs(fill = 'Intensity of selection') +
   coord_sf(crs = 3978)
 p.bc
+
+pde.bc.global <- crop(crop(pde.re.discrete.2015, pde.bc.sa), bc)
+p.bc.global <- ggplot(bc) +
+  geom_spatvector(fill = NA) +
+  geom_spatraster(data = as.numeric(pde.bc.global), show.legend = T) +
+  scale_fill_gradientn(colours = mako(10),na.value = NA, limits = c(0,10)) +
+  ggtitle('BC') +
+  theme_bw() +
+  theme(plot.title=element_text(size=12,hjust = 0.05),axis.title = element_blank()) +
+  theme_void() +
+  labs(fill = 'Intensity of selection') +
+  coord_sf(crs = 3978)
+p.bc.global
 
 ### MB plot ----
 p.mb <- ggplot(mb) +
