@@ -15,6 +15,7 @@ juris.herds <- file.path(raw, 'juris_herds')
 
 crs <- st_crs(3978)$wkt
 
+
 #### ECCC data ----
 # Extracting the caribou herds needed from the full critical habitat db
 # ch <- st_read(file.path(raw, 'CriticalHabitat', 'CriticalHabitat.gdb'), layer = 'CriticalHabitatArea')
