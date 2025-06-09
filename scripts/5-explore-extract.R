@@ -6,6 +6,7 @@ require(data.table)
 raw <- file.path('data', 'raw-data')
 derived <- file.path('data', 'derived-data')
 
+# taking the output of the `_targets.R` processing/extraction.
 dat.derive <- targets::tar_read(stepID)
 
 dat.derive[,uniqueN(id), by = .(jurisdiction)]
@@ -97,3 +98,9 @@ dat.clean <- dat[,.(x1_ = as.integer(x1_), y1_ = as.integer(y1_), x2_ = as.integ
                     disturbance_start = as.integer(disturbance_start), disturbance_end = as.integer(disturbance_end),
                     indiv_step_id)]
 saveRDS(dat.clean, file.path(derived, 'dat_iSSA.RDS'))
+
+# for pub aspatial data
+dat <- readRDS(file.path(derived, 'dat_iSSA.RDS'))
+dat.pub <- dat[, c('x1_', 'y1_', 'x2_', 'y2_'):= NULL]
+saveRDS(dat.pub, file.path(derived, 'dat_iSSA_pub.RDS'))
+write.csv(dat.pub, file.path(derived, 'dat_iSSA_pub.csv'))
