@@ -36,9 +36,7 @@ set.seed(37)
 path <- file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat.RDS')
 canada <- file.path('~/Dropbox', 'ActiveDocs', 'Git-local', 'Can_GIS_layers')
 studyArea <- file.path('data', 'derived-data', 'prepped-data', 'WBIprepDat_10kmBuff.shp')
-# can2010 <- file.path(canada, 'canada_2010', 'CAN_LC_2010_CAL.tif')
-# can2015 <- file.path(canada, 'canada_2015', 'CAN_LC_2015_CAL.tif')
-# can2020 <- file.path(canada, 'canada_2020', 'landcover-2020-classification.tif')
+
 
 prop_water <- file.path('data', 'raw-data', 'prop_land', 'prop_water')
 prop_snow <- file.path('data', 'raw-data', 'prop_land', 'prop_snow')
@@ -53,10 +51,7 @@ prop_needleleaf <- file.path('data', 'raw-data','prop_land', 'prop_needleleaf')
 prop_deciduous <- file.path('data', 'raw-data', 'prop_land', 'prop_deciduous')
 prop_mixed <- file.path('data', 'raw-data', 'prop_land', 'prop_mixed')
 
-# ## this is a short term crutch to get it to work
-# values2010 <- file.path('data', 'raw-data', 'prop_land', '2010','propvalues.RDS')
-# values2015 <- file.path('data', 'raw-data', 'prop_land', '2015','propvalues.RDS')
-# values2020 <- file.path('data', 'raw-data', 'prop_land', '2020','propvalues.RDS')
+
 
 linfeat <- file.path('data', 'raw-data', 'wbi_road_rail.shp')
 fires <- file.path('data', 'raw-data', 'fire_nbac_1986_to_2020', 'fires')
@@ -299,62 +294,6 @@ targets_propland <- c(
 )
 
 
-# # Targets: extract proportion of land
-# targets_propland2010 <- c(
-#   tar_map(
-#     readRDS(values2010),
-#     tar_target(extract2010,
-#                extract_pt(addyear, r_path, raster_name, where = 'both', int.yr = 2010)),
-#     unlist = FALSE)
-#   )
-#   
-# targets_propland2015 <- c(  
-#   tar_map(
-#     readRDS(values2015),
-#     tar_target(extract2015,
-#                extract_pt(addyear, r_path, raster_name, where = 'both', int.yr = 2015)),
-#     unlist = FALSE)
-#   )
-#   
-# targets_propland2020 <- c(  
-#   tar_map(
-#     readRDS(values2020),
-#     tar_target(extract2020,
-#                extract_pt(addyear, r_path, raster_name, where = 'both', int.yr = 2020)),
-#     unlist = FALSE)
-# )
-# 
-# 
-# targets_proplandcombo_year<- c(
-#   tar_combine(
-#     propland2010,
-#     targets_propland2010,
-#     command =  list(!!!.x) %>% purrr::reduce(dplyr::full_join, by = names(addyear))
-#   ),
-#   
-# 
-#     tar_combine(
-#     propland2015,
-#     targets_propland2015,
-#     command = list(!!!.x) %>% purrr::reduce(dplyr::full_join, by = names(addyear))
-#   ),
-#   
-# 
-#     tar_combine(
-#     propland2020,
-#     targets_propland2020,
-#     command = list(!!!.x) %>% purrr::reduce(dplyr::full_join, by = names(addyear))
-#   )
-# )
-#   
-#   
-# targets_proplandcombo <- c(  
-#   tar_combine(
-#     extractprop,
-#     list(targets_proplandcombo_year),
-#     command = dplyr::bind_rows(!!!.x)
-#   )
-# )
 
 ## time since ----
 targets_timesince <- c(    
@@ -477,23 +416,6 @@ targets_stepID <- c(
       setDT(extrdisturbother)[,indiv_step_id := paste(id, step_id_, sep = '_')]
     )
 )
-# Targets: combine ------------------------------------------------------------------
-# 
-# targets_combine <- c(  
-#   tar_combine(
-#     extrland,
-#     targets_distto, targets_proplandcombo,
-#     command = list(!!!.x) %>% purrr::reduce(dplyr::full_join, by = names(addyear))
-#   ),
-# 
-# 
-#   # create step ID across individuals
-#   tar_target(
-#     stepID,
-#     setDT(extrland)[,indiv_step_id := paste(id, step_id_, sep = '_')]
-#   )
-# )
-
 
 # Targets: all ------------------------------------------------------------------
 # Automatically grab and combine all the 'targets_*' lists above
