@@ -1,0 +1,42 @@
+---
+output: 
+  github_document
+---
+
+## Inferring wildlife population trends from hierarchical habitat selection: a case study with boreal caribou
+
+
+* Authors:
+    + [Julie W. Turner](https://www.julwturner.com)
+    + Samuel Haché 
+    + James Hodson 
+    + Philip D. McLoughlin 
+    + Tatiane Micheletti
+    + Michael J. L. Peers
+    + Agnès Pelletier
+    + Eliot McIntire 
+
+    
+
+This repository contains the data and code accompanying the paper "Inferring wildlife population trends from hierarchical habitat selection: a case study with boreal caribou". 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+libs <- c('data.table', 'knitr', 'tidyr')
+lapply(libs, require, character.only = TRUE)
+
+## Input data ----
+derivedPath <- file.path('data_pub', 'derived-data')
+
+metadat <- fread(file.path(derivedPath, 'data_description.csv'))
+
+```
+
+## Data
+Data processing and harmonizing occurred in scripts 1-5. Data included here are the aspatial, calculated movement parameters (steps and turn angles) and extracted covariates for each step used in analyses (scripts 6-9). Descriptions of the variables in the data for analysis are below.
+
+```{r summary, echo=FALSE}
+
+kable(metadat, options = list(pageLength = 35))
+```
