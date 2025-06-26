@@ -1,6 +1,8 @@
 
 ## Inferring wildlife population trends from hierarchical habitat selection: a case study with boreal caribou
 
+[![DOI](https://zenodo.org/badge/375803485.svg)](https://doi.org/10.5281/zenodo.15750844)
+
 - Authors:
   - [Julie W. Turner](https://www.julwturner.com)
   - Samuel Haché
