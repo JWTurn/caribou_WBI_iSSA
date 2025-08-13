@@ -38,7 +38,7 @@ set.seed(53)
 juris <- 'mb'
 
 
-dat.yr <- dat[int.year==int.yr]
+dat.yr <- dat.obs[int.year==int.yr]
 indivs <- sample(unique(dat.yr[jurisdiction == juris]$id), 
                  ceiling(length(unique(dat.yr[jurisdiction == juris]$id))*0.80))
 dat.sub<- dat.yr[!(id %in% indivs)]
