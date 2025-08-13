@@ -122,7 +122,7 @@ gc()
 test.sArea.2015 <- make_study_area(dat.test, crs, buff = buffer)
 
 ## 2010 ----
-dat.2010 <- dat[int.year==2010]
+dat.2010 <- dat.obs[int.year==2010]
 indivs.2010 <- sample(unique(dat.2010[jurisdiction == juris]$id), 
                       ceiling(length(unique(dat.2010[jurisdiction == juris]$id))*0.80))
 test.2010 <- dat.2010[!(id %in% indivs.2010)]
